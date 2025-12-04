@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Math - Ứng Dụng Học Toán Tương Tác</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tải Tone.js cho hiệu ứng âm thanh -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        /* Tùy chỉnh font cho dễ nhìn hơn */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 90%;
+            width: 800px;
+        }
+        .math-input {
+            width: 120px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        .sorting-number {
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            user-select: none;
+        }
+        .sorting-number:hover:not(.selected) {
+            background-color: #d1e5ff;
+        }
+        .selected {
+            border: 3px solid #10b981;
+            transform: scale(1.05);
+        }
+        
+        /* Cập nhật CSS cho độ tương phản cao hơn: Nền nhạt, Chữ đậm */
+        .correct-answer-box {
+            background-color: #d1fae5 !important; /* light green (green-100) */
+            animation: pulse-green 0.5s;
+        }
+        .incorrect-answer-box {
+            background-color: #fee2e2 !important; /* light red (red-100) */
+            animation: pulse-red 0.5s;
+        }
+        /* Cập nhật CSS cho hộp thông báo lỗi/chưa nhập đáp án (vàng) */
+        .warning-answer-box {
+            background-color: #fef9c3 !important; /* light yellow (yellow-100) */
+        }
+
+
+        /* --- Score Pop-up Effect --- */
+        .score-effect {
+            position: absolute;
+            top: 0px; /* Vị trí ban đầu */
+            right: 0px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            opacity: 0;
+            transition: all 0.5s ease-out;
+            pointer-events: none;
+        }
+        .score-container-relative {
+            position: relative;
+        }
+        
+        /* Dùng keyframes cho các hiệu ứng nền */
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Styling cho đồng hồ kim SVG */
+        .clock-face {
+            fill: #f9fafb;
+            stroke: #374151;
+            stroke-width: 4;
+        }
+        .hour-hand {
+            stroke: #1f2937;
+            stroke-linecap: round;
+            stroke-width: 6;
+            transform-origin: 50% 50%;
+        }
+        .minute-hand {
+            stroke: #ef4444;
+            stroke-linecap: round;
+            stroke-width: 4;
+            transform-origin: 50% 50%;
+        }
+
+        /* Styling đặc biệt cho ô so sánh */
+        .comparison-box {
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+        <h1 class="text-4xl font-bold text-center text-indigo-700 mb-6">🧠 Ứng Dụng Học Toán Tương Tác</h1>
+        
+        <div id="setup-screen" class="space-y-6">
+            <p class="text-lg text-gray-600 text-center">Chọn cấp độ để bắt đầu bài quiz 20 câu ngẫu nhiên. Quiz kéo dài 30 phút.</p>
+
+            <!-- CHỌN CẤP ĐỘ: CỘNG TRỪ -->
+            <div class="p-4 bg-indigo-50 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-indigo-800 mb-3">Cộng Trừ (Addition/Subtraction):</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="ADD_SUB" data-name="Cấp 1 (Phạm vi 0-9)">Cấp 1 (0-9)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="2" data-type="ADD_SUB" data-name="Cấp 2 (Phạm vi 0-99)">Cấp 2 (0-99)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="3" data-type="ADD_SUB" data-name="Cấp 3 (Phạm vi 0-999)">Cấp 3 (0-999)</button>
+                </div>
+            </div>
+
+            <!-- CHỌN CẤP ĐỘ: NHÂN CHIA -->
+            <div class="p-4 bg-green-50 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-green-800 mb-3">Nhân Chia (Multiplication/Division):</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="MULT_DIV" data-name="Cấp 1 (Bảng x2, x3)">Cấp 1 (x2, x3)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="2" data-type="MULT_DIV" data-name="Cấp 2 (Bảng x4, x5)">Cấp 2 (x4, x5)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="3" data-type="MULT_DIV" data-name="Cấp 3 (Bảng x6, x7)">Cấp 3 (x6, x7)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="4" data-type="MULT_DIV" data-name="Cấp 4 (Bảng x8, x9)">Cấp 4 (x8, x9)</button>
+                </div>
+            </div>
+
+            <p id="level-description" class="mt-4 text-sm text-indigo-700 text-center font-medium">Bạn đã chọn: Cấp 1 (Phạm vi số từ 0 đến 9).</p>
+<!-- Chọn số câu hỏi -->
+<div class="text-center mt-4">
+    <p class="text-md font-semibold text-gray-700 mb-2">Chọn số câu hỏi:</p>
+    <div id="question-count-options" class="flex justify-center space-x-4">
+        <button data-questions="10" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+            10 câu
+        </button>
+        <button data-questions="20" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+            20 câu
+        </button>
+        <button data-questions="30" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+            30 câu
+        </button>
+    </div>
+</div>
+
+            <div class="text-center pt-4">
+                <button id="start-quiz-btn" class="px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105" disabled>
+                    Bắt Đầu Quiz
+                </button>
+            </div>
+        </div>
+
+        <!-- Màn Hình Quiz -->
+        <div id="quiz-screen" class="hidden text-center">
+            
+            <!-- Header Bar -->
+            <div class="mb-6 flex justify-between items-center text-gray-600">
+                <button id="exit-quiz-btn" class="px-4 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    Quay lại Màn hình Chính
+                </button>
+                
+                <!-- Timer -->
+                <p class="text-xl font-semibold text-red-600">
+                    ⏰ <span id="quiz-timer" class="font-extrabold text-3xl">30:00</span>
+                </p>
+
+                <!-- Score Container with Relative Positioning for Effect -->
+                <p class="text-xl font-semibold score-container-relative">
+                    Điểm: <span id="current-score" class="text-green-600 font-extrabold text-2xl">0</span>
+                    <span id="score-effect" class="score-effect"></span>
+                </p>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div id="progress-bar-container" class="w-full bg-gray-200 rounded-full h-4 mb-4 overflow-hidden shadow-inner">
+                <div id="progress-bar" class="bg-indigo-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+            
+            <p class="text-lg font-semibold mb-4">Cấp độ: <span id="current-level-name">Cấp 1</span> | Câu hỏi: <span id="current-question-number">0</span> / <span id="total-questions">20</span></p>
+
+
+            <!-- Khu vực câu hỏi -->
+            <div id="question-area" class="min-h-[150px] flex flex-col justify-center items-center p-6 bg-blue-100 rounded-xl shadow-xl mb-6">
+                <!-- Vùng cho hình ảnh đồng hồ (Q19) -->
+                <div id="clock-image-container" class="hidden my-4">
+                    <!-- SVG clock will be generated here -->
+                </div>
+                
+                <!-- Dạng bài so sánh -->
+                <div id="comparison-display-area" class="hidden w-full flex flex-col md:flex-row justify-center items-center space-x-0 md:space-x-4">
+                    <p id="expression-left" class="text-4xl md:text-5xl font-extrabold text-blue-800 p-2"></p>
+                    <div id="comparison-box" class="comparison-box w-16 h-16 md:w-20 md:h-20 border-4 border-indigo-400 rounded-lg bg-white shadow-inner text-4xl font-extrabold text-red-600 my-4 md:my-0">?</div>
+                    <p id="expression-right" class="text-4xl md:text-5xl font-extrabold text-blue-800 p-2"></p>
+                </div>
+
+                <!-- Dạng bài thông thường (kể cả bài toán lời văn) -->
+                <p id="question-text" class="text-xl md:text-3xl font-extrabold text-blue-800">Câu hỏi sẽ hiện ở đây...</p>
+            </div>
+
+            <!-- Khu vực trả lời -->
+            <div id="answer-area" class="flex flex-col items-center space-y-4">
+                <!-- Vùng cho Bài tập Cộng/Trừ, Tìm X, Lời Văn, Đọc Giờ -->
+                <div id="input-answer-container" class="flex items-center space-x-3 hidden">
+                    <input type="number" id="math-answer-input" placeholder="Nhập đáp án" class="math-input p-3 border-2 border-indigo-300 rounded-lg focus:ring-4 focus:ring-indigo-500 focus:border-indigo-500">
+                    <button id="submit-answer-btn" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300">Kiểm tra</button>
+                </div>
+                
+                <!-- Vùng cho Bài tập So sánh (nút bấm) -->
+                <div id="comparison-buttons-container" class="space-x-4 hidden">
+                    <button data-op=">" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800">></button>
+                    <button data-op="<" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800"><</button>
+                    <button data-op="=" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800">=</button>
+                </div>
+
+                <!-- Vùng cho Bài tập Sắp xếp -->
+                <div id="sorting-numbers-container" class="flex flex-wrap justify-center gap-3 hidden">
+                    <!-- Các ô số sẽ được thêm vào đây -->
+                </div>
+                <div id="sorting-target-container" class="flex flex-wrap justify-center gap-3 p-4 bg-gray-200 rounded-lg w-full max-w-md min-h-[70px] hidden">
+                    <!-- Các ô số đã chọn sẽ được thêm vào đây -->
+                </div>
+                <div id="sorting-controls" class="space-x-4 hidden">
+                    <button id="reset-sorting-btn" class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-300">Đặt lại</button>
+                    <button id="submit-sorting-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300">Hoàn thành</button>
+                </div>
+            </div>
+
+            <!-- Message Box -->
+            <p id="message-box" class="mt-4 text-xl font-bold min-h-[30px]"></p>
+
+            <button id="next-question-btn" class="mt-6 px-6 py-3 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition duration-300 hidden">Câu hỏi tiếp theo</button>
+        </div>
+        
+        <!-- Màn Hình Kết thúc Quiz -->
+        <div id="end-screen" class="hidden text-center p-8 bg-white rounded-xl shadow-2xl">
+            <h2 class="text-4xl font-extrabold text-green-700 mb-4">Hoàn thành Quiz! 🎉</h2>
+            <p class="text-2xl text-gray-700 mb-6">Bạn đã hoàn thành 20 câu hỏi.</p>
+            <p class="text-5xl font-extrabold text-indigo-600">Điểm của bạn: <span id="final-score">0</span> / 20</p>
+            <p id="time-taken-message" class="text-xl text-gray-600 mt-4"></p>
+            <button id="restart-quiz-btn" class="mt-8 px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
+                Chơi lại
+            </button>
+        </div>
+
+        <!-- Custom Modal for Confirmation (using Tailwind) -->
+        <div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4">
+                <h3 class="text-xl font-bold text-red-600 mb-4">Xác nhận Quay lại</h3>
+                <p class="text-gray-700 mb-6">Bạn có chắc chắn muốn quay lại màn hình chính? Mọi tiến trình quiz hiện tại sẽ bị mất.</p>
+                <div class="flex justify-end space-x-4">
+                    <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Hủy</button>
+                    <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Quay lại</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Constants
+        
+        // Loại câu hỏi: Cộng/Trừ/So sánh/Sắp xếp/Tìm X, Nhân/Chia, Đọc giờ, Bài toán lời văn
+        const QUESTION_TYPES_BASIC = ['basic-op', 'find-x', 'sorting', 'comparison'];
+        const QUESTION_TYPES_MULT_DIV = ['mult-div', 'find-x-mult-div', 'sorting', 'comparison'];
+        const MAX_QUIZ_TIME_SECONDS = 30 * 60; // 30 phút
+
+        // Định nghĩa các bảng nhân cho từng cấp độ Nhân Chia
+        const MULT_DIV_FACTORS = {
+            1: [2, 3], // Cấp 1: x2, x3
+            2: [4, 5], // Cấp 2: x4, x5
+            3: [6, 7], // Cấp 3: x6, x7
+            4: [8, 9]  // Cấp 4: x8, x9
+        };
+
+        // Khởi tạo các biến trạng thái
+        let currentLevel = 1;
+        let currentLevelName = 'Cấp 1 (Phạm vi 0-9)';
+        let currentQuizType = 'ADD_SUB'; // Thêm biến theo dõi loại quiz đang chọn
+        let currentScore = 0;
+        let currentQuestionNumber = 0; 
+        let currentQuestion = null;
+        let quizTimer = null; // Biến cho setInterval
+        let timeRemaining = MAX_QUIZ_TIME_SECONDS;
+        let startTime = 0;
+
+        // Các phần tử DOM
+        const setupScreen = document.getElementById('setup-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelSelectBtns = document.querySelectorAll('.level-select-btn');
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+        const exitQuizBtn = document.getElementById('exit-quiz-btn');
+        const questionText = document.getElementById('question-text');
+        const currentLevelNameSpan = document.getElementById('current-level-name');
+        const currentQuestionNumberSpan = document.getElementById('current-question-number');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const currentScoreSpan = document.getElementById('current-score');
+        const finalScoreSpan = document.getElementById('final-score');
+        const mathAnswerInput = document.getElementById('math-answer-input');
+        const submitAnswerBtn = document.getElementById('submit-answer-btn');
+        const messageBox = document.getElementById('message-box');
+        const inputAnswerContainer = document.getElementById('input-answer-container');
+        const sortingNumbersContainer = document.getElementById('sorting-numbers-container');
+        const sortingTargetContainer = document.getElementById('sorting-target-container');
+        const sortingControls = document.getElementById('sorting-controls');
+        const resetSortingBtn = document.getElementById('reset-sorting-btn');
+        const submitSortingBtn = document.getElementById('submit-sorting-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreEffect = document.getElementById('score-effect');
+        const quizTimerDisplay = document.getElementById('quiz-timer');
+        const timeTakenMessage = document.getElementById('time-taken-message');
+        const clockImageContainer = document.getElementById('clock-image-container');
+        const levelDescription = document.getElementById('level-description');
+	let TOTAL_QUIZ_QUESTIONS = 20; // Mặc định
+	
+	
+        // Phần tử mới cho So sánh
+        const comparisonDisplayArea = document.getElementById('comparison-display-area');
+        const expressionLeft = document.getElementById('expression-left');
+        const expressionRight = document.getElementById('expression-right');
+        const comparisonBox = document.getElementById('comparison-box');
+        const comparisonButtonsContainer = document.getElementById('comparison-buttons-container');
+        const comparisonButtons = document.querySelectorAll('.comp-btn');
+        
+        // Modal components
+        const confirmModal = document.getElementById('confirm-modal');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+
+
+        // --- Tone.js Setup for Sound Effects ---
+        
+        // Synth cho âm thanh chính xác (correct)
+        const correctSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.01, decay: 0.2, sustain: 0.01, release: 0.5 },
+        }).toDestination();
+
+        // Synth cho âm thanh sai (incorrect)
+        const incorrectSynth = new Tone.NoiseSynth({
+            volume: -10,
+            envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.2 }
+        }).toDestination();
+
+        // Biến kiểm tra Audio Context
+        let isAudioContextStarted = false;
+        
+        function startAudioContext() {
+            if (!isAudioContextStarted) {
+                Tone.start();
+                isAudioContextStarted = true;
+                console.log("Tone.js Audio Context started.");
+            }
+        }
+
+        function playCorrectSound() {
+            if (!isAudioContextStarted) return;
+            correctSynth.triggerAttackRelease(["C5", "E5", "G5"], "8n");
+        }
+
+        function playIncorrectSound() {
+            if (!isAudioContextStarted) return;
+            incorrectSynth.triggerAttackRelease("16n");
+        }
+        
+        // --- Logic Hẹn giờ ---
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            quizTimerDisplay.textContent = formatTime(timeRemaining);
+            if (timeRemaining <= 60) {
+                quizTimerDisplay.classList.add('text-4xl');
+                quizTimerDisplay.classList.remove('text-3xl');
+            } else {
+                quizTimerDisplay.classList.add('text-3xl');
+                quizTimerDisplay.classList.remove('text-4xl');
+            }
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timeRemaining = MAX_QUIZ_TIME_SECONDS;
+            updateTimerDisplay();
+            
+            if (quizTimer) clearInterval(quizTimer);
+
+            quizTimer = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                if (timeRemaining <= 0) {
+                    clearInterval(quizTimer);
+                    endQuiz(true); // Kết thúc do hết giờ
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (quizTimer) clearInterval(quizTimer);
+            quizTimer = null;
+        }
+
+        // --- Hàm Tiện Ích ---
+
+        function getMaxRange(level) {
+            if (level === 1) return 10;
+            if (level === 2) return 100;
+            if (level === 3) return 1000;
+            return 10; // Fallback cho trường hợp không xác định
+        }
+
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        // --- Logic Hiệu ứng Điểm ---
+
+        function showScoreEffect(isCorrect) {
+            scoreEffect.textContent = isCorrect ? '+1' : '0';
+            scoreEffect.className = isCorrect
+                ? 'score-effect text-yellow-500' 
+                : 'score-effect text-red-500'; 
+
+            scoreEffect.style.opacity = '0';
+            scoreEffect.style.transform = 'translateY(0)';
+            void scoreEffect.offsetWidth;
+
+            scoreEffect.style.opacity = '1';
+            scoreEffect.style.transform = 'translateY(-25px)';
+
+            setTimeout(() => {
+                scoreEffect.style.opacity = '0';
+            }, 500);
+        }
+
+        // --- Logic Tạo Câu Hỏi Mới ---
+
+        function generateBasicOpQuestion(max) {
+            let A, B, op, answer, question;
+            do {
+                A = getRandomInt(max) + 1;
+                B = getRandomInt(max) + 1;
+                op = (Math.random() > 0.5) ? '+' : '-';
+                if (op === '+') {
+                    answer = A + B;
+                    question = `${A} + ${B} = ?`;
+                } else {
+                    if (A < B) [A, B] = [B, A];
+                    answer = A - B;
+                    question = `${A} - ${B} = ?`;
+                }
+            } while (answer < 0 || answer >= max * 2);
+            return { question, answer: String(answer), type: 'input' };
+        }
+
+        function generateMultDivQuestion() {
+            // Sử dụng bảng cửu chương theo cấp độ
+            const factors = MULT_DIV_FACTORS[currentLevel];
+            const baseFactor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở (2, 3, 4,...)
+            const otherFactor = getRandomInt(10) + 1; // Số nhân còn lại (1 đến 10)
+
+            let A, B, op, answer, question;
+            
+            if (Math.random() > 0.5) { // Multiplication: A x B = ?
+                A = baseFactor; 
+                B = otherFactor;
+                answer = A * B;
+                question = `${A} × ${B} = ?`;
+            } else { // Division: C ÷ B = ?
+                // Đảm bảo phép chia hết và nằm trong phạm vi bảng cửu chương
+                B = baseFactor; // Số chia (phải là factor)
+                answer = otherFactor; // Thương (từ 1 đến 10)
+                A = B * answer; // Số bị chia
+                question = `${A} ÷ ${B} = ?`;
+            }
+            return { question, answer: String(answer), type: 'input' };
+        }
+        
+        function generateFindXMultDivQuestion() {
+            // Sử dụng bảng cửu chương theo cấp độ
+            const factors = MULT_DIV_FACTORS[currentLevel];
+            const baseFactor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở
+            const otherFactor = getRandomInt(10) + 1; // Số nhân còn lại (1 đến 10)
+            
+            let A, B, answer, question;
+            
+            if (Math.random() < 0.5) { // Multiplication: A x ? = C hoặc ? x B = C
+                B = baseFactor;
+                answer = otherFactor;
+                A = B * answer; // Product
+                
+                if (Math.random() > 0.5) {
+                     question = `${B} × ? = ${A}`; // Tìm nhân tử (otherFactor)
+                } else {
+                     question = `? × ${B} = ${A}`; // Tìm nhân tử (otherFactor)
+                }
+            } else { // Division: A ÷ ? = C hoặc ? ÷ B = C hoặc A ÷ B = ?
+                B = baseFactor; // Số chia
+                answer = otherFactor; // Thương
+                A = B * answer; // Số bị chia
+                
+                // Randomly choose the unknown part
+                const unknownType = getRandomInt(3); 
+                
+                if (unknownType === 0) { // Tìm số bị chia (A)
+                    question = `? ÷ ${B} = ${answer}`;
+                } else if (unknownType === 1) { // Tìm số chia (B)
+                    answer = B; // Số chia là đáp án
+                    question = `${A} ÷ ? = ${otherFactor}`; // Thương là otherFactor
+                } else { // Tìm thương (answer)
+                    question = `${A} ÷ ${B} = ?`;
+                    // Answer is already correct (otherFactor)
+                }
+            }
+            return { question, answer: String(answer), type: 'input' };
+        }
+
+        function generateFindXQuestion(max) {
+            let A, B, op, answer, question;
+            do {
+                A = getRandomInt(max) + 1;
+                op = (Math.random() > 0.5) ? '+' : '-';
+                if (op === '+') {
+                    answer = getRandomInt(max) + 1;
+                    const C = A + answer;
+                    question = `${A} + ? = ${C}`;
+                } else {
+                    if (Math.random() > 0.5) {
+                        const C = getRandomInt(A);
+                        answer = A - C;
+                        question = `${A} - ? = ${C}`;
+                    } else {
+                        B = getRandomInt(max) + 1;
+                        const C = getRandomInt(max) + 1;
+                        answer = B + C;
+                        question = `? - ${B} = ${C}`;
+                    }
+                }
+            } while (answer <= 0 || answer >= max * 2);
+            return { question, answer: String(answer), type: 'input' };
+        }
+
+        function generateSortingQuestion(level) {
+            // Đảm bảo luôn là 5 số
+            const count = 5; 
+            
+            let max;
+            if (level === 1) max = 100; // 0-100
+            else if (level === 2) max = 500; // 0-500
+            else max = 1000; // 0-1000 cho cấp 3 và cấp 4 (dùng max range cao nhất)
+
+            const direction = (Math.random() > 0.5) ? 'tăng dần' : 'giảm dần';
+            const numbers = [];
+            while (numbers.length < count) {
+                const num = getRandomInt(max) + 1;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+            let sorted = [...numbers].sort((a, b) => a - b);
+            if (direction === 'giảm dần') {
+                sorted.reverse();
+            }
+            const answer = sorted.join(',');
+            
+            const directionColorClass = (direction === 'tăng dần') ? 'text-blue-600' : 'text-red-600';
+            
+            const question = `Sắp xếp các số sau theo thứ tự <span class="font-extrabold ${directionColorClass}">${direction}</span>:`;
+            return { question, numbers, answer, direction, type: 'sorting' };
+        }
+
+        // Hàm tạo một phép tính đơn giản dựa trên loại quiz và cấp độ
+        function generateSimpleExpression(max, quizType) {
+            let A, B, op, result;
+            
+            if (quizType === 'MULT_DIV') {
+                const factors = MULT_DIV_FACTORS[currentLevel];
+                let A_factor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở
+                let B_factor = getRandomInt(10) + 1; // Nhân tử còn lại (1 đến 10)
+
+                op = (Math.random() > 0.5) ? '×' : '÷';
+
+                if (op === '×') {
+                    A = A_factor;
+                    B = B_factor;
+                    result = A * B;
+                } else {
+                    // Division (A ÷ B = result)
+                    const Divisor = A_factor;
+                    const Quotient = B_factor;
+                    const Dividend = Divisor * Quotient;
+                    
+                    // Randomly choose form: Dividend ÷ Divisor = ? or Dividend ÷ Quotient = ?
+                    if (Math.random() > 0.5) { 
+                        A = Dividend;
+                        B = Divisor;
+                        result = Quotient;
+                    } else {
+                        A = Dividend;
+                        B = Quotient;
+                        result = Divisor;
+                    }
+                }
+            } else { // ADD_SUB
+                A = getRandomInt(max) + 1;
+                B = getRandomInt(max) + 1;
+                op = (Math.random() > 0.5) ? '+' : '-';
+                
+                if (op === '-') {
+                    if (A < B) [A, B] = [B, A];
+                }
+                
+                result = (op === '+') ? A + B : A - B;
+            }
+            // Thay thế '×' và '÷' bằng '*' và '/' để eval() có thể tính
+            const expression = `${A} ${op} ${B}`; 
+            return { expression: expression.replace('×', '*').replace('÷', '/'), result: result };
+        }
+
+        function generateComparisonQuestion(level) {
+            const isMultDivLevel = (currentQuizType === 'MULT_DIV');
+            // Max range cho ADD_SUB trong comparison, MULT_DIV sẽ dùng factors
+            const max = isMultDivLevel ? 10 : (level === 1) ? 15 : (level === 2) ? 100 : 500;
+            
+            let exp1 = generateSimpleExpression(max, currentQuizType);
+            let exp2 = generateSimpleExpression(max, currentQuizType);
+            
+            // Đảm bảo kết quả không quá chênh lệch (chỉ áp dụng cho Cộng/Trừ)
+            if (!isMultDivLevel && Math.abs(exp1.result - exp2.result) > 20 && exp1.result !== exp2.result) {
+                 exp2 = generateSimpleExpression(max, currentQuizType);
+            }
+            
+            let answer = '';
+            // Dùng eval để so sánh chính xác kết quả
+            const val1 = eval(exp1.expression);
+            const val2 = eval(exp2.expression);
+            
+            if (val1 > val2) answer = '>';
+            else if (val1 < val2) answer = '<';
+            else answer = '=';
+
+            return { 
+                question: 'Chọn dấu so sánh đúng:', 
+                exp1: exp1.expression.replace('*', '×').replace('/', '÷'), // Hiển thị ký hiệu toán học
+                exp2: exp2.expression.replace('*', '×').replace('/', '÷'), // Hiển thị ký hiệu toán học
+                answer: answer, 
+                result1: val1, // Thêm kết quả của vế 1
+                result2: val2, // Thêm kết quả của vế 2
+                type: 'comparison' 
+            };
+        }
+        
+        // Hàm tạo SVG đồng hồ kim
+        function createClockSVG(hour, minute) {
+            const size = 150;
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const hourAngle = (hour % 12 + minute / 60) * 30 - 90;
+            const minuteAngle = minute * 6 - 90;
+
+            let svgHtml = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
+            // Vòng tròn ngoài
+            svgHtml += `<circle cx="${centerX}" cy="${centerY}" r="70" class="clock-face"/>`;
+            // Vạch giờ
+            for (let i = 1; i <= 12; i++) {
+                const angle = i * 30 * Math.PI / 180;
+                const r = 60;
+                const x = centerX + r * Math.cos(angle - Math.PI / 2);
+                const y = centerY + r * Math.sin(angle - Math.PI / 2);
+                svgHtml += `<text x="${x}" y="${y + 5}" text-anchor="middle" font-size="12" fill="#374151">${i}</text>`;
+            }
+            // Kim giờ
+            svgHtml += `<line x1="${centerX}" y1="${centerY}" x2="${centerX + 40 * Math.cos(hourAngle * Math.PI / 180)}" y2="${centerY + 40 * Math.sin(hourAngle * Math.PI / 180)}" class="hour-hand"/>`;
+            // Kim phút
+            svgHtml += `<line x1="${centerX}" y1="${centerY}" x2="${centerX + 60 * Math.cos(minuteAngle * Math.PI / 180)}" y2="${centerY + 60 * Math.sin(minuteAngle * Math.PI / 180)}" class="minute-hand"/>`;
+            // Chốt giữa
+            svgHtml += `<circle cx="${centerX}" cy="${centerY}" r="3" fill="#ef4444"/>`;
+            svgHtml += `</svg>`;
+            return svgHtml;
+        }
+
+        function generateClockQuestion() {
+            // Chỉ tạo giờ chẵn (ví dụ: 1:00, 1:30, 2:00, 2:30)
+            const randomHour = getRandomInt(12) + 1; // 1 đến 12
+            const randomMinute = getRandomInt(2) * 30; // 0 hoặc 30
+
+            // Định dạng HH:MM cho đáp án
+            const hour = String(randomHour).padStart(2, '0');
+            const minute = String(randomMinute).padStart(2, '0');
+            const answer = `${hour}:${minute}`;
+
+            // Tạo và hiển thị đồng hồ SVG
+            const svgHtml = createClockSVG(randomHour, randomMinute);
+            clockImageContainer.innerHTML = svgHtml;
+
+            const question = `Đồng hồ này đang chỉ mấy giờ? (Nhập dưới dạng HH:MM)`;
+            return { question, answer: answer, type: 'input', special: 'clock' };
+        }
+
+        function generateWordProblem() {
+            const ops = ['+', '-'];
+            const op = ops[getRandomInt(ops.length)];
+            const max = 50; // Giới hạn bài toán lời văn 
+            
+            let A = getRandomInt(max) + 5;
+            let B = getRandomInt(A / 2) + 2; // Đảm bảo số hợp lý
+
+            let problemText;
+            let answer;
+
+            if (op === '+') {
+                answer = A + B;
+                problemText = `Bạn An có ${A} viên kẹo. Mẹ cho An thêm ${B} viên kẹo nữa. Hỏi bạn An có tất cả bao nhiêu viên kẹo?`;
+            } else {
+                answer = A - B;
+                problemText = `Bạn Bình có ${A} quả táo. Bình cho bạn ${B} quả. Hỏi Bình còn lại bao nhiêu quả táo?`;
+            }
+            
+            const question = `**Bài toán có lời văn:** ${problemText}`;
+            return { question, answer: String(answer), type: 'input', special: 'word-problem' };
+        }
+
+        /**
+         * Hàm chính để tạo câu hỏi ngẫu nhiên và kiểm tra kết thúc
+         */
+        function generateQuestion() {
+            if (currentQuestionNumber >= TOTAL_QUIZ_QUESTIONS) {
+                endQuiz(false); // Kết thúc do hoàn thành
+                return;
+            }
+
+            currentQuestionNumber++;
+            currentQuestionNumberSpan.textContent = currentQuestionNumber;
+            
+            // Cập nhật Progress Bar
+            const percentage = (currentQuestionNumber / TOTAL_QUIZ_QUESTIONS) * 100;
+            progressBar.style.width = `${percentage}%`;
+
+            let randomType;
+            let maxRange = getMaxRange(currentLevel);
+            let questionPool;
+
+            if (currentQuizType === 'MULT_DIV') {
+                 // Cấp Nhân/Chia: Nhân/Chia, Tìm X (Nhân/Chia), So sánh (Nhân/Chia), Sắp xếp
+                 questionPool = QUESTION_TYPES_MULT_DIV;
+            } else {
+                // Cấp Cộng/Trừ: Cộng/Trừ, Tìm X (Cộng/Trừ), So sánh (Cộng/Trừ), Sắp xếp
+                questionPool = QUESTION_TYPES_BASIC;
+            }
+
+
+            // Xử lý 2 câu hỏi đặc biệt cuối cùng
+            if (currentQuestionNumber === 19) {
+                currentQuestion = generateClockQuestion();
+            } else if (currentQuestionNumber === 20) {
+                currentQuestion = generateWordProblem();
+            } else {
+                // Tạo câu hỏi ngẫu nhiên
+                randomType = questionPool[getRandomInt(questionPool.length)];
+
+                switch (randomType) {
+                    case 'basic-op':
+                        currentQuestion = generateBasicOpQuestion(maxRange);
+                        break;
+                    case 'mult-div':
+                        currentQuestion = generateMultDivQuestion();
+                        break;
+                    case 'find-x':
+                        currentQuestion = generateFindXQuestion(maxRange);
+                        break;
+                    case 'find-x-mult-div':
+                        currentQuestion = generateFindXMultDivQuestion();
+                        break;
+                    case 'sorting':
+                        currentQuestion = generateSortingQuestion(currentLevel);
+                        break;
+                    case 'comparison':
+                        currentQuestion = generateComparisonQuestion(currentLevel);
+                        break;
+                    default:
+                        // Default fallback
+                        currentQuestion = generateBasicOpQuestion(10); 
+                }
+            }
+
+            displayQuestion(currentQuestion);
+        }
+
+        // --- Logic Hiển Thị Câu Hỏi và Đáp Án ---
+
+        function displayQuestion(q) {
+            messageBox.textContent = '';
+            nextQuestionBtn.classList.add('hidden');
+            
+            // Ẩn tất cả các khu vực trả lời và hiển thị
+            inputAnswerContainer.classList.add('hidden');
+            sortingNumbersContainer.classList.add('hidden');
+            sortingTargetContainer.classList.add('hidden');
+            sortingControls.classList.add('hidden');
+            comparisonButtonsContainer.classList.add('hidden');
+            clockImageContainer.classList.add('hidden'); 
+            comparisonDisplayArea.classList.add('hidden');
+            questionText.classList.remove('hidden'); // Hiển thị text mặc định
+
+            if (q.type === 'input') {
+                // Hiển thị dạng nhập đáp án
+                questionText.innerHTML = q.question;
+                inputAnswerContainer.classList.remove('hidden');
+                mathAnswerInput.value = '';
+                mathAnswerInput.focus();
+                submitAnswerBtn.onclick = checkMathAnswer;
+                submitAnswerBtn.disabled = false;
+                
+                if (q.special === 'clock') {
+                    clockImageContainer.classList.remove('hidden');
+                }
+            } else if (q.type === 'sorting') {
+                // Hiển thị dạng sắp xếp
+                questionText.innerHTML = q.question;
+                sortingNumbersContainer.classList.remove('hidden');
+                sortingTargetContainer.classList.remove('hidden');
+                sortingControls.classList.remove('hidden');
+                renderSortingNumbers(q.numbers);
+                sortingTargetContainer.innerHTML = '';
+                submitSortingBtn.onclick = checkSortingAnswer;
+                submitSortingBtn.disabled = false;
+                resetSortingBtn.disabled = false;
+            } else if (q.type === 'comparison') {
+                // Hiển thị dạng so sánh 2 phép tính
+                questionText.innerHTML = q.question;
+                questionText.classList.add('hidden'); // Ẩn text mặc định
+                
+                comparisonDisplayArea.classList.remove('hidden');
+                comparisonButtonsContainer.classList.remove('hidden');
+                
+                expressionLeft.textContent = q.exp1;
+                expressionRight.textContent = q.exp2;
+                comparisonBox.textContent = '?';
+                comparisonBox.classList.remove('correct-answer-box', 'incorrect-answer-box');
+                comparisonButtons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        function renderSortingNumbers(numbers) {
+            sortingNumbersContainer.innerHTML = '';
+            numbers.forEach(num => {
+                const numDiv = document.createElement('div');
+                numDiv.className = 'sorting-number px-4 py-2 bg-white border border-gray-300 rounded-lg text-2xl font-semibold text-gray-800 shadow-sm';
+                numDiv.textContent = num;
+                numDiv.setAttribute('data-value', num);
+                numDiv.addEventListener('click', () => handleNumberClick(numDiv));
+                sortingNumbersContainer.appendChild(numDiv);
+            });
+        }
+
+        function handleNumberClick(element) {
+            if (submitSortingBtn.disabled) return; 
+
+            if (element.classList.contains('selected')) {
+                element.classList.remove('selected');
+                // Chuyển về container số gốc
+                sortingNumbersContainer.appendChild(element);
+            } else {
+                element.classList.add('selected');
+                // Chuyển sang container đích
+                sortingTargetContainer.appendChild(element);
+            }
+        }
+
+        // --- Logic Kiểm tra Đáp án ---
+
+        function processAnswerResult(isCorrect, correctAnswerText) {
+            if (isCorrect) {
+                currentScore++;
+                // Cập nhật message box dựa trên loại câu hỏi
+                if (currentQuestion.type === 'input') {
+                     messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> Đáp án là: <span class="text-green-600 font-extrabold">${correctAnswerText}</span>`;
+                } else if (currentQuestion.type === 'comparison') {
+                    // Đối với so sánh, correctAnswerText đã là thông điệp đầy đủ có kết quả
+                    messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> ${correctAnswerText}`;
+                    comparisonBox.classList.add('correct-answer-box');
+                } else { // sorting
+                     messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> Thứ tự đúng là: ${correctAnswerText}`;
+                }
+                
+                messageBox.className = 'mt-4 text-xl font-bold text-green-800 p-3 rounded-lg correct-answer-box min-h-[30px]'; 
+                showScoreEffect(true);
+                playCorrectSound();
+            } else {
+                if (currentQuestion.type === 'comparison') {
+                    // Đối với so sánh, correctAnswerText đã là thông điệp đầy đủ có kết quả
+                    messageBox.innerHTML = `❌ <span class="text-red-800">Sai rồi!</span> ${correctAnswerText}`;
+                } else {
+                    messageBox.innerHTML = `❌ <span class="text-red-800">Sai rồi!</span> Đáp án đúng là: <span class="text-red-600 font-extrabold">${correctAnswerText}</span>`;
+                }
+                
+                messageBox.className = 'mt-4 text-xl font-bold text-red-800 p-3 rounded-lg incorrect-answer-box min-h-[30px]';
+                showScoreEffect(false);
+                playIncorrectSound();
+
+                if (currentQuestion.type === 'comparison') {
+                    comparisonBox.classList.add('incorrect-answer-box');
+                }
+            }
+            currentScoreSpan.textContent = currentScore;
+            nextQuestionBtn.classList.remove('hidden');
+        }
+
+        function checkMathAnswer() {
+            const userAnswer = mathAnswerInput.value.trim();
+            const correctAnswer = currentQuestion.answer;
+            
+            if (userAnswer === '') {
+                messageBox.textContent = 'Vui lòng nhập đáp án!';
+                messageBox.className = 'mt-4 text-xl font-bold text-yellow-800 p-3 rounded-lg warning-answer-box min-h-[30px]'; 
+                return;
+            }
+
+            submitAnswerBtn.disabled = true;
+            processAnswerResult(userAnswer === correctAnswer, correctAnswer);
+        }
+
+        function checkSortingAnswer() {
+            const selectedElements = Array.from(sortingTargetContainer.children);
+            const userAnswerArray = selectedElements.map(el => el.getAttribute('data-value')).join(',');
+            const correctAnswer = currentQuestion.answer;
+            const isCorrect = (userAnswerArray === correctAnswer);
+
+            submitSortingBtn.disabled = true;
+            resetSortingBtn.disabled = true;
+
+            // Loại bỏ ** và thêm span cho màu sắc nổi bật
+            const correctAnswerText = correctAnswer.split(',').join(' <span class="text-indigo-600 font-extrabold">→</span> ');
+            
+            if (isCorrect) {
+                selectedElements.forEach(el => {
+                    el.classList.remove('selected');
+                    el.classList.add('bg-green-200', 'text-green-800'); 
+                    el.removeEventListener('click', handleNumberClick);
+                });
+            } else {
+                const userText = userAnswerArray.split(',').join(' → ');
+                // Cập nhật messageBox để hiển thị cả đáp án người dùng và đáp án đúng
+                const fullMessage = `Thứ tự bạn chọn là: ${userText}. Đúng phải là: ${correctAnswerText}`;
+                processAnswerResult(false, fullMessage);
+                return; 
+            }
+
+            processAnswerResult(isCorrect, correctAnswerText);
+        }
+
+        function checkComparisonAnswer(userOp) {
+            comparisonButtons.forEach(btn => btn.disabled = true);
+            const isCorrect = (userOp === currentQuestion.answer);
+            
+            // Xây dựng thông điệp hiển thị kết quả chi tiết
+            // Loại bỏ ** và thêm span với màu xanh/đỏ cho nổi bật
+            const resultMsg = `(${currentQuestion.exp1} = <span class="text-indigo-600 font-extrabold">${currentQuestion.result1}</span>) ${currentQuestion.answer} (${currentQuestion.exp2} = <span class="text-indigo-600 font-extrabold">${currentQuestion.result2}</span>).`;
+
+            // Hiển thị dấu so sánh đã chọn trong ô
+            comparisonBox.textContent = userOp;
+
+            processAnswerResult(isCorrect, resultMsg);
+        }
+
+
+        // --- Logic Kết thúc Quiz ---
+
+        function endQuiz(isTimeout) {
+            stopTimer();
+            quizScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            finalScoreSpan.textContent = currentScore;
+            
+            if (isTimeout) {
+                timeTakenMessage.textContent = 'Hết giờ! Quiz đã kết thúc.';
+            } else {
+                const totalSeconds = MAX_QUIZ_TIME_SECONDS - timeRemaining;
+                const timeStr = formatTime(totalSeconds);
+                timeTakenMessage.textContent = `Bạn đã hoàn thành trong ${timeStr}.`;
+            }
+        }
+        
+        // --- Logic Modal ---
+        function showModal() {
+            stopTimer();
+            confirmModal.classList.remove('hidden');
+        }
+
+        function hideModal() {
+            confirmModal.classList.add('hidden');
+            if (quizScreen.classList.contains('hidden') === false) {
+                 startTimer(); // Tiếp tục đếm giờ nếu người dùng hủy thoát
+            }
+        }
+
+        function exitToSetupScreen() {
+            stopTimer();
+            hideModal();
+            quizScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
+            // Đặt lại trạng thái màn hình cài đặt
+            // Chọn mặc định Cấp 1 Cộng Trừ
+            levelSelectBtns[0].click();
+        }
+
+        // --- Xử lý Sự kiện Giao diện ---
+
+        levelSelectBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentLevel = parseInt(btn.getAttribute('data-level'));
+                currentLevelName = btn.getAttribute('data-name');
+                currentQuizType = btn.getAttribute('data-type'); // Lấy loại quiz
+
+
+                levelSelectBtns.forEach(b => {
+                    // Xóa màu nền xanh (ADD_SUB) và xanh lá (MULT_DIV) cũ
+                    b.classList.remove('bg-indigo-500', 'text-white', 'bg-green-500');
+                    // Thêm màu nền xám mặc định
+                    b.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                
+                // Thiết lập màu mới dựa trên loại quiz
+                if (currentQuizType === 'ADD_SUB') {
+                    btn.classList.add('bg-indigo-500', 'text-white');
+                } else {
+                    btn.classList.add('bg-green-500', 'text-white');
+                }
+                btn.classList.remove('bg-gray-200', 'text-gray-700');
+                startQuizBtn.disabled = false;
+                levelDescription.textContent = `Bạn đã chọn: ${currentLevelName}`;
+            });
+        });
+        
+        startQuizBtn.addEventListener('click', () => {
+            startAudioContext(); 
+            if (!currentLevel) { return; }
+
+            currentScore = 0;
+            currentQuestionNumber = 0;
+            currentScoreSpan.textContent = 0;
+            totalQuestionsSpan.textContent = TOTAL_QUIZ_QUESTIONS;
+            currentLevelNameSpan.textContent = currentLevelName;
+
+            setupScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            
+            startTimer(); // Bắt đầu đếm giờ
+            generateQuestion();
+        });
+
+        restartQuizBtn.addEventListener('click', () => {
+            // Chuyển về màn hình chính (Setup)
+            exitToSetupScreen();
+        });
+
+        nextQuestionBtn.addEventListener('click', () => {
+            generateQuestion();
+        });
+
+        mathAnswerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !submitAnswerBtn.disabled) {
+                checkMathAnswer();
+            } else if (e.key === 'Enter' && nextQuestionBtn.classList.contains('hidden') === false) {
+                 nextQuestionBtn.click();
+            }
+        });
+        
+        comparisonButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                checkComparisonAnswer(btn.getAttribute('data-op'));
+            });
+        });
+
+        resetSortingBtn.addEventListener('click', () => {
+            Array.from(sortingTargetContainer.children).forEach(el => {
+                el.classList.remove('selected');
+                sortingNumbersContainer.appendChild(el);
+            });
+        });
+
+        // Nút Quay lại Màn hình Chính
+        exitQuizBtn.addEventListener('click', showModal);
+        modalCancelBtn.addEventListener('click', hideModal);
+        modalConfirmBtn.addEventListener('click', exitToSetupScreen);
+
+
+        // Thiết lập trạng thái ban đầu khi tải trang
+        document.addEventListener('DOMContentLoaded', () => {
+            // Chọn mặc định Cấp 1 Cộng Trừ
+            levelSelectBtns[0].click();
+            startQuizBtn.disabled = false;
+	const questionCountBtns = document.querySelectorAll('.q-count-btn');
+
+    	questionCountBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            TOTAL_QUIZ_QUESTIONS = parseInt(btn.getAttribute('data-questions'));
+
+            questionCountBtns.forEach(b => {
+                b.classList.remove('bg-indigo-500', 'text-white');
+                b.classList.add('bg-gray-200', 'text-gray-700');
+            });
+
+            btn.classList.add('bg-indigo-500', 'text-white');
+            btn.classList.remove('bg-gray-200', 'text-gray-700');
+        });
+	});
+});
+    </script>
+</body>
+</html>
