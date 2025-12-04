@@ -1074,23 +1074,23 @@
         });
 
         restartQuizBtn.addEventListener("click", () => {
-    quizContainer.classList.add("hide");
-    resultContainer.classList.add("hide");
-    welcomeContainer.classList.remove("hide");
+    		quizContainer.classList.add("hide");
+    		resultContainer.classList.add("hide");
+    		welcomeContainer.classList.remove("hide");
 
-    // Reset trạng thái quiz
-    currentQuestion = 0;
-    score = 0;
+    		// Reset trạng thái quiz
+    		currentQuestion = 0;
+    		score = 0;
 
-    // Xóa câu hỏi và lựa chọn cũ
-    quizContainer.innerHTML = "";
+    		// Xóa câu hỏi và lựa chọn cũ
+    		quizContainer.innerHTML = "";
 
-    // Ẩn bảng thông báo nếu có
-    if(resultContainer) resultContainer.style.display = "none";
+    		// Ẩn bảng thông báo nếu có
+   			 if(resultContainer) resultContainer.style.display = "none";
 
-    // Reset tất cả input/radio/checkbox
-    const options = document.querySelectorAll(".option");
-    options.forEach(opt => {
+    		// Reset tất cả input/radio/checkbox
+    		const options = document.querySelectorAll(".option");
+    		options.forEach(opt => {
         if(opt.type === "radio" || opt.type === "checkbox") opt.checked = false;
     });
 });
@@ -1151,4 +1151,5 @@
     </script>
 </body>
 </html>
+
 
