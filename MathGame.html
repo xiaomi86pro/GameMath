@@ -1074,25 +1074,31 @@
         });
 
         const restartQuizBtn = document.getElementById("restartQuizBtn");
+		window.addEventListener("DOMContentLoaded", () => {
+    const restartQuizBtn = document.getElementById("restartQuizBtn"); // nút Chơi lại
+    const welcomeContainer = document.getElementById("welcomeContainer"); // màn hình chính
+    const quiz = document.getElementById("quiz"); // div chứa câu hỏi
+    const result = document.getElementById("result"); // div kết quả
 
-restartQuizBtn.addEventListener("click", () => {
-    // Ẩn bảng kết quả
-    document.getElementById("result").style.display = "none";
+    restartQuizBtn.addEventListener("click", () => {
+        // 1. Ẩn bảng kết quả
+        result.style.display = "none";
 
-    // Hiển thị màn hình chính
-    document.getElementById("welcomeContainer").style.display = "block";
+        // 2. Hiển thị màn hình chính
+        welcomeContainer.style.display = "block";
 
-    // Reset quiz
-    currentQuestion = 0;
-    score = 0;
+        // 3. Reset quiz
+        currentQuestion = 0;
+        score = 0;
 
-    // Xóa nội dung quiz cũ
-    document.getElementById("quiz").innerHTML = "";
+        // 4. Xóa nội dung quiz cũ
+        quiz.innerHTML = "";
 
-    // Reset các lựa chọn radio/checkbox nếu có
-    const options = document.querySelectorAll(".option");
-    options.forEach(opt => {
-        if(opt.type === "radio" || opt.type === "checkbox") opt.checked = false;
+        // 5. Reset tất cả lựa chọn radio/checkbox
+        const options = document.querySelectorAll(".option");
+        options.forEach(opt => {
+            if(opt.type === "radio" || opt.type === "checkbox") opt.checked = false;
+        });
     });
 });
 
@@ -1149,9 +1155,12 @@ restartQuizBtn.addEventListener("click", () => {
         });
 	});
 });
+
+
     </script>
 </body>
 </html>
+
 
 
 
