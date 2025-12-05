@@ -117,7 +117,7 @@
         <h1 class="text-4xl font-bold text-center text-indigo-700 mb-6">🧠 Ứng Dụng Học Toán Tương Tác</h1>
         
         <div id="setup-screen" class="space-y-6">
-            <p class="text-lg text-gray-600 text-center">Chọn cấp độ để bắt đầu bài quiz 20 câu ngẫu nhiên. Quiz kéo dài 30 phút.</p>
+            <p class="text-lg text-gray-600 text-center">Chọn cấp độ để bắt đầu bài quiz ngẫu nhiên. Quiz kéo dài 30 phút.</p>
 
             <!-- CHỌN CẤP ĐỘ: CỘNG TRỪ -->
             <div class="p-4 bg-indigo-50 rounded-lg shadow-inner">
@@ -157,7 +157,7 @@
         <button data-questions="10" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
             10 câu
         </button>
-        <button data-questions="20" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+        <button data-questions="20" class="q-count-btn px-4 py-2 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
             20 câu
         </button>
         <button data-questions="30" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
@@ -206,7 +206,7 @@
 
 
             <!-- Khu vực câu hỏi -->
-            <div id="question-area" class="min-h-[150px] flex flex-col justify-center items-center p-6 bg-blue-100 rounded-xl shadow-xl mb-6">
+            <div id="question-area" class="min-h-[150px] flex flex-col justify-center items-center p-6 bg-blue-100 rounded-xl shadow-xl mb-3">
                 <!-- Vùng cho hình ảnh đồng hồ (Q19) -->
                 <div id="clock-image-container" class="hidden my-4">
                     <!-- SVG clock will be generated here -->
@@ -222,6 +222,13 @@
                 <!-- Dạng bài thông thường (kể cả bài toán lời văn) -->
                 <p id="question-text" class="text-xl md:text-3xl font-extrabold text-blue-800">Câu hỏi sẽ hiện ở đây...</p>
             </div>
+
+            <!-- Khu vực GỢI Ý (MỚI) -->
+            <div id="hint-area" class="w-full text-center p-3 bg-yellow-100 rounded-lg shadow-md mb-6 hidden">
+                <p class="font-bold text-yellow-800 mb-2">💡 Gợi ý Logic:</p>
+                <div id="hint-text" class="text-sm text-yellow-700"></div>
+            </div>
+            <!-- Kết thúc Khu vực GỢI Ý -->
 
             <!-- Khu vực trả lời -->
             <div id="answer-area" class="flex flex-col items-center space-y-4">
@@ -301,6 +308,15 @@
             'Hôm kia': -2
         };
 
+        // Gợi ý cho bài toán ngày trong tuần (MỚI)
+        const DAY_OF_WEEK_HINT = `
+            <div class="flex flex-col sm:flex-row justify-center items-center text-center space-y-2 sm:space-y-0 sm:space-x-4 p-2">
+                <span class="text-red-600 font-semibold text-xs md:text-sm text-right sm:text-left">Hôm kia, Hôm qua, Trước đó là TRỪ (-)</span>
+                <span class="text-lg font-extrabold text-blue-700 px-3 py-1 bg-white rounded-full shadow-lg border-2 border-blue-300">HÔM NAY</span>
+                <span class="text-green-600 font-semibold text-xs md:text-sm text-left sm:text-right">Ngày mai, Ngày kia, Sau đó là CỘNG (+)</span>
+            </div>
+        `;
+
 
         // Định nghĩa các bảng nhân cho từng cấp độ Nhân Chia
         const MULT_DIV_FACTORS = {
@@ -320,6 +336,8 @@
         let quizTimer = null; // Biến cho setInterval
         let timeRemaining = MAX_QUIZ_TIME_SECONDS;
         let startTime = 0;
+        let TOTAL_QUIZ_QUESTIONS = 20; // Mặc định
+
 
         // Các phần tử DOM
         const setupScreen = document.getElementById('setup-screen');
@@ -351,9 +369,12 @@
         const timeTakenMessage = document.getElementById('time-taken-message');
         const clockImageContainer = document.getElementById('clock-image-container');
         const levelDescription = document.getElementById('level-description');
-	let TOTAL_QUIZ_QUESTIONS = 20; // Mặc định
 	
-	
+        // Phần tử mới cho Gợi ý (MỚI)
+        const hintArea = document.getElementById('hint-area');
+        const hintText = document.getElementById('hint-text');
+
+
         // Phần tử mới cho So sánh
         const comparisonDisplayArea = document.getElementById('comparison-display-area');
         const expressionLeft = document.getElementById('expression-left');
@@ -766,8 +787,7 @@
 		
         /**
          * Hàm tạo câu hỏi ngày trong tuần (đã được sửa đổi)
-         * - Kiểu: [Ngày tương đối] là [Thứ X]. Hỏi [n] ngày [trước/sau] là thứ mấy.
-         * - Cập nhật logic 2 phần nếu ngày tham chiếu không phải 'Hôm nay'.
+         * - Cập nhật hướng từ 'trước'/'sau' thành 'trước đó'/'sau đó'
          */
         function generateDayOfWeekQuestion() {
             // 1. Chọn ngày tương đối (Hôm nay, Hôm qua, ...)
@@ -780,15 +800,17 @@
             const todayName = DAYS_OF_WEEK[todayIndex];
 
             // 3. Tính thứ của ngày tương đối (Reference Day Index)
-            // Lấy todayIndex + relativeOffset, đảm bảo luôn dương bằng cách thêm 7 và lấy % 7
             const refDayIndex = (todayIndex + relativeOffset + 7) % 7;
             const refDayName = DAYS_OF_WEEK[refDayIndex];
 
             // 4. Chọn khoảng cách n ngày và hướng (Giới hạn n <= 5)
             const maxDayGap = 5; 
             const dayGap = getRandomInt(maxDayGap) + 1; // 1 đến 5 ngày
-            const direction = Math.random() > 0.5 ? 'sau' : 'trước';
-            const directionOffset = direction === 'sau' ? dayGap : -dayGap;
+            
+            // Cập nhật ở đây: Dùng 'sau đó' và 'trước đó'
+            const directionText = Math.random() > 0.5 ? 'sau đó' : 'trước đó'; 
+            const directionInternal = directionText === 'sau đó' ? 'sau' : 'trước'; // Dùng cho tính toán
+            const directionOffset = directionInternal === 'sau' ? dayGap : -dayGap;
 
             // 5. Tính thứ của ngày đích (Target Day Index, relative to todayIndex)
             let targetIndex = (todayIndex + directionOffset);
@@ -798,19 +820,15 @@
             let question;
             
             if (relativeDayKey === 'Hôm nay') {
-                // Cấu trúc cũ (đơn giản): Hôm nay là Thứ X. Hỏi n ngày sau/trước là thứ mấy.
-                question = `<span class="text-purple-700 font-extrabold">${relativeDayKey}</span> là <span class="text-purple-700 font-extrabold">${refDayName}</span>. Hỏi <span class="font-extrabold">${dayGap}</span> ngày <span class="text-red-600 font-extrabold">${direction}</span> là thứ mấy?`;
+                // Cấu trúc đơn giản: Hôm nay là Thứ X. Hỏi n ngày sau/trước là thứ mấy.
+                question = `<span class="text-purple-700 font-extrabold">${relativeDayKey}</span> là <span class="text-purple-700 font-extrabold">${refDayName}</span>. Hỏi <span class="font-extrabold">${dayGap}</span> ngày <span class="text-red-600 font-extrabold">${directionText}</span> là thứ mấy?`;
             } else {
-                // Cấu trúc mới (2 phần): Hôm qua/Ngày mai... là Thứ X. Hỏi Hôm nay là thứ mấy VÀ n ngày sau/trước là thứ mấy.
-                // Đáp án vẫn là TargetDayName (phần thứ 2)
-                
-                // Ngày tương đối [relativeDayKey] là [refDayName]
+                // Cấu trúc 2 phần: Hôm qua/Ngày mai... là Thứ X. Hỏi Hôm nay là thứ mấy VÀ n ngày sau/trước là thứ mấy.
                 const refPart = `<span class="text-purple-700 font-extrabold">${relativeDayKey}</span> là <span class="text-purple-700 font-extrabold">${refDayName}</span>.`;
                 
-                // Ngày đích là [dayGap] ngày [direction]
-                const targetPart = `Hỏi <span class="font-extrabold">${dayGap}</span> ngày <span class="text-red-600 font-extrabold">${direction}</span> (tính từ Hôm nay) là thứ mấy?`;
+                // Ngày đích là [dayGap] ngày [directionText]
+                const targetPart = `Hỏi <span class="font-extrabold">${dayGap}</span> ngày <span class="text-red-600 font-extrabold">${directionText}</span> (tính từ Hôm nay) là thứ mấy?`;
                 
-                // Thêm phần hỏi 'Hôm nay' vào giữa câu hỏi
                 question = `${refPart} Hỏi Hôm nay là thứ mấy và ${targetPart}`;
             }
 
@@ -818,13 +836,13 @@
                 question, 
                 answer: targetDayName, 
                 type: 'multiple-choice',
-                choices: DAYS_OF_WEEK 
+                choices: DAYS_OF_WEEK,
+                special: 'day-of-week' // Thêm tag đặc biệt để hiện gợi ý
             };
         }
 
         /**
          * Hàm tạo câu hỏi về tuổi (đã được sửa đổi)
-         * - Gồm 3 kiểu: Tuổi tương đối (quá khứ/hiện tại/tương lai), So sánh tuổi cha mẹ, Tính hiệu số tuổi.
          */
         function generateAgeProblem() {
             const names = ['An', 'Bình', 'Chi', 'Dung', 'Em', 'Phong', 'Giang', 'Hà'];
@@ -938,9 +956,9 @@
 
 
             // Xử lý 2 câu hỏi đặc biệt cuối cùng
-            if (currentQuestionNumber === 19) {
+            if (currentQuestionNumber === TOTAL_QUIZ_QUESTIONS - 1 && TOTAL_QUIZ_QUESTIONS >= 2) {
                 currentQuestion = generateClockQuestion();
-            } else if (currentQuestionNumber === 20) {
+            } else if (currentQuestionNumber === TOTAL_QUIZ_QUESTIONS) {
                 currentQuestion = generateWordProblem();
             } else {
                 // Tạo câu hỏi ngẫu nhiên
@@ -989,6 +1007,15 @@
             clockImageContainer.classList.add('hidden'); 
             comparisonDisplayArea.classList.add('hidden');
             questionText.classList.remove('hidden'); // Hiển thị text mặc định
+            
+            // Xóa các nút trắc nghiệm cũ
+            const oldChoices = document.querySelectorAll('.choice-btn');
+            oldChoices.forEach(btn => btn.remove());
+            
+            // Ẩn khu vực gợi ý (MỚI)
+            hintArea.classList.add('hidden');
+            hintText.innerHTML = '';
+
 
             if (q.type === 'input') {
                 // Hiển thị dạng nhập đáp án
@@ -1028,23 +1055,29 @@
                 comparisonButtons.forEach(btn => btn.disabled = false);
             }
 			if (q.type === 'multiple-choice') {
-    questionText.innerHTML = q.question;
-    
-    let choicesHTML = '<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">';
-    q.choices.forEach(choice => {
-        choicesHTML += `<button class="choice-btn px-4 py-3 bg-purple-100 text-purple-800 font-semibold rounded-lg hover:bg-purple-200 transition duration-300 border-2 border-transparent" data-choice="${choice}">${choice}</button>`;
-    });
-    choicesHTML += '</div>';
-    
-    questionText.innerHTML += choicesHTML;
-    
-    const choiceBtns = document.querySelectorAll('.choice-btn');
-    choiceBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            checkMultipleChoiceAnswer(btn.getAttribute('data-choice'));
-        });
-    });
-}
+                questionText.innerHTML = q.question;
+                
+                let choicesHTML = '<div id="choice-buttons-area" class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">';
+                q.choices.forEach(choice => {
+                    choicesHTML += `<button class="choice-btn px-4 py-3 bg-purple-100 text-purple-800 font-semibold rounded-lg hover:bg-purple-200 transition duration-300 border-2 border-transparent" data-choice="${choice}">${choice}</button>`;
+                });
+                choicesHTML += '</div>';
+                
+                questionText.innerHTML += choicesHTML;
+                
+                const choiceBtns = document.querySelectorAll('.choice-btn');
+                choiceBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        checkMultipleChoiceAnswer(btn.getAttribute('data-choice'));
+                    });
+                });
+                
+                // Hiển thị gợi ý cho câu hỏi Ngày trong tuần (MỚI)
+                if (q.special === 'day-of-week') {
+                    hintArea.classList.remove('hidden');
+                    hintText.innerHTML = DAY_OF_WEEK_HINT;
+                }
+            }
         }
 
         function renderSortingNumbers(numbers) {
@@ -1085,6 +1118,8 @@
                     // Đối với so sánh, correctAnswerText đã là thông điệp đầy đủ có kết quả
                     messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> ${correctAnswerText}`;
                     comparisonBox.classList.add('correct-answer-box');
+                } else if (currentQuestion.type === 'multiple-choice') {
+                     messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> Đáp án là: ${correctAnswerText}`;
                 } else { // sorting
                      messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> Thứ tự đúng là: ${correctAnswerText}`;
                 }
@@ -1096,6 +1131,8 @@
                 if (currentQuestion.type === 'comparison') {
                     // Đối với so sánh, correctAnswerText đã là thông điệp đầy đủ có kết quả
                     messageBox.innerHTML = `❌ <span class="text-red-800">Sai rồi!</span> ${correctAnswerText}`;
+                } else if (currentQuestion.type === 'multiple-choice') {
+                    messageBox.innerHTML = `❌ <span class="text-red-800">Sai rồi!</span> Đáp án đúng là: ${correctAnswerText}`;
                 } else {
                     messageBox.innerHTML = `❌ <span class="text-red-800">Sai rồi!</span> Đáp án đúng là: <span class="text-red-600 font-extrabold">${correctAnswerText}</span>`;
                 }
