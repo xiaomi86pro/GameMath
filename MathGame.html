@@ -139,7 +139,16 @@
                     <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="4" data-type="MULT_DIV" data-name="Cấp 4 (Bảng x8, x9)">Cấp 4 (x8, x9)</button>
                 </div>
             </div>
-
+			<!-- CHỌN CẤP ĐỘ: TIMO -->
+			<div class="p-4 bg-purple-50 rounded-lg shadow-inner">
+    		<h2 class="text-xl font-semibold text-purple-800 mb-3">🎯 TIMO (Logic & Tư duy):</h2>
+   			<p class="text-sm text-gray-600 mb-3">Câu hỏi về ngày trong tuần, tính tuổi và logic thời gian</p>
+   			<div class="grid grid-cols-1 gap-4">
+        	<button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-purple-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="TIMO" data-name="TIMO - Logic">
+            Begin
+        	</button>
+    		</div>
+			</div>
             <p id="level-description" class="mt-4 text-sm text-indigo-700 text-center font-medium">Bạn đã chọn: Cấp 1 (Phạm vi số từ 0 đến 9).</p>
 <!-- Chọn số câu hỏi -->
 <div class="text-center mt-4">
@@ -279,6 +288,8 @@
         // Loại câu hỏi: Cộng/Trừ/So sánh/Sắp xếp/Tìm X, Nhân/Chia, Đọc giờ, Bài toán lời văn
         const QUESTION_TYPES_BASIC = ['basic-op', 'find-x', 'sorting', 'comparison'];
         const QUESTION_TYPES_MULT_DIV = ['mult-div', 'find-x-mult-div', 'sorting', 'comparison'];
+		const QUESTION_TYPES_TIMO = ['day-of-week', 'age-problem'];
+		const DAYS_OF_WEEK = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
         const MAX_QUIZ_TIME_SECONDS = 30 * 60; // 30 phút
 
         // Định nghĩa các bảng nhân cho từng cấp độ Nhân Chia
@@ -742,7 +753,95 @@
             const question = `**Bài toán có lời văn:** ${problemText}`;
             return { question, answer: String(answer), type: 'input', special: 'word-problem' };
         }
+		// Hàm tạo câu hỏi ngày trong tuần
+function generateDayOfWeekQuestion() {
+    const maxDayGap = 5;
+    const dayGap = getRandomInt(maxDayGap) + 1; // 1 đến 5 ngày
+    const todayIndex = getRandomInt(7); // 0-6
+    
+    const direction = Math.random() > 0.5 ? 'sau' : 'trước';
+    
+    let targetIndex;
+    if (direction === 'sau') {
+        targetIndex = (todayIndex + dayGap) % 7;
+    } else {
+        targetIndex = (todayIndex - dayGap + 7) % 7;
+    }
+    
+    const today = DAYS_OF_WEEK[todayIndex];
+    const target = DAYS_OF_WEEK[targetIndex];
+    
+    const questionTypes = [
+        `Hôm nay là <span class="text-purple-700 font-extrabold">${today}</span>. ${dayGap} ngày ${direction} là thứ mấy?`,
+        `Nếu ${dayGap} ngày ${direction} là <span class="text-purple-700 font-extrabold">${target}</span>, hôm nay là thứ mấy?`,
+        `${dayGap} ngày ${direction === 'sau' ? 'trước' : 'sau'} <span class="text-purple-700 font-extrabold">${target}</span> là thứ mấy?`
+    ];
+    
+    const question = questionTypes[getRandomInt(questionTypes.length)];
+    
+    let answer;
+    if (question.includes(`hôm nay là ${today}`)) {
+        answer = target;
+    } else if (question.includes(`hôm nay là thứ mấy`)) {
+        answer = today;
+    } else {
+        answer = today;
+    }
+    
+    return { 
+        question, 
+        answer, 
+        type: 'multiple-choice',
+        choices: DAYS_OF_WEEK 
+    };
+}
 
+function generateAgeProblem() {
+    const names = ['An', 'Bình', 'Chi', 'Dung', 'Em', 'Phong', 'Giang', 'Hà'];
+    const name = names[getRandomInt(names.length)];
+    const baseAge = getRandomInt(10) + 1;
+    
+    const questionType = getRandomInt(4);
+    let question, answer;
+    
+    if (questionType === 0) {
+        const ageDiff = getRandomInt(5) + 1;
+        const relativeAge = baseAge + ageDiff;
+        question = `Bạn <span class="text-purple-700 font-extrabold">${name}</span> ${baseAge} tuổi. Chị của bạn ấy lớn hơn ${ageDiff} tuổi. Hỏi tuổi của chị bạn ${name}?`;
+        answer = String(relativeAge);
+        
+    } else if (questionType === 1) {
+        const yearsAgo = getRandomInt(3) + 1;
+        const pastAge = Math.max(1, baseAge - yearsAgo);
+        question = `Bạn <span class="text-purple-700 font-extrabold">${name}</span> hiện nay ${baseAge} tuổi. ${yearsAgo} năm trước bạn ${name} bao nhiêu tuổi?`;
+        answer = String(pastAge);
+        
+    } else if (questionType === 2) {
+        const yearsLater = getRandomInt(3) + 1;
+        const futureAge = baseAge + yearsLater;
+        question = `Bạn <span class="text-purple-700 font-extrabold">${name}</span> hiện nay ${baseAge} tuổi. ${yearsLater} năm sau bạn ${name} bao nhiêu tuổi?`;
+        answer = String(futureAge);
+        
+    } else {
+        const name2 = names[getRandomInt(names.length)];
+        const ageDiff = getRandomInt(5) + 1;
+        const age2 = baseAge + ageDiff;
+        question = `Bạn <span class="text-purple-700 font-extrabold">${name}</span> ${baseAge} tuổi, nhỏ hơn bạn ${name2} ${ageDiff} tuổi. Hỏi bạn ${name2} bao nhiêu tuổi?`;
+        answer = String(age2);
+    }
+    
+    return { question, answer, type: 'input' };
+}
+
+function generateTIMOQuestion() {
+    const questionType = QUESTION_TYPES_TIMO[getRandomInt(QUESTION_TYPES_TIMO.length)];
+    
+    if (questionType === 'day-of-week') {
+        return generateDayOfWeekQuestion();
+    } else {
+        return generateAgeProblem();
+    }
+}
         /**
          * Hàm chính để tạo câu hỏi ngẫu nhiên và kiểm tra kết thúc
          */
@@ -764,12 +863,14 @@
             let questionPool;
 
             if (currentQuizType === 'MULT_DIV') {
-                 // Cấp Nhân/Chia: Nhân/Chia, Tìm X (Nhân/Chia), So sánh (Nhân/Chia), Sắp xếp
-                 questionPool = QUESTION_TYPES_MULT_DIV;
-            } else {
-                // Cấp Cộng/Trừ: Cộng/Trừ, Tìm X (Cộng/Trừ), So sánh (Cộng/Trừ), Sắp xếp
-                questionPool = QUESTION_TYPES_BASIC;
-            }
+     questionPool = QUESTION_TYPES_MULT_DIV;
+} else if (currentQuizType === 'TIMO') {
+     currentQuestion = generateTIMOQuestion();
+     displayQuestion(currentQuestion);
+     return;
+} else {
+    questionPool = QUESTION_TYPES_BASIC;
+}
 
 
             // Xử lý 2 câu hỏi đặc biệt cuối cùng
@@ -862,6 +963,24 @@
                 comparisonBox.classList.remove('correct-answer-box', 'incorrect-answer-box');
                 comparisonButtons.forEach(btn => btn.disabled = false);
             }
+			if (q.type === 'multiple-choice') {
+    questionText.innerHTML = q.question;
+    
+    let choicesHTML = '<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">';
+    q.choices.forEach(choice => {
+        choicesHTML += `<button class="choice-btn px-4 py-3 bg-purple-100 text-purple-800 font-semibold rounded-lg hover:bg-purple-200 transition duration-300 border-2 border-transparent" data-choice="${choice}">${choice}</button>`;
+    });
+    choicesHTML += '</div>';
+    
+    questionText.innerHTML += choicesHTML;
+    
+    const choiceBtns = document.querySelectorAll('.choice-btn');
+    choiceBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            checkMultipleChoiceAnswer(btn.getAttribute('data-choice'));
+        });
+    });
+}
         }
 
         function renderSortingNumbers(numbers) {
@@ -985,7 +1104,27 @@
 
             processAnswerResult(isCorrect, resultMsg);
         }
-
+		function checkMultipleChoiceAnswer(userChoice) {
+    const choiceBtns = document.querySelectorAll('.choice-btn');
+    choiceBtns.forEach(btn => {
+        btn.disabled = true;
+        if (btn.getAttribute('data-choice') === userChoice) {
+            btn.classList.add('bg-purple-500', 'text-white', 'border-purple-700');
+        }
+    });
+    
+    const isCorrect = (userChoice === currentQuestion.answer);
+    const correctAnswerText = `<span class="text-purple-600 font-extrabold">${currentQuestion.answer}</span>`;
+    
+    choiceBtns.forEach(btn => {
+        if (btn.getAttribute('data-choice') === currentQuestion.answer) {
+            btn.classList.add('bg-green-500', 'text-white', 'border-green-700');
+            btn.classList.remove('bg-purple-500', 'bg-purple-100');
+        }
+    });
+    
+    processAnswerResult(isCorrect, correctAnswerText);
+}
 
         // --- Logic Kết thúc Quiz ---
 
@@ -1046,9 +1185,11 @@
                 // Thiết lập màu mới dựa trên loại quiz
                 if (currentQuizType === 'ADD_SUB') {
                     btn.classList.add('bg-indigo-500', 'text-white');
-                } else {
-                    btn.classList.add('bg-green-500', 'text-white');
-                }
+                } else if (currentQuizType === 'TIMO') {
+    btn.classList.add('bg-purple-500', 'text-white');
+} else {
+    btn.classList.add('bg-green-500', 'text-white');
+}
                 btn.classList.remove('bg-gray-200', 'text-gray-700');
                 startQuizBtn.disabled = false;
                 levelDescription.textContent = `Bạn đã chọn: ${currentLevelName}`;
@@ -1164,6 +1305,7 @@
     </script>
 </body>
 </html>
+
 
 
 
