@@ -291,6 +291,16 @@
 		const QUESTION_TYPES_TIMO = ['day-of-week', 'age-problem'];
 		const DAYS_OF_WEEK = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
         const MAX_QUIZ_TIME_SECONDS = 30 * 60; // 30 phút
+        
+        // Thêm hằng số cho câu hỏi ngày trong tuần phức tạp
+        const RELATIVE_DAY_OPTIONS = {
+            'Hôm nay': 0,
+            'Ngày mai': 1,
+            'Ngày kia': 2,
+            'Hôm qua': -1,
+            'Hôm kia': -2
+        };
+
 
         // Định nghĩa các bảng nhân cho từng cấp độ Nhân Chia
         const MULT_DIV_FACTORS = {
@@ -753,95 +763,149 @@
             const question = `**Bài toán có lời văn:** ${problemText}`;
             return { question, answer: String(answer), type: 'input', special: 'word-problem' };
         }
-		// Hàm tạo câu hỏi ngày trong tuần
-function generateDayOfWeekQuestion() {
-    const maxDayGap = 5;
-    const dayGap = getRandomInt(maxDayGap) + 1; // 1 đến 5 ngày
-    const todayIndex = getRandomInt(7); // 0-6
-    
-    const direction = Math.random() > 0.5 ? 'sau' : 'trước';
-    
-    let targetIndex;
-    if (direction === 'sau') {
-        targetIndex = (todayIndex + dayGap) % 7;
-    } else {
-        targetIndex = (todayIndex - dayGap + 7) % 7;
-    }
-    
-    const today = DAYS_OF_WEEK[todayIndex];
-    const target = DAYS_OF_WEEK[targetIndex];
-    
-    const questionTypes = [
-        `Hôm nay là <span class="text-purple-700 font-extrabold">${today}</span>. ${dayGap} ngày ${direction} là thứ mấy?`,
-        `Nếu ${dayGap} ngày ${direction} là <span class="text-purple-700 font-extrabold">${target}</span>, hôm nay là thứ mấy?`,
-        `${dayGap} ngày ${direction === 'sau' ? 'trước' : 'sau'} <span class="text-purple-700 font-extrabold">${target}</span> là thứ mấy?`
-    ];
-    
-    const question = questionTypes[getRandomInt(questionTypes.length)];
-    
-    let answer;
-    if (question.includes(`hôm nay là ${today}`)) {
-        answer = target;
-    } else if (question.includes(`hôm nay là thứ mấy`)) {
-        answer = today;
-    } else {
-        answer = today;
-    }
-    
-    return { 
-        question, 
-        answer, 
-        type: 'multiple-choice',
-        choices: DAYS_OF_WEEK 
-    };
-}
+		
+        /**
+         * Hàm tạo câu hỏi ngày trong tuần (đã được sửa đổi)
+         * - Kiểu: [Ngày tương đối] là [Thứ X]. Hỏi [n] ngày [trước/sau] là thứ mấy.
+         * - Cập nhật logic 2 phần nếu ngày tham chiếu không phải 'Hôm nay'.
+         */
+        function generateDayOfWeekQuestion() {
+            // 1. Chọn ngày tương đối (Hôm nay, Hôm qua, ...)
+            const relativeKeys = Object.keys(RELATIVE_DAY_OPTIONS);
+            const relativeDayKey = relativeKeys[getRandomInt(relativeKeys.length)];
+            const relativeOffset = RELATIVE_DAY_OPTIONS[relativeDayKey];
 
-function generateAgeProblem() {
-    const names = ['An', 'Bình', 'Chi', 'Dung', 'Em', 'Phong', 'Giang', 'Hà'];
-    const name = names[getRandomInt(names.length)];
-    const baseAge = getRandomInt(10) + 1;
-    
-    const questionType = getRandomInt(4);
-    let question, answer;
-    
-    if (questionType === 0) {
-        const ageDiff = getRandomInt(5) + 1;
-        const relativeAge = baseAge + ageDiff;
-        question = `Bạn <span class="text-purple-700 font-extrabold">${name}</span> ${baseAge} tuổi. Chị của bạn ấy lớn hơn ${ageDiff} tuổi. Hỏi tuổi của chị bạn ${name}?`;
-        answer = String(relativeAge);
-        
-    } else if (questionType === 1) {
-        const yearsAgo = getRandomInt(3) + 1;
-        const pastAge = Math.max(1, baseAge - yearsAgo);
-        question = `Bạn <span class="text-purple-700 font-extrabold">${name}</span> hiện nay ${baseAge} tuổi. ${yearsAgo} năm trước bạn ${name} bao nhiêu tuổi?`;
-        answer = String(pastAge);
-        
-    } else if (questionType === 2) {
-        const yearsLater = getRandomInt(3) + 1;
-        const futureAge = baseAge + yearsLater;
-        question = `Bạn <span class="text-purple-700 font-extrabold">${name}</span> hiện nay ${baseAge} tuổi. ${yearsLater} năm sau bạn ${name} bao nhiêu tuổi?`;
-        answer = String(futureAge);
-        
-    } else {
-        const name2 = names[getRandomInt(names.length)];
-        const ageDiff = getRandomInt(5) + 1;
-        const age2 = baseAge + ageDiff;
-        question = `Bạn <span class="text-purple-700 font-extrabold">${name}</span> ${baseAge} tuổi, nhỏ hơn bạn ${name2} ${ageDiff} tuổi. Hỏi bạn ${name2} bao nhiêu tuổi?`;
-        answer = String(age2);
-    }
-    
-    return { question, answer, type: 'input' };
-}
+            // 2. Chọn ngày gốc (TodayIndex) - Ngày thật của Hôm nay
+            const todayIndex = getRandomInt(7); // 0-6
+            const todayName = DAYS_OF_WEEK[todayIndex];
 
-function generateTIMOQuestion() {
-    const questionType = QUESTION_TYPES_TIMO[getRandomInt(QUESTION_TYPES_TIMO.length)];
-    
-    if (questionType === 'day-of-week') {
-        return generateDayOfWeekQuestion();
-    } else {
-        return generateAgeProblem();
-    }
-}
+            // 3. Tính thứ của ngày tương đối (Reference Day Index)
+            // Lấy todayIndex + relativeOffset, đảm bảo luôn dương bằng cách thêm 7 và lấy % 7
+            const refDayIndex = (todayIndex + relativeOffset + 7) % 7;
+            const refDayName = DAYS_OF_WEEK[refDayIndex];
+
+            // 4. Chọn khoảng cách n ngày và hướng (Giới hạn n <= 5)
+            const maxDayGap = 5; 
+            const dayGap = getRandomInt(maxDayGap) + 1; // 1 đến 5 ngày
+            const direction = Math.random() > 0.5 ? 'sau' : 'trước';
+            const directionOffset = direction === 'sau' ? dayGap : -dayGap;
+
+            // 5. Tính thứ của ngày đích (Target Day Index, relative to todayIndex)
+            let targetIndex = (todayIndex + directionOffset);
+            targetIndex = (targetIndex % 7 + 7) % 7; // Đảm bảo index dương
+            const targetDayName = DAYS_OF_WEEK[targetIndex];
+            
+            let question;
+            
+            if (relativeDayKey === 'Hôm nay') {
+                // Cấu trúc cũ (đơn giản): Hôm nay là Thứ X. Hỏi n ngày sau/trước là thứ mấy.
+                question = `<span class="text-purple-700 font-extrabold">${relativeDayKey}</span> là <span class="text-purple-700 font-extrabold">${refDayName}</span>. Hỏi <span class="font-extrabold">${dayGap}</span> ngày <span class="text-red-600 font-extrabold">${direction}</span> là thứ mấy?`;
+            } else {
+                // Cấu trúc mới (2 phần): Hôm qua/Ngày mai... là Thứ X. Hỏi Hôm nay là thứ mấy VÀ n ngày sau/trước là thứ mấy.
+                // Đáp án vẫn là TargetDayName (phần thứ 2)
+                
+                // Ngày tương đối [relativeDayKey] là [refDayName]
+                const refPart = `<span class="text-purple-700 font-extrabold">${relativeDayKey}</span> là <span class="text-purple-700 font-extrabold">${refDayName}</span>.`;
+                
+                // Ngày đích là [dayGap] ngày [direction]
+                const targetPart = `Hỏi <span class="font-extrabold">${dayGap}</span> ngày <span class="text-red-600 font-extrabold">${direction}</span> (tính từ Hôm nay) là thứ mấy?`;
+                
+                // Thêm phần hỏi 'Hôm nay' vào giữa câu hỏi
+                question = `${refPart} Hỏi Hôm nay là thứ mấy và ${targetPart}`;
+            }
+
+            return { 
+                question, 
+                answer: targetDayName, 
+                type: 'multiple-choice',
+                choices: DAYS_OF_WEEK 
+            };
+        }
+
+        /**
+         * Hàm tạo câu hỏi về tuổi (đã được sửa đổi)
+         * - Gồm 3 kiểu: Tuổi tương đối (quá khứ/hiện tại/tương lai), So sánh tuổi cha mẹ, Tính hiệu số tuổi.
+         */
+        function generateAgeProblem() {
+            const names = ['An', 'Bình', 'Chi', 'Dung', 'Em', 'Phong', 'Giang', 'Hà'];
+            const name = names[getRandomInt(names.length)];
+            
+            const questionType = getRandomInt(3); // 0, 1, 2 cho 3 loại mới
+            let question, answer;
+
+            if (questionType === 0) { // Loại 1: Tuổi tương đối (Quá khứ/Tương lai -> Hiện tại/Tương lai/Quá khứ)
+                const yearsOffset = getRandomInt(5) + 2; // Độ lệch thời gian gốc (2-6 năm)
+                const isPastReference = Math.random() > 0.5; // True: X năm trước (Past) là mốc
+                let currentAge;
+                
+                if (isPastReference) { 
+                    // Mốc: X năm trước bạn A n tuổi. Hỏi Hiện tại/Y năm sau bạn A bao tuổi
+                    const pastAge = getRandomInt(8) + 5; // 5-12 tuổi
+                    currentAge = pastAge + yearsOffset;
+                    
+                    const targetYears = getRandomInt(5) + 1; // 1-5 năm
+                    const targetType = Math.random() > 0.5 ? 'Hiện tại' : `${targetYears} năm sau`;
+                    
+                    let targetAge;
+                    
+                    if (targetType === 'Hiện tại') {
+                        targetAge = currentAge;
+                    } else {
+                        targetAge = currentAge + targetYears;
+                    }
+                    
+                    question = `${yearsOffset} năm trước, bạn <span class="text-purple-700 font-extrabold">${name}</span> ${pastAge} tuổi. Hỏi <span class="text-red-600 font-extrabold">${targetType}</span> bạn ấy bao nhiêu tuổi?`;
+                    answer = String(targetAge);
+                    
+                } else { 
+                    // Mốc: X năm sau bạn A n tuổi. Hỏi Hiện tại/Y năm trước bạn A bao tuổi
+                    const futureAge = getRandomInt(10) + 15; // 15-25 tuổi
+                    currentAge = futureAge - yearsOffset;
+                    
+                    const targetYears = getRandomInt(5) + 1; // 1-5 năm
+                    const targetType = Math.random() > 0.5 ? 'Hiện tại' : `${targetYears} năm trước`;
+                    
+                    let targetAge;
+
+                    if (targetType === 'Hiện tại') {
+                        targetAge = currentAge;
+                    } else {
+                        targetAge = currentAge - targetYears;
+                    }
+                    
+                    question = `${yearsOffset} năm sau, bạn <span class="text-purple-700 font-extrabold">${name}</span> ${futureAge} tuổi. Hỏi <span class="text-red-600 font-extrabold">${targetType}</span> bạn ấy bao nhiêu tuổi?`;
+                    answer = String(Math.max(1, targetAge)); // Đảm bảo tuổi không âm
+                }
+
+            } else if (questionType === 1) { // Loại 2: Bố X tuổi, Mẹ ít hơn bố n tuổi. Hỏi mẹ bao nhiêu tuổi.
+                const fatherAge = getRandomInt(20) + 30; // 30-50
+                const ageDiff = getRandomInt(5) + 2; // 2-6 years difference
+                const motherAge = fatherAge - ageDiff;
+                
+                question = `Bố <span class="text-purple-700 font-extrabold">${fatherAge}</span> tuổi. Mẹ <span class="text-red-600 font-extrabold">ít hơn</span> bố <span class="font-extrabold">${ageDiff}</span> tuổi. Hỏi mẹ bao nhiêu tuổi?`;
+                answer = String(motherAge);
+
+            } else { // questionType === 2 - Loại 3: Bố X tuổi, Mẹ Y tuổi. Hỏi bố hơn mẹ bao nhiêu tuổi.
+                const fatherAge = getRandomInt(20) + 30; // 30-50
+                const ageDiff = getRandomInt(5) + 2; // 2-6 years difference
+                const motherAge = fatherAge - ageDiff;
+                
+                question = `Bố <span class="text-purple-700 font-extrabold">${fatherAge}</span> tuổi, Mẹ <span class="text-purple-700 font-extrabold">${motherAge}</span> tuổi. Hỏi bố <span class="text-red-600 font-extrabold">hơn</span> mẹ bao nhiêu tuổi?`;
+                answer = String(ageDiff);
+            }
+            
+            return { question, answer, type: 'input' };
+        }
+
+        function generateTIMOQuestion() {
+            const questionType = QUESTION_TYPES_TIMO[getRandomInt(QUESTION_TYPES_TIMO.length)];
+            
+            if (questionType === 'day-of-week') {
+                return generateDayOfWeekQuestion();
+            } else {
+                return generateAgeProblem();
+            }
+        }
         /**
          * Hàm chính để tạo câu hỏi ngẫu nhiên và kiểm tra kết thúc
          */
@@ -1177,7 +1241,7 @@ function generateTIMOQuestion() {
 
                 levelSelectBtns.forEach(b => {
                     // Xóa màu nền xanh (ADD_SUB) và xanh lá (MULT_DIV) cũ
-                    b.classList.remove('bg-indigo-500', 'text-white', 'bg-green-500');
+                    b.classList.remove('bg-indigo-500', 'text-white', 'bg-green-500', 'bg-purple-500');
                     // Thêm màu nền xám mặc định
                     b.classList.add('bg-gray-200', 'text-gray-700');
                 });
@@ -1186,10 +1250,10 @@ function generateTIMOQuestion() {
                 if (currentQuizType === 'ADD_SUB') {
                     btn.classList.add('bg-indigo-500', 'text-white');
                 } else if (currentQuizType === 'TIMO') {
-    btn.classList.add('bg-purple-500', 'text-white');
-} else {
-    btn.classList.add('bg-green-500', 'text-white');
-}
+                    btn.classList.add('bg-purple-500', 'text-white');
+                } else {
+                    btn.classList.add('bg-green-500', 'text-white');
+                }
                 btn.classList.remove('bg-gray-200', 'text-gray-700');
                 startQuizBtn.disabled = false;
                 levelDescription.textContent = `Bạn đã chọn: ${currentLevelName}`;
@@ -1305,12 +1369,3 @@ function generateTIMOQuestion() {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
