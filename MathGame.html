@@ -268,7 +268,7 @@
         <div id="end-screen" class="hidden text-center p-8 bg-white rounded-xl shadow-2xl">
             <h2 class="text-4xl font-extrabold text-green-700 mb-4">Hoàn thành Quiz! 🎉</h2>
             <p class="text-2xl text-gray-700 mb-6">Bạn đã hoàn thành quiz.</p>
-            <p class="text-5xl font-extrabold text-indigo-600">Điểm của bạn: <span id="final-score">0</span></p>
+            <<p class="text-5xl font-extrabold text-indigo-600">Điểm của bạn: <span id="final-score">0</span> / <span id="total-questions-display">20</span></p>
             <p id="time-taken-message" class="text-xl text-gray-600 mt-4"></p>
             <button id="restart-quiz-btn" class="mt-8 px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
                 Chơi lại
@@ -295,7 +295,7 @@
         // Loại câu hỏi: Cộng/Trừ/So sánh/Sắp xếp/Tìm X, Nhân/Chia, Đọc giờ, Bài toán lời văn
         const QUESTION_TYPES_BASIC = ['basic-op', 'find-x', 'sorting', 'comparison'];
         const QUESTION_TYPES_MULT_DIV = ['mult-div', 'find-x-mult-div', 'sorting', 'comparison'];
-		const QUESTION_TYPES_TIMO = ['day-of-week', 'age-problem'];
+		const QUESTION_TYPES_TIMO = ['day-of-week', 'age-problem', 'queue-problem'];
 		const DAYS_OF_WEEK = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
         const MAX_QUIZ_TIME_SECONDS = 30 * 60; // 30 phút
         
@@ -844,86 +844,110 @@
         /**
          * Hàm tạo câu hỏi về tuổi (đã được sửa đổi)
          */
-        function generateAgeProblem() {
-            const names = ['An', 'Bình', 'Chi', 'Dung', 'Em', 'Phong', 'Giang', 'Hà'];
-            const name = names[getRandomInt(names.length)];
+        /**
+ * Hàm tạo câu hỏi về xếp hàng
+ */
+function generateQueueProblem() {
+    const names = ['An', 'Bình', 'Chi', 'Dung', 'Em', 'Phong', 'Giang', 'Hà', 'Linh', 'Mai'];
+    const name = names[getRandomInt(names.length)];
+    
+    const questionType = getRandomInt(3); // 0, 1, 2
+    let question, answer;
+    
+    if (questionType === 0) {
+        // Dạng 1: Biết trước/sau, hỏi sau/trước hoặc hỏi thứ tự
+        const totalPeople = getRandomInt(15) + 10; // 10-24 người
+        const positionType = Math.random() > 0.5 ? 'trước' : 'sau';
+        
+        if (positionType === 'trước') {
+            const peopleBefore = getRandomInt(totalPeople - 2) + 1;
+            const peopleAfter = totalPeople - peopleBefore - 1;
+            const position = peopleBefore + 1;
             
-            const questionType = getRandomInt(3); // 0, 1, 2 cho 3 loại mới
-            let question, answer;
-
-            if (questionType === 0) { // Loại 1: Tuổi tương đối (Quá khứ/Tương lai -> Hiện tại/Tương lai/Quá khứ)
-                const yearsOffset = getRandomInt(5) + 2; // Độ lệch thời gian gốc (2-6 năm)
-                const isPastReference = Math.random() > 0.5; // True: X năm trước (Past) là mốc
-                let currentAge;
-                
-                if (isPastReference) { 
-                    // Mốc: X năm trước bạn A n tuổi. Hỏi Hiện tại/Y năm sau bạn A bao tuổi
-                    const pastAge = getRandomInt(8) + 5; // 5-12 tuổi
-                    currentAge = pastAge + yearsOffset;
-                    
-                    const targetYears = getRandomInt(5) + 1; // 1-5 năm
-                    const targetType = Math.random() > 0.5 ? 'Hiện tại' : `${targetYears} năm sau`;
-                    
-                    let targetAge;
-                    
-                    if (targetType === 'Hiện tại') {
-                        targetAge = currentAge;
-                    } else {
-                        targetAge = currentAge + targetYears;
-                    }
-                    
-                    question = `${yearsOffset} năm trước, bạn <span class="text-purple-700 font-extrabold">${name}</span> ${pastAge} tuổi. Hỏi <span class="text-red-600 font-extrabold">${targetType}</span> bạn ấy bao nhiêu tuổi?`;
-                    answer = String(targetAge);
-                    
-                } else { 
-                    // Mốc: X năm sau bạn A n tuổi. Hỏi Hiện tại/Y năm trước bạn A bao tuổi
-                    const futureAge = getRandomInt(10) + 15; // 15-25 tuổi
-                    currentAge = futureAge - yearsOffset;
-                    
-                    const targetYears = getRandomInt(5) + 1; // 1-5 năm
-                    const targetType = Math.random() > 0.5 ? 'Hiện tại' : `${targetYears} năm trước`;
-                    
-                    let targetAge;
-
-                    if (targetType === 'Hiện tại') {
-                        targetAge = currentAge;
-                    } else {
-                        targetAge = currentAge - targetYears;
-                    }
-                    
-                    question = `${yearsOffset} năm sau, bạn <span class="text-purple-700 font-extrabold">${name}</span> ${futureAge} tuổi. Hỏi <span class="text-red-600 font-extrabold">${targetType}</span> bạn ấy bao nhiêu tuổi?`;
-                    answer = String(Math.max(1, targetAge)); // Đảm bảo tuổi không âm
-                }
-
-            } else if (questionType === 1) { // Loại 2: Bố X tuổi, Mẹ ít hơn bố n tuổi. Hỏi mẹ bao nhiêu tuổi.
-                const fatherAge = getRandomInt(20) + 30; // 30-50
-                const ageDiff = getRandomInt(5) + 2; // 2-6 years difference
-                const motherAge = fatherAge - ageDiff;
-                
-                question = `Bố <span class="text-purple-700 font-extrabold">${fatherAge}</span> tuổi. Mẹ <span class="text-red-600 font-extrabold">ít hơn</span> bố <span class="font-extrabold">${ageDiff}</span> tuổi. Hỏi mẹ bao nhiêu tuổi?`;
-                answer = String(motherAge);
-
-            } else { // questionType === 2 - Loại 3: Bố X tuổi, Mẹ Y tuổi. Hỏi bố hơn mẹ bao nhiêu tuổi.
-                const fatherAge = getRandomInt(20) + 30; // 30-50
-                const ageDiff = getRandomInt(5) + 2; // 2-6 years difference
-                const motherAge = fatherAge - ageDiff;
-                
-                question = `Bố <span class="text-purple-700 font-extrabold">${fatherAge}</span> tuổi, Mẹ <span class="text-purple-700 font-extrabold">${motherAge}</span> tuổi. Hỏi bố <span class="text-red-600 font-extrabold">hơn</span> mẹ bao nhiêu tuổi?`;
-                answer = String(ageDiff);
-            }
+            const askType = getRandomInt(2);
             
-            return { question, answer, type: 'input' };
-        }
-
-        function generateTIMOQuestion() {
-            const questionType = QUESTION_TYPES_TIMO[getRandomInt(QUESTION_TYPES_TIMO.length)];
-            
-            if (questionType === 'day-of-week') {
-                return generateDayOfWeekQuestion();
+            if (askType === 0) {
+                question = `Một hàng có <span class="text-purple-700 font-extrabold">${totalPeople}</span> người. 
+                           Phía <span class="text-red-600 font-extrabold">trước</span> bạn <span class="text-purple-700 font-extrabold">${name}</span> có 
+                           <span class="text-purple-700 font-extrabold">${peopleBefore}</span> người. 
+                           Hỏi phía <span class="text-red-600 font-extrabold">sau</span> bạn ${name} có bao nhiêu người?`;
+                answer = String(peopleAfter);
             } else {
-                return generateAgeProblem();
+                question = `Một hàng có <span class="text-purple-700 font-extrabold">${totalPeople}</span> người. 
+                           Phía <span class="text-red-600 font-extrabold">trước</span> bạn <span class="text-purple-700 font-extrabold">${name}</span> có 
+                           <span class="text-purple-700 font-extrabold">${peopleBefore}</span> người. 
+                           Hỏi bạn ${name} đứng thứ mấy?`;
+                answer = String(position);
+            }
+            
+        } else {
+            const peopleAfter = getRandomInt(totalPeople - 2) + 1;
+            const peopleBefore = totalPeople - peopleAfter - 1;
+            const position = peopleBefore + 1;
+            
+            const askType = getRandomInt(2);
+            
+            if (askType === 0) {
+                question = `Một hàng có <span class="text-purple-700 font-extrabold">${totalPeople}</span> người. 
+                           Phía <span class="text-red-600 font-extrabold">sau</span> bạn <span class="text-purple-700 font-extrabold">${name}</span> có 
+                           <span class="text-purple-700 font-extrabold">${peopleAfter}</span> người. 
+                           Hỏi phía <span class="text-red-600 font-extrabold">trước</span> bạn ${name} có bao nhiêu người?`;
+                answer = String(peopleBefore);
+            } else {
+                question = `Một hàng có <span class="text-purple-700 font-extrabold">${totalPeople}</span> người. 
+                           Phía <span class="text-red-600 font-extrabold">sau</span> bạn <span class="text-purple-700 font-extrabold">${name}</span> có 
+                           <span class="text-purple-700 font-extrabold">${peopleAfter}</span> người. 
+                           Hỏi bạn ${name} đứng thứ mấy?`;
+                answer = String(position);
             }
         }
+        
+    } else if (questionType === 1) {
+        // Dạng 2: A đứng giữa, hỏi A đứng thứ mấy
+        const totalPeople = getRandomInt(10) + 11;
+        const adjustedTotal = (totalPeople % 2 === 0) ? totalPeople + 1 : totalPeople;
+        const middlePosition = Math.ceil(adjustedTotal / 2);
+        
+        question = `Một hàng có <span class="text-purple-700 font-extrabold">${adjustedTotal}</span> người. 
+                   Bạn <span class="text-purple-700 font-extrabold">${name}</span> đứng ở <span class="text-red-600 font-extrabold">giữa hàng</span>. 
+                   Hỏi bạn ${name} đứng thứ mấy?`;
+        answer = String(middlePosition);
+        
+    } else {
+        // Dạng 3: A thứ x, B thứ y, hỏi giữa có bao nhiêu người
+        const totalPeople = getRandomInt(15) + 15;
+        const name2 = names[getRandomInt(names.length)];
+        
+        let positionA = getRandomInt(totalPeople - 5) + 2;
+        let positionB = getRandomInt(totalPeople - 5) + 2;
+        
+        while (Math.abs(positionA - positionB) < 2) {
+            positionB = getRandomInt(totalPeople - 5) + 2;
+        }
+        
+        const peopleBetween = Math.abs(positionA - positionB) - 1;
+        
+        question = `Một hàng có <span class="text-purple-700 font-extrabold">${totalPeople}</span> người. 
+                   Bạn <span class="text-purple-700 font-extrabold">${name}</span> đứng thứ <span class="text-purple-700 font-extrabold">${positionA}</span>, 
+                   bạn <span class="text-purple-700 font-extrabold">${name2}</span> đứng thứ <span class="text-purple-700 font-extrabold">${positionB}</span>. 
+                   Hỏi giữa bạn ${name} và bạn ${name2} có bao nhiêu người?`;
+        answer = String(peopleBetween);
+    }
+    
+    return { question, answer, type: 'input' };
+}
+
+    function generateTIMOQuestion() {
+    const questionType = QUESTION_TYPES_TIMO[getRandomInt(QUESTION_TYPES_TIMO.length)];
+    
+    if (questionType === 'day-of-week') {
+        return generateDayOfWeekQuestion();
+    } else if (questionType === 'age-problem') {
+        return generateAgeProblem();
+    } else {
+        return generateQueueProblem();
+    }
+}
         /**
          * Hàm chính để tạo câu hỏi ngẫu nhiên và kiểm tra kết thúc
          */
@@ -1234,7 +1258,7 @@
             quizScreen.classList.add('hidden');
             endScreen.classList.remove('hidden');
             finalScoreSpan.textContent = currentScore;
-            
+            document.getElementById('total-questions-display').textContent = TOTAL_QUIZ_QUESTIONS;
             if (isTimeout) {
                 timeTakenMessage.textContent = 'Hết giờ! Quiz đã kết thúc.';
             } else {
@@ -1406,4 +1430,5 @@
     </script>
 </body>
 </html>
+
 
