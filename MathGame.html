@@ -1074,32 +1074,36 @@
         });
 
     
-		window.addEventListener("DOMContentLoaded", () => {
-    const restartQuizBtn = document.getElementById("restartQuizBtn"); // nút Chơi lại
-    const welcomeContainer = document.getElementById("welcomeContainer"); // màn hình chính
-    const quiz = document.getElementById("quiz"); // div chứa câu hỏi
-    const result = document.getElementById("result"); // div kết quả
-
-    restartQuizBtn.addEventListener("click", () => {
-        // 1. Ẩn bảng kết quả
-        result.style.display = "none";
-
-        // 2. Hiển thị màn hình chính
-        welcomeContainer.style.display = "block";
-
-        // 3. Reset quiz
-        currentQuestion = 0;
-        score = 0;
-
-        // 4. Xóa nội dung quiz cũ
-        quiz.innerHTML = "";
-
-        // 5. Reset tất cả lựa chọn radio/checkbox
-        const options = document.querySelectorAll(".option");
-        options.forEach(opt => {
-            if(opt.type === "radio" || opt.type === "checkbox") opt.checked = false;
-        });
+		restartQuizBtn.addEventListener('click', () => {
+    // Reset toàn bộ trạng thái
+    currentScore = 0;
+    currentQuestionNumber = 0;
+    timeRemaining = MAX_QUIZ_TIME_SECONDS;
+    
+    // Ẩn màn hình kết thúc
+    endScreen.classList.add('hidden');
+    
+    // Hiển thị màn hình setup (màn hình chính)
+    setupScreen.classList.remove('hidden');
+    
+    // Reset các giá trị hiển thị
+    currentScoreSpan.textContent = 0;
+    progressBar.style.width = '0%';
+    messageBox.textContent = '';
+    
+    // Chọn lại cấp độ mặc định (Cấp 1 Cộng Trừ)
+    levelSelectBtns[0].click();
+    
+    // Reset nút số câu hỏi về mặc định (20 câu)
+    const questionCountBtns = document.querySelectorAll('.q-count-btn');
+    questionCountBtns.forEach(btn => {
+        btn.classList.remove('bg-indigo-500', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
     });
+    // Chọn mặc định 20 câu (nút thứ 2)
+    questionCountBtns[1].classList.add('bg-indigo-500', 'text-white');
+    questionCountBtns[1].classList.remove('bg-gray-200', 'text-gray-700');
+    TOTAL_QUIZ_QUESTIONS = 20;
 });
 
 
@@ -1160,6 +1164,7 @@
     </script>
 </body>
 </html>
+
 
 
 
