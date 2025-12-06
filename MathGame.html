@@ -760,6 +760,17 @@ function generateSequencePattern() {
         sequence.push(sequence[i - 1] + pattern);
     }
     
+    // SỬA DÒNG NÀY:
+    // CŨ: const answer = String(sequence[sequenceLength - 1] + pattern);
+    const answer = String(sequence[sequenceLength - 1]); // ✅ BỎ "+ pattern"
+    
+    const displaySequence = sequence.slice(0, -1);
+    
+    const question = `Tìm số tiếp theo trong dãy: <span class="text-blue-700 font-extrabold">${displaySequence.join(', ')}, ?</span>`;
+    
+    return { question, answer, type: 'input' };
+}
+    
     const answer = String(sequence[sequenceLength - 1] + pattern);
     const displaySequence = sequence.slice(0, -1);
     
@@ -781,7 +792,10 @@ function generateSequenceIncrement() {
         increment++;
     }
     
-    const answer = String(sequence[sequenceLength - 1] + increment);
+    // SỬA DÒNG NÀY:
+    // CŨ: const answer = String(sequence[sequenceLength - 1] + increment);
+    const answer = String(sequence[sequenceLength - 1]); // ✅ BỎ "+ increment"
+    
     const displaySequence = sequence.slice(0, -1);
     
     const question = `Tìm số tiếp theo trong dãy (quy luật tăng dần): <span class="text-blue-700 font-extrabold">${displaySequence.join(', ')}, ?</span>`;
@@ -1688,6 +1702,7 @@ function generateQueueProblem() {
     </script>
 </body>
 </html>
+
 
 
 
