@@ -293,7 +293,18 @@
         // Constants
         
         // Loại câu hỏi: Cộng/Trừ/So sánh/Sắp xếp/Tìm X, Nhân/Chia, Đọc giờ, Bài toán lời văn
-        const QUESTION_TYPES_BASIC = ['basic-op', 'find-x', 'sorting', 'comparison'];
+        const QUESTION_TYPES_BASIC = [
+    'basic-op', 
+    'find-x', 
+    'sorting', 
+    'comparison',
+    'balance-equation',      // MỚI: Phép tính cân bằng
+    'create-even-odd',       // MỚI: Tạo số chẵn/lẻ
+    'create-max-min',        // MỚI: Tạo 2 số lớn/nhỏ nhất
+    'sequence-pattern',      // MỚI: Dãy số quy luật cộng đều
+    'sequence-increment',    // MỚI: Dãy số quy luật cộng tăng dần
+    'shape-pattern'          // MỚI: Hình vẽ quy luật
+];
         const QUESTION_TYPES_MULT_DIV = ['mult-div', 'find-x-mult-div', 'sorting', 'comparison'];
 		const QUESTION_TYPES_TIMO = ['day-of-week', 'age-problem', 'queue-problem'];
 		const DAYS_OF_WEEK = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
@@ -579,7 +590,236 @@
             }
             return { question, answer: String(answer), type: 'input' };
         }
+		// 1. PHÉP TÍNH CÂN BẰNG
+function generateBalanceEquation(max) {
+    const A_right = getRandomInt(max) + 1;
+    const B_right = getRandomInt(max) + 1;
+    const C_right = A_right + B_right;
+    
+    const A_left = getRandomInt(max) + 1;
+    const X = C_right - A_left;
+    
+    if (X <= 0 || X >= max * 2) {
+        return generateBalanceEquation(max);
+    }
+    
+    const question = `${A_left} + ? = ${A_right} + ${B_right}`;
+    const answer = String(X);
+    
+    return { question, answer, type: 'input' };
+}
 
+// 2. TẠO SỐ CHẴN/LẺ TỪ 4 CHỮ SỐ
+function generateEvenOddNumberQuestion(level) {
+    const digits = [];
+    const digitCount = 4;
+    const max = 10;
+    
+    while (digits.length < digitCount) {
+        const num = getRandomInt(max);
+        if (!digits.includes(num)) {
+            digits.push(num);
+        }
+    }
+    
+    const questionType = getRandomInt(4);
+    let question, answer;
+    
+    if (questionType === 0) {
+        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
+                   Tạo số <span class="text-red-600 font-extrabold">CHẴN nhỏ nhất</span> có thể (dùng hết 4 chữ số).`;
+        const sortedDigits = [...digits].sort((a, b) => a - b);
+        let evenDigit = null;
+        for (let d of sortedDigits) {
+            if (d % 2 === 0) {
+                evenDigit = d;
+                break;
+            }
+        }
+        if (evenDigit === null) {
+            return generateEvenOddNumberQuestion(level);
+        }
+        const remaining = sortedDigits.filter(d => d !== evenDigit);
+        answer = remaining.join('') + evenDigit;
+        
+    } else if (questionType === 1) {
+        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
+                   Tạo số <span class="text-red-600 font-extrabold">CHẴN lớn nhất</span> có thể (dùng hết 4 chữ số).`;
+        const sortedDigits = [...digits].sort((a, b) => b - a);
+        let evenDigit = null;
+        for (let d of sortedDigits) {
+            if (d % 2 === 0) {
+                evenDigit = d;
+                break;
+            }
+        }
+        if (evenDigit === null) {
+            return generateEvenOddNumberQuestion(level);
+        }
+        const remaining = sortedDigits.filter(d => d !== evenDigit);
+        answer = remaining.join('') + evenDigit;
+        
+    } else if (questionType === 2) {
+        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
+                   Tạo số <span class="text-red-600 font-extrabold">LẺ nhỏ nhất</span> có thể (dùng hết 4 chữ số).`;
+        const sortedDigits = [...digits].sort((a, b) => a - b);
+        let oddDigit = null;
+        for (let d of sortedDigits) {
+            if (d % 2 !== 0) {
+                oddDigit = d;
+                break;
+            }
+        }
+        if (oddDigit === null) {
+            return generateEvenOddNumberQuestion(level);
+        }
+        const remaining = sortedDigits.filter(d => d !== oddDigit);
+        answer = remaining.join('') + oddDigit;
+        
+    } else {
+        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
+                   Tạo số <span class="text-red-600 font-extrabold">LẺ lớn nhất</span> có thể (dùng hết 4 chữ số).`;
+        const sortedDigits = [...digits].sort((a, b) => b - a);
+        let oddDigit = null;
+        for (let d of sortedDigits) {
+            if (d % 2 !== 0) {
+                oddDigit = d;
+                break;
+            }
+        }
+        if (oddDigit === null) {
+            return generateEvenOddNumberQuestion(level);
+        }
+        const remaining = sortedDigits.filter(d => d !== oddDigit);
+        answer = remaining.join('') + oddDigit;
+    }
+    
+    return { question, answer, type: 'input' };
+}
+
+// 3. TẠO 2 SỐ LỚN/NHỎ NHẤT VÀ TÍNH TỔNG/HIỆU
+function generateMaxMinTwoNumbers(level) {
+    const digits = [];
+    const digitCount = 4;
+    const max = 10;
+    
+    while (digits.length < digitCount) {
+        const num = getRandomInt(max);
+        if (!digits.includes(num) && num !== 0) {
+            digits.push(num);
+        }
+    }
+    
+    const questionType = getRandomInt(4);
+    let question, answer;
+    const sortedDesc = [...digits].sort((a, b) => b - a);
+    const sortedAsc = [...digits].sort((a, b) => a - b);
+    
+    if (questionType === 0) {
+        const num1 = parseInt(sortedDesc[0].toString() + sortedDesc[1].toString());
+        const num2 = parseInt(sortedDesc[2].toString() + sortedDesc[3].toString());
+        answer = String(num1 + num2);
+        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
+                   Tạo <span class="text-red-600 font-extrabold">2 số LỚN NHẤT</span> có thể (mỗi số 2 chữ số) rồi tính <span class="text-red-600 font-extrabold">TỔNG</span>.`;
+        
+    } else if (questionType === 1) {
+        const num1 = parseInt(sortedDesc[0].toString() + sortedDesc[1].toString());
+        const num2 = parseInt(sortedDesc[2].toString() + sortedDesc[3].toString());
+        answer = String(Math.abs(num1 - num2));
+        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
+                   Tạo <span class="text-red-600 font-extrabold">2 số LỚN NHẤT</span> có thể (mỗi số 2 chữ số) rồi tính <span class="text-red-600 font-extrabold">HIỆU</span>.`;
+        
+    } else if (questionType === 2) {
+        const num1 = parseInt(sortedAsc[0].toString() + sortedAsc[1].toString());
+        const num2 = parseInt(sortedAsc[2].toString() + sortedAsc[3].toString());
+        answer = String(num1 + num2);
+        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
+                   Tạo <span class="text-red-600 font-extrabold">2 số NHỎ NHẤT</span> có thể (mỗi số 2 chữ số) rồi tính <span class="text-red-600 font-extrabold">TỔNG</span>.`;
+        
+    } else {
+        const num1 = parseInt(sortedAsc[0].toString() + sortedAsc[1].toString());
+        const num2 = parseInt(sortedAsc[2].toString() + sortedAsc[3].toString());
+        answer = String(Math.abs(num1 - num2));
+        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
+                   Tạo <span class="text-red-600 font-extrabold">2 số NHỎ NHẤT</span> có thể (mỗi số 2 chữ số) rồi tính <span class="text-red-600 font-extrabold">HIỆU</span>.`;
+    }
+    
+    return { question, answer, type: 'input' };
+}
+
+// 4. DÃY SỐ QUY LUẬT CỘNG ĐỀU
+function generateSequencePattern() {
+    const patterns = [2, 3, 4, 5];
+    const pattern = patterns[getRandomInt(patterns.length)];
+    
+    const sequenceLength = getRandomInt(2) + 5;
+    const startNum = getRandomInt(10) + 1;
+    
+    const sequence = [startNum];
+    for (let i = 1; i < sequenceLength; i++) {
+        sequence.push(sequence[i - 1] + pattern);
+    }
+    
+    const answer = String(sequence[sequenceLength - 1] + pattern);
+    const displaySequence = sequence.slice(0, -1);
+    
+    const question = `Tìm số tiếp theo trong dãy: <span class="text-blue-700 font-extrabold">${displaySequence.join(', ')}, ?</span>`;
+    
+    return { question, answer, type: 'input' };
+}
+
+// 5. DÃY SỐ QUY LUẬT CỘNG TĂNG DẦN
+function generateSequenceIncrement() {
+    const sequenceLength = getRandomInt(2) + 6;
+    const startNum = getRandomInt(5) + 1;
+    
+    const sequence = [startNum];
+    let increment = 1;
+    
+    for (let i = 1; i < sequenceLength; i++) {
+        sequence.push(sequence[i - 1] + increment);
+        increment++;
+    }
+    
+    const answer = String(sequence[sequenceLength - 1] + increment);
+    const displaySequence = sequence.slice(0, -1);
+    
+    const question = `Tìm số tiếp theo trong dãy (quy luật tăng dần): <span class="text-blue-700 font-extrabold">${displaySequence.join(', ')}, ?</span>`;
+    
+    return { question, answer, type: 'input' };
+}
+
+// 6. HÌNH VẼ QUY LUẬT LẶP LẠI
+function generateShapePattern() {
+    const shapes = ['🔵', '🔺', '⭐', '🟥', '💚', '🔶'];
+    
+    const patternLength = getRandomInt(2) + 3;
+    const pattern = [];
+    
+    for (let i = 0; i < patternLength; i++) {
+        pattern.push(shapes[i]);
+    }
+    
+    const repeatTimes = getRandomInt(2) + 2;
+    let fullSequence = [];
+    
+    for (let i = 0; i < repeatTimes; i++) {
+        fullSequence = fullSequence.concat(pattern);
+    }
+    
+    const answer = fullSequence[fullSequence.length - 1];
+    const displaySequence = fullSequence.slice(0, -1);
+    
+    const question = `Tìm hình tiếp theo trong dãy: <span style="font-size: 2rem;">${displaySequence.join(' ')}, ?</span>`;
+    
+    return { 
+        question, 
+        answer, 
+        type: 'multiple-choice',
+        choices: pattern,
+        special: 'shape-pattern'
+    };
+}
         function generateFindXQuestion(max) {
             let A, B, op, answer, question;
             do {
@@ -989,6 +1229,24 @@ function generateQueueProblem() {
                 randomType = questionPool[getRandomInt(questionPool.length)];
 
                 switch (randomType) {
+					case 'balance-equation':
+        currentQuestion = generateBalanceEquation(maxRange);
+        break;
+    case 'create-even-odd':
+        currentQuestion = generateEvenOddNumberQuestion(currentLevel);
+        break;
+    case 'create-max-min':
+        currentQuestion = generateMaxMinTwoNumbers(currentLevel);
+        break;
+    case 'sequence-pattern':
+        currentQuestion = generateSequencePattern();
+        break;
+    case 'sequence-increment':
+        currentQuestion = generateSequenceIncrement();
+        break;
+    case 'shape-pattern':
+        currentQuestion = generateShapePattern();
+        break;	
                     case 'basic-op':
                         currentQuestion = generateBasicOpQuestion(maxRange);
                         break;
@@ -1430,6 +1688,7 @@ function generateQueueProblem() {
     </script>
 </body>
 </html>
+
 
 
 
