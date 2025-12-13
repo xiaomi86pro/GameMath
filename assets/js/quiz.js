@@ -1,3 +1,5 @@
+const soundCorrect = new Audio('assets/sounds/correct.mp3');
+const soundWrong = new Audio('assets/sounds/wrong.mp3');
 
         // Constants
         
@@ -108,41 +110,17 @@
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
 
-
-        // --- Tone.js Setup for Sound Effects ---
-        
-        // Synth cho âm thanh chính xác (correct)
-        const correctSynth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: "sine" },
-            envelope: { attack: 0.01, decay: 0.2, sustain: 0.01, release: 0.5 },
-        }).toDestination();
-
-        // Synth cho âm thanh sai (incorrect)
-        const incorrectSynth = new Tone.NoiseSynth({
-            volume: -10,
-            envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.2 }
-        }).toDestination();
-
-        // Biến kiểm tra Audio Context
-        let isAudioContextStarted = false;
-        
-        function startAudioContext() {
-            if (!isAudioContextStarted) {
-                Tone.start();
-                isAudioContextStarted = true;
-                console.log("Tone.js Audio Context started.");
-            }
-        }
-
-        function playCorrectSound() {
-            if (!isAudioContextStarted) return;
-            correctSynth.triggerAttackRelease(["C5", "E5", "G5"], "8n");
-        }
-
-        function playIncorrectSound() {
-            if (!isAudioContextStarted) return;
-            incorrectSynth.triggerAttackRelease("16n");
-        }
+		function giveFeedback(correct) {
+ 		if (correct) {
+    	soundCorrect.currentTime = 0; // reset về đầu
+   		soundCorrect.play();
+    	flashColor('green'); // hiệu ứng màu xanh
+  		} else {
+    	soundWrong.currentTime = 0;
+    	soundWrong.play();
+    	flashColor('red'); // hiệu ứng màu đỏ
+  		}
+		}		
         
         // --- Logic Hẹn giờ ---
 
