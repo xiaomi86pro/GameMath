@@ -439,58 +439,6 @@ function generateTIMOQuestion() {
     }
 }
 
-function generateDayOfWeekQuestion() {
-            // 1. Chọn ngày tương đối (Hôm nay, Hôm qua, ...)
-            const relativeKeys = Object.keys(RELATIVE_DAY_OPTIONS);
-            const relativeDayKey = relativeKeys[getRandomInt(relativeKeys.length)];
-            const relativeOffset = RELATIVE_DAY_OPTIONS[relativeDayKey];
-
-            // 2. Chọn ngày gốc (TodayIndex) - Ngày thật của Hôm nay
-            const todayIndex = getRandomInt(7); // 0-6
-            const todayName = DAYS_OF_WEEK[todayIndex];
-
-            // 3. Tính thứ của ngày tương đối (Reference Day Index)
-            const refDayIndex = (todayIndex + relativeOffset + 7) % 7;
-            const refDayName = DAYS_OF_WEEK[refDayIndex];
-
-            // 4. Chọn khoảng cách n ngày và hướng (Giới hạn n <= 5)
-            const maxDayGap = 5; 
-            const dayGap = getRandomInt(maxDayGap) + 1; // 1 đến 5 ngày
-            
-            // Cập nhật ở đây: Dùng 'sau đó' và 'trước đó'
-            const directionText = Math.random() > 0.5 ? 'sau đó' : 'trước đó'; 
-            const directionInternal = directionText === 'sau đó' ? 'sau' : 'trước'; // Dùng cho tính toán
-            const directionOffset = directionInternal === 'sau' ? dayGap : -dayGap;
-
-            // 5. Tính thứ của ngày đích (Target Day Index, relative to todayIndex)
-            let targetIndex = (todayIndex + directionOffset);
-            targetIndex = (targetIndex % 7 + 7) % 7; // Đảm bảo index dương
-            const targetDayName = DAYS_OF_WEEK[targetIndex];
-            
-            let question;
-            
-            if (relativeDayKey === 'Hôm nay') {
-                // Cấu trúc đơn giản: Hôm nay là Thứ X. Hỏi n ngày sau/trước là thứ mấy.
-                question = `<span class="text-purple-700 font-extrabold">${relativeDayKey}</span> là <span class="text-purple-700 font-extrabold">${refDayName}</span>. Hỏi <span class="font-extrabold">${dayGap}</span> ngày <span class="text-red-600 font-extrabold">${directionText}</span> là thứ mấy?`;
-            } else {
-                // Cấu trúc 2 phần: Hôm qua/Ngày mai... là Thứ X. Hỏi Hôm nay là thứ mấy VÀ n ngày sau/trước là thứ mấy.
-                const refPart = `<span class="text-purple-700 font-extrabold">${relativeDayKey}</span> là <span class="text-purple-700 font-extrabold">${refDayName}</span>.`;
-                
-                // Ngày đích là [dayGap] ngày [directionText]
-                const targetPart = `Hỏi <span class="font-extrabold">${dayGap}</span> ngày <span class="text-red-600 font-extrabold">${directionText}</span> (tính từ Hôm nay) là thứ mấy?`;
-                
-                question = `${refPart} Hỏi Hôm nay là thứ mấy và ${targetPart}`;
-            }
-
-            return { 
-                question, 
-                answer: targetDayName, 
-                type: 'multiple-choice',
-                choices: DAYS_OF_WEEK,
-                special: 'day-of-week' // Thêm tag đặc biệt để hiện gợi ý
-            };
-}
-
 export function createClockSVG(hour, minute) {
             const size = 150;
             const centerX = size / 2;
