@@ -312,6 +312,19 @@
   generateTIMOQuestion
 } from './assets/js/quiz.js';
 
+		const correctSound = document.getElementById('sound-correct');
+const wrongSound = document.getElementById('sound-wrong');
+
+function playCorrectSound() {
+  correctSound.currentTime = 0;
+  correctSound.play();
+}
+
+function playWrongSound() {
+  wrongSound.currentTime = 0;
+  wrongSound.play();
+}
+
         
         // Loại câu hỏi: Cộng/Trừ/So sánh/Sắp xếp/Tìm X, Nhân/Chia, Đọc giờ, Bài toán lời văn
         const QUESTION_TYPES_BASIC = [
@@ -482,21 +495,6 @@
         }
 
         // --- Logic Tạo Câu Hỏi Mới ---
-        
-        
-	
-
-
-
-    
-
-
-    
-
-
-
-
-
         // Hàm tạo một phép tính đơn giản dựa trên loại quiz và cấp độ
         function generateSimpleExpression(max, quizType) {
             let A, B, op, result;
@@ -1040,11 +1038,13 @@
         });
 	});
 });
+</script>
+	<audio id="sound-correct" src="./assets/sounds/correct.mp3" preload="auto"></audio>
+	<audio id="sound-wrong" src="./assets/sounds/wrong.mp3" preload="auto"></audio>
 
-
-    </script>
 </body>
 </html>
+
 
 
 
