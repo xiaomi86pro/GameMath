@@ -1399,25 +1399,11 @@ function generateQueueProblem() {
 
         // Thiết lập trạng thái ban đầu khi tải trang
         document.addEventListener('DOMContentLoaded', () => {
-            // Chọn mặc định Cấp 1 Cộng Trừ
-            levelSelectBtns[0].click();
-            startQuizBtn.disabled = false;
-	const questionCountBtns = document.querySelectorAll('.q-count-btn');
-
-    	questionCountBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            TOTAL_QUIZ_QUESTIONS = parseInt(btn.getAttribute('data-questions'));
-
-            questionCountBtns.forEach(b => {
-                b.classList.remove('bg-indigo-500', 'text-white');
-                b.classList.add('bg-gray-200', 'text-gray-700');
-            });
-
-            btn.classList.add('bg-indigo-500', 'text-white');
-            btn.classList.remove('bg-gray-200', 'text-gray-700');
-        });
-	});
+  levelSelectBtns[0].click();
+  startQuizBtn.disabled = false;
+  initState();
 });
+
 
 
 
