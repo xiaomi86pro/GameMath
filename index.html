@@ -171,20 +171,30 @@
                 </button>
             </div>
         </div>
-		<div id="leaderboard-container" style="width: 350px; float: left; margin-right: 20px;">
-  <h2>Bảng xếp hạng</h2>
-  <table id="leaderboard" border="1" style="width:100%; text-align:center;">
-    <thead>
-      <tr>
-        <th>STT</th>
-        <th>Tên</th>
-        <th>Điểm</th>
-        <th>Thời gian</th>
-        <th>Cấp độ</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+		<div class="flex space-x-6">
+  <!-- Bảng xếp hạng -->
+  <div id="leaderboard-container" class="w-1/3 bg-blue-50 p-6 rounded-xl shadow-lg">
+    <h2 class="text-xl font-bold text-blue-700 mb-4">🏆 Bảng xếp hạng</h2>
+    <table id="leaderboard" class="w-full border-collapse text-center">
+      <thead class="bg-blue-200">
+        <tr>
+          <th class="p-2 border">STT</th>
+          <th class="p-2 border">Tên</th>
+          <th class="p-2 border">Điểm</th>
+          <th class="p-2 border">Thời gian</th>
+          <th class="p-2 border">Cấp độ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JS sẽ render dữ liệu -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Khối quiz -->
+  <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl w-2/3">
+    <!-- Nội dung quiz giữ nguyên -->
+  </div>
 </div>
         <!-- Màn Hình Quiz -->
         <div id="quiz-screen" class="hidden text-center">
@@ -303,6 +313,7 @@
 	<script type="module" src="assets/js/quiz.js"></script>
 </body>
 </html>
+
 
 
 
