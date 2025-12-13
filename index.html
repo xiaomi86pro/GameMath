@@ -132,7 +132,7 @@
     </div>
     <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl">
         <h1 class="text-4xl font-bold text-center text-indigo-700 mb-6">🧠 Ứng Dụng Học Toán Tương Tác</h1>
-        <div class="w-2/3">  
+        <div class="w-2/3 space-y-6">  
             <div id="setup-screen" class="space-y-6">
                 <p class="text-lg text-gray-600 text-center">Chọn cấp độ để bắt đầu bài quiz ngẫu nhiên. Quiz kéo dài 30 phút.</p>
 
@@ -189,16 +189,9 @@
                             </button>
                     </div>
             </div>
-         </div> 
-     </div>  
-</div>    		
-        <!-- Khối quiz -->
-        <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl w-2/3">
-        <!-- Nội dung quiz giữ nguyên -->
-        </div>
-        <!-- Màn Hình Quiz -->
-        <div id="quiz-screen" class="hidden text-center">
-            
+            </div>
+            <!-- Màn Hình Quiz -->
+            <div id="quiz-screen" class="hidden text-center">          
             <!-- Header Bar -->
             <div class="mb-6 flex justify-between items-center text-gray-600">
                 <button id="exit-quiz-btn" class="px-4 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition duration-300">
@@ -285,32 +278,36 @@
             <p id="message-box" class="mt-4 text-xl font-bold min-h-[30px]"></p>
 
             <button id="next-question-btn" class="mt-6 px-6 py-3 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition duration-300 hidden">Câu hỏi tiếp theo</button>
-        </div>
-        
-        <!-- Màn Hình Kết thúc Quiz -->
-        <div id="end-screen" class="hidden text-center p-8 bg-white rounded-xl shadow-2xl">
-            <h2 class="text-4xl font-extrabold text-green-700 mb-4">Hoàn thành Quiz! 🎉</h2>
-            <p class="text-2xl text-gray-700 mb-6">Bạn đã hoàn thành quiz.</p>
-            <p class="text-5xl font-extrabold text-indigo-600">Điểm của bạn: <span id="final-score">0</span> / <span id="total-questions-display">20</span></p>
-            <p id="time-taken-message" class="text-xl text-gray-600 mt-4"></p>
-            <button id="restart-quiz-btn" class="mt-8 px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
-                Chơi lại
-            </button>
-        </div>
-        
-        
-        <!-- Custom Modal for Confirmation (using Tailwind) -->
-        <div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4">
-                <h3 class="text-xl font-bold text-red-600 mb-4">Xác nhận Quay lại</h3>
-                <p class="text-gray-700 mb-6">Bạn có chắc chắn muốn quay lại màn hình chính? Mọi tiến trình quiz hiện tại sẽ bị mất.</p>
-                <div class="flex justify-end space-x-4">
-                    <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Hủy</button>
-                    <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Quay lại</button>
-                </div>
             </div>
-        </div>
-	<script type="module" src="assets/js/quiz.js"></script>
+        
+                        <!-- Màn Hình Kết thúc Quiz -->
+                        <div id="end-screen" class="hidden text-center p-8 bg-white rounded-xl shadow-2xl">
+                            <h2 class="text-4xl font-extrabold text-green-700 mb-4">Hoàn thành Quiz! 🎉</h2>
+                            <p class="text-2xl text-gray-700 mb-6">Bạn đã hoàn thành quiz.</p>
+                            <p class="text-5xl font-extrabold text-indigo-600">Điểm của bạn: <span id="final-score">0</span> / <span id="total-questions-display">20</span></p>
+                            <p id="time-taken-message" class="text-xl text-gray-600 mt-4"></p>
+                            <button id="restart-quiz-btn" class="mt-8 px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
+                                Chơi lại
+                            </button>
+                        </div>
+         </div> 
+     </div>  
+</div>    		
+        
+        
+        
+                        <!-- Custom Modal for Confirmation (using Tailwind) -->
+                        <div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+                            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4">
+                                <h3 class="text-xl font-bold text-red-600 mb-4">Xác nhận Quay lại</h3>
+                                <p class="text-gray-700 mb-6">Bạn có chắc chắn muốn quay lại màn hình chính? Mọi tiến trình quiz hiện tại sẽ bị mất.</p>
+                                <div class="flex justify-end space-x-4">
+                                    <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Hủy</button>
+                                    <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Quay lại</button>
+                                </div>
+                            </div>
+                        </div>
+	                    <script type="module" src="assets/js/quiz.js"></script>         
 </body>
 </html>
 
