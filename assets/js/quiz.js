@@ -1,4 +1,5 @@
 // ===== State =====
+let leaderboardData = [];
 let currentLevel = 1;
 let currentLevelName = 'Cấp 1 (Phạm vi 0-9)';
 let currentQuizType = 'ADD_SUB';
