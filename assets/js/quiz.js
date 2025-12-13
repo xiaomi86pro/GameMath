@@ -95,29 +95,6 @@ export function generateBalanceEquation(max) {
     return { question, answer, type: 'input' };
 }
 
-export function generateMultDivQuestion() {
-            // Sử dụng bảng cửu chương theo cấp độ
-            const factors = MULT_DIV_FACTORS[currentLevel];
-            const baseFactor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở (2, 3, 4,...)
-            const otherFactor = getRandomInt(10) + 1; // Số nhân còn lại (1 đến 10)
-
-            let A, B, op, answer, question;
-            
-            if (Math.random() > 0.5) { // Multiplication: A x B = ?
-                A = baseFactor; 
-                B = otherFactor;
-                answer = A * B;
-                question = `${A} × ${B} = ?`;
-            } else { // Division: C ÷ B = ?
-                // Đảm bảo phép chia hết và nằm trong phạm vi bảng cửu chương
-                B = baseFactor; // Số chia (phải là factor)
-                answer = otherFactor; // Thương (từ 1 đến 10)
-                A = B * answer; // Số bị chia
-                question = `${A} ÷ ${B} = ?`;
-            }
-            return { question, answer: String(answer), type: 'input' };
-        }
-
 export function generateFindXMultDivQuestion() {
             // Sử dụng bảng cửu chương theo cấp độ
             const factors = MULT_DIV_FACTORS[currentLevel];
@@ -181,45 +158,6 @@ export function generateFindXQuestion(max) {
             } while (answer <= 0 || answer >= max * 2);
             return { question, answer: String(answer), type: 'input' };
         }
-
-export function generateFindXMultDivQuestion() {
-            // Sử dụng bảng cửu chương theo cấp độ
-            const factors = MULT_DIV_FACTORS[currentLevel];
-            const baseFactor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở
-            const otherFactor = getRandomInt(10) + 1; // Số nhân còn lại (1 đến 10)
-            
-            let A, B, answer, question;
-            
-            if (Math.random() < 0.5) { // Multiplication: A x ? = C hoặc ? x B = C
-                B = baseFactor;
-                answer = otherFactor;
-                A = B * answer; // Product
-                
-                if (Math.random() > 0.5) {
-                     question = `${B} × ? = ${A}`; // Tìm nhân tử (otherFactor)
-                } else {
-                     question = `? × ${B} = ${A}`; // Tìm nhân tử (otherFactor)
-                }
-            } else { // Division: A ÷ ? = C hoặc ? ÷ B = C hoặc A ÷ B = ?
-                B = baseFactor; // Số chia
-                answer = otherFactor; // Thương
-                A = B * answer; // Số bị chia
-                
-                // Randomly choose the unknown part
-                const unknownType = getRandomInt(3); 
-                
-                if (unknownType === 0) { // Tìm số bị chia (A)
-                    question = `? ÷ ${B} = ${answer}`;
-                } else if (unknownType === 1) { // Tìm số chia (B)
-                    answer = B; // Số chia là đáp án
-                    question = `${A} ÷ ? = ${otherFactor}`; // Thương là otherFactor
-                } else { // Tìm thương (answer)
-                    question = `${A} ÷ ${B} = ?`;
-                    // Answer is already correct (otherFactor)
-                }
-            }
-            return { question, answer: String(answer), type: 'input' };
- }
 
 export function generateComparisonQuestion(level) {
             const isMultDivLevel = (currentQuizType === 'MULT_DIV');
