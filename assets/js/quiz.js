@@ -1,5 +1,4 @@
 // ===== State =====
-// ===== State =====
 let currentLevel = 1;
 let currentLevelName = 'Cấp 1 (Phạm vi 0-9)';
 let currentQuizType = 'ADD_SUB';
@@ -11,6 +10,11 @@ let timeRemaining = 0;
 let startTime = 0;
 let TOTAL_QUIZ_QUESTIONS = 20;
 
+const QUESTION_TYPES_MULT_DIV = ['mult-div', 'find-x-mult-div', 'sorting', 'comparison'];
+const QUESTION_TYPES_TIMO = ['day-of-week', 'age-problem', 'queue-problem'];
+const DAYS_OF_WEEK = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+const MAX_QUIZ_TIME_SECONDS = 30 * 60; // 30 phút
+
 function initState() {
   currentLevel = 1;
   currentLevelName = 'Cấp 1 (Phạm vi 0-9)';
@@ -19,6 +23,7 @@ function initState() {
   currentQuestionNumber = 0;
   TOTAL_QUIZ_QUESTIONS = 20;
   timeRemaining = MAX_QUIZ_TIME_SECONDS;
+  startTime = 0;
 }
 
         // Constants
@@ -38,10 +43,7 @@ function initState() {
     'sequence-increment',    // MỚI: Dãy số quy luật cộng tăng dần
     'shape-pattern'          // MỚI: Hình vẽ quy luật
 ];
-        const QUESTION_TYPES_MULT_DIV = ['mult-div', 'find-x-mult-div', 'sorting', 'comparison'];
-		const QUESTION_TYPES_TIMO = ['day-of-week', 'age-problem', 'queue-problem'];
-		const DAYS_OF_WEEK = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-        const MAX_QUIZ_TIME_SECONDS = 30 * 60; // 30 phút
+        
         
         // Thêm hằng số cho câu hỏi ngày trong tuần phức tạp
         const RELATIVE_DAY_OPTIONS = {
