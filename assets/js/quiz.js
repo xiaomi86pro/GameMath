@@ -1292,27 +1292,25 @@ function generateQueueProblem() {
                 levelDescription.textContent = `Bạn đã chọn: ${currentLevelName}`;
             });
         });
-        
-        startQuizBtn.addEventListener('click', () => {
-            startAudioContext(); 
-            if (!currentLevel) { return; }
 
-            currentScore = 0;
-            currentQuestionNumber = 0;
-            currentScoreSpan.textContent = 0;
-            totalQuestionsSpan.textContent = TOTAL_QUIZ_QUESTIONS;
-            currentLevelNameSpan.textContent = currentLevelName;
+	startQuizBtn.addEventListener('click', () => {
+    if (!currentLevel) { return; }
 
-            setupScreen.classList.add('hidden');
-            endScreen.classList.add('hidden');
-            quizScreen.classList.remove('hidden');
-            
-            startTimer(); // Bắt đầu đếm giờ
-            generateQuestion();
-        });
+    currentScore = 0;
+    currentQuestionNumber = 0;
+    currentScoreSpan.textContent = 0;
+    totalQuestionsSpan.textContent = TOTAL_QUIZ_QUESTIONS;
+    currentLevelNameSpan.textContent = currentLevelName;
 
+    setupScreen.classList.add('hidden');
+    endScreen.classList.add('hidden');
+    quizScreen.classList.remove('hidden');
     
-		restartQuizBtn.addEventListener('click', () => {
+    startTimer(); // Bắt đầu đếm giờ
+    generateQuestion();
+	});
+
+	restartQuizBtn.addEventListener('click', () => {
     // Reset toàn bộ trạng thái
     currentScore = 0;
     currentQuestionNumber = 0;
