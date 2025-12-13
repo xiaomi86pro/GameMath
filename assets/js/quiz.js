@@ -1,5 +1,17 @@
 const soundCorrect = new Audio('assets/sounds/correct.mp3');
 const soundWrong = new Audio('assets/sounds/wrong.mp3');
+// ===== State =====
+let currentLevel = null;
+let currentScore = 0;
+let currentQuestionNumber = 0;
+let TOTAL_QUIZ_QUESTIONS = 10;
+
+function initState() {
+  currentLevel = null;
+  currentScore = 0;
+  currentQuestionNumber = 0;
+  TOTAL_QUIZ_QUESTIONS = 10;
+}
 
         // Constants
         
@@ -1405,16 +1417,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Setup mặc định nếu cần
   renderSetupScreen();
 });
-// ===== Fix lỗi AudioContext autoplay =====
-// Trình duyệt (Chrome, Edge, Safari) yêu cầu phải có hành động người dùng
-// trước khi AudioContext được phép chạy.
-// Đoạn này sẽ "resume" Tone khi người dùng click lần đầu.
 
-document.addEventListener('click', () => {
-  if (Tone.context.state !== 'running') {
-    Tone.context.resume().then(() => {
-      console.log('AudioContext đã được resume sau click.');
-    });
-  }
-}, { once: true });
+
+
 
