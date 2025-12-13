@@ -23,6 +23,29 @@ export const MULT_DIV_FACTORS = {
   4: [8, 9]
 };
 
+export function generateMultDivQuestion() {
+            // Sử dụng bảng cửu chương theo cấp độ
+            const factors = MULT_DIV_FACTORS[currentLevel];
+            const baseFactor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở (2, 3, 4,...)
+            const otherFactor = getRandomInt(10) + 1; // Số nhân còn lại (1 đến 10)
+
+            let A, B, op, answer, question;
+            
+            if (Math.random() > 0.5) { // Multiplication: A x B = ?
+                A = baseFactor; 
+                B = otherFactor;
+                answer = A * B;
+                question = `${A} × ${B} = ?`;
+            } else { // Division: C ÷ B = ?
+                // Đảm bảo phép chia hết và nằm trong phạm vi bảng cửu chương
+                B = baseFactor; // Số chia (phải là factor)
+                answer = otherFactor; // Thương (từ 1 đến 10)
+                A = B * answer; // Số bị chia
+                question = `${A} ÷ ${B} = ?`;
+            }
+            return { question, answer: String(answer), type: 'input' };
+        }
+   
 export const DAY_OF_WEEK_HINT = `
             <div class="flex flex-col sm:flex-row justify-center items-center text-center space-y-2 sm:space-y-0 sm:space-x-4 p-2">
                 <span class="text-red-600 font-semibold text-xs md:text-sm text-right sm:text-left">Hôm kia, Hôm qua, Trước đó là TRỪ (-)</span>
