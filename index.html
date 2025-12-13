@@ -6,8 +6,6 @@
     <title>Game Math - Ứng Dụng Học Toán Tương Tác</title>
     <!-- Tải Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tải Tone.js cho hiệu ứng âm thanh -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         /* Tùy chỉnh font cho dễ nhìn hơn */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
@@ -421,42 +419,6 @@
         const confirmModal = document.getElementById('confirm-modal');
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
-
-
-        // --- Tone.js Setup for Sound Effects ---
-        
-        // Synth cho âm thanh chính xác (correct)
-        const correctSynth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: "sine" },
-            envelope: { attack: 0.01, decay: 0.2, sustain: 0.01, release: 0.5 },
-        }).toDestination();
-
-        // Synth cho âm thanh sai (incorrect)
-        const incorrectSynth = new Tone.NoiseSynth({
-            volume: -10,
-            envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.2 }
-        }).toDestination();
-
-        // Biến kiểm tra Audio Context
-        let isAudioContextStarted = false;
-        
-        function startAudioContext() {
-            if (!isAudioContextStarted) {
-                Tone.start();
-                isAudioContextStarted = true;
-                console.log("Tone.js Audio Context started.");
-            }
-        }
-
-        function playCorrectSound() {
-            if (!isAudioContextStarted) return;
-            correctSynth.triggerAttackRelease(["C5", "E5", "G5"], "8n");
-        }
-
-        function playIncorrectSound() {
-            if (!isAudioContextStarted) return;
-            incorrectSynth.triggerAttackRelease("16n");
-        }
         
         // --- Logic Hẹn giờ ---
 
@@ -1083,6 +1045,7 @@
     </script>
 </body>
 </html>
+
 
 
 
