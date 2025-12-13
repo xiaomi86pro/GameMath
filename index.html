@@ -776,7 +776,7 @@ function playWrongSound() {
                 
                 messageBox.className = 'mt-4 text-xl font-bold text-red-800 p-3 rounded-lg incorrect-answer-box min-h-[30px]';
                 showScoreEffect(false);
-                playIncorrectSound();
+                playWrongSound();
 
                 if (currentQuestion.type === 'comparison') {
                     comparisonBox.classList.add('incorrect-answer-box');
@@ -1044,6 +1044,7 @@ function playWrongSound() {
 
 </body>
 </html>
+
 
 
 
