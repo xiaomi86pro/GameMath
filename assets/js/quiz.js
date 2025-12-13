@@ -1,4 +1,4 @@
-<script type="module">
+
         // Constants
         
         // Loại câu hỏi: Cộng/Trừ/So sánh/Sắp xếp/Tìm X, Nhân/Chia, Đọc giờ, Bài toán lời văn
@@ -1441,4 +1441,4 @@ document.addEventListener('click', () => {
     });
   }
 }, { once: true });
-</script>
+
