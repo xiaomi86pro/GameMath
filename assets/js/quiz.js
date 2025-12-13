@@ -1,14 +1,24 @@
 // ===== State =====
-let currentLevel = null;
+// ===== State =====
+let currentLevel = 1;
+let currentLevelName = 'Cấp 1 (Phạm vi 0-9)';
+let currentQuizType = 'ADD_SUB';
 let currentScore = 0;
 let currentQuestionNumber = 0;
-let TOTAL_QUIZ_QUESTIONS = 10;
+let currentQuestion = null;
+let quizTimer = null;
+let timeRemaining = 0;
+let startTime = 0;
+let TOTAL_QUIZ_QUESTIONS = 20;
 
 function initState() {
-  currentLevel = null;
+  currentLevel = 1;
+  currentLevelName = 'Cấp 1 (Phạm vi 0-9)';
+  currentQuizType = 'ADD_SUB';
   currentScore = 0;
   currentQuestionNumber = 0;
-  TOTAL_QUIZ_QUESTIONS = 10;
+  TOTAL_QUIZ_QUESTIONS = 20;
+  timeRemaining = MAX_QUIZ_TIME_SECONDS;
 }
 
         // Constants
@@ -121,6 +131,17 @@ function initState() {
         const confirmModal = document.getElementById('confirm-modal');
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+
+		function playCorrectSound() {
+  			soundCorrect.currentTime = 0;
+ 			soundCorrect.play();
+		}
+
+		function playIncorrectSound() {
+			soundWrong.currentTime = 0;
+			soundWrong.play();
+		}
+
 
 		function giveFeedback(correct) {
  		if (correct) {
@@ -1407,16 +1428,7 @@ function generateQueueProblem() {
         });
 	});
 });
-document.addEventListener('DOMContentLoaded', () => {
-  // Khởi tạo trạng thái
-  initState();
 
-  // Gán event listeners
-  bindEvents();
-
-  // Setup mặc định nếu cần
-  renderSetupScreen();
-});
 
 
 
