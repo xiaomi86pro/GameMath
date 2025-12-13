@@ -427,18 +427,6 @@ export function generateSortingQuestion(level) {
             return { question, numbers, answer, direction, type: 'sorting' };
         }
 
-function generateTIMOQuestion() {
-    const questionType = QUESTION_TYPES_TIMO[getRandomInt(QUESTION_TYPES_TIMO.length)];
-    
-    if (questionType === 'day-of-week') {
-        return generateDayOfWeekQuestion();
-    } else if (questionType === 'age-problem') {
-        return generateAgeProblem();
-    } else {
-        return generateQueueProblem();
-    }
-}
-
 export function createClockSVG(hour, minute) {
             const size = 150;
             const centerX = size / 2;
