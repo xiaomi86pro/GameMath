@@ -997,6 +997,50 @@ function generateQueueProblem() {
         return generateQueueProblem();
     }
 }
+
+function addToLeaderboard(name, score, time, level) {
+  leaderboardData.push({ name, score, time, level });
+
+  // Sắp xếp: điểm giảm dần, nếu bằng điểm thì thời gian tăng dần
+  leaderboardData.sort((a, b) => {
+    if (b.score === a.score) {
+      return a.time - b.time;
+    }
+    return b.score - a.score;
+  });
+
+  // Giữ top 10
+  leaderboardData = leaderboardData.slice(0, 10);
+
+  // Lưu vào localStorage (demo online)
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboardData));
+
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const tbody = document.querySelector("#leaderboard tbody");
+  tbody.innerHTML = "";
+
+  leaderboardData.forEach((player, index) => {
+    const row = tbody.insertRow();
+    row.insertCell(0).textContent = index + 1;
+    row.insertCell(1).textContent = player.name;
+    row.insertCell(2).textContent = player.score;
+    row.insertCell(3).textContent = player.time + "s";
+    row.insertCell(4).textContent = "Cấp " + player.level;
+  });
+}
+
+// Load dữ liệu khi mở trang
+window.onload = () => {
+  const saved = localStorage.getItem("leaderboard");
+  if (saved) {
+    leaderboardData = JSON.parse(saved);
+    renderLeaderboard();
+  }
+};
+
         /**
          * Hàm chính để tạo câu hỏi ngẫu nhiên và kiểm tra kết thúc
          */
@@ -1333,6 +1377,14 @@ function generateQueueProblem() {
                 const timeStr = formatTime(totalSeconds);
                 timeTakenMessage.textContent = `Bạn đã hoàn thành trong ${timeStr}.`;
             }
+			const totalSeconds = MAX_QUIZ_TIME_SECONDS - timeRemaining;
+			const timeStr = formatTime(totalSeconds);
+
+			// Hiện ô nhập tên
+			const playerName = prompt("Nhập tên của bạn để lưu vào bảng xếp hạng:");
+			if (playerName) {
+  			addToLeaderboard(playerName, currentScore, totalSeconds, currentLevel);
+}
         }
         
         // --- Logic Modal ---
