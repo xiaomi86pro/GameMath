@@ -427,39 +427,6 @@ export function generateSortingQuestion(level) {
             return { question, numbers, answer, direction, type: 'sorting' };
         }
 
-function generateComparisonQuestion(level) {
-            const isMultDivLevel = (currentQuizType === 'MULT_DIV');
-            // Max range cho ADD_SUB trong comparison, MULT_DIV sẽ dùng factors
-            const max = isMultDivLevel ? 10 : (level === 1) ? 15 : (level === 2) ? 100 : 500;
-            
-            let exp1 = generateSimpleExpression(max, currentQuizType);
-            let exp2 = generateSimpleExpression(max, currentQuizType);
-            
-            // Đảm bảo kết quả không quá chênh lệch (chỉ áp dụng cho Cộng/Trừ)
-            if (!isMultDivLevel && Math.abs(exp1.result - exp2.result) > 20 && exp1.result !== exp2.result) {
-                 exp2 = generateSimpleExpression(max, currentQuizType);
-            }
-            
-            let answer = '';
-            // Dùng eval để so sánh chính xác kết quả
-            const val1 = eval(exp1.expression);
-            const val2 = eval(exp2.expression);
-            
-            if (val1 > val2) answer = '>';
-            else if (val1 < val2) answer = '<';
-            else answer = '=';
-
-            return { 
-                question: 'Chọn dấu so sánh đúng:', 
-                exp1: exp1.expression.replace('*', '×').replace('/', '÷'), // Hiển thị ký hiệu toán học
-                exp2: exp2.expression.replace('*', '×').replace('/', '÷'), // Hiển thị ký hiệu toán học
-                answer: answer, 
-                result1: val1, // Thêm kết quả của vế 1
-                result2: val2, // Thêm kết quả của vế 2
-                type: 'comparison' 
-            };
-}
-
 function generateTIMOQuestion() {
     const questionType = QUESTION_TYPES_TIMO[getRandomInt(QUESTION_TYPES_TIMO.length)];
     
