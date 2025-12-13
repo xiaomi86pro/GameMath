@@ -685,6 +685,6 @@ export {
   // TIMO
   generateDayOfWeekQuestion,
   generateQueueProblem,
-  generateTIMOQuestion
+  generateTIMOQuestion,
 };
 
