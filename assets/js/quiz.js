@@ -1419,6 +1419,14 @@ function generateQueueProblem() {
         });
 	});
 });
+document.addEventListener('DOMContentLoaded', () => {
+  // Khởi tạo trạng thái
+  initState();
 
+  // Gán event listeners
+  bindEvents();
 
-    </script>
+  // Setup mặc định nếu cần
+  renderSetupScreen();
+});
+</script>
