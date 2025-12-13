@@ -112,89 +112,90 @@
 </head>
 <body class="p-4">
 <div class="flex space-x-6">
-  <!-- Bảng xếp hạng -->
-  <div id="leaderboard-container" class="w-1/3 bg-blue-50 p-6 rounded-xl shadow-lg">
-    <h2 class="text-xl font-bold text-blue-700 mb-4">🏆 Bảng xếp hạng</h2>
-    <table id="leaderboard" class="w-full border-collapse text-center">
-      <thead class="bg-blue-200">
-        <tr>
-          <th class="p-2 border">STT</th>
-          <th class="p-2 border">Tên</th>
-          <th class="p-2 border">Điểm</th>
-          <th class="p-2 border">Thời gian</th>
-          <th class="p-2 border">Cấp độ</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- JS sẽ render dữ liệu -->
-      </tbody>
-    </table>
-  </div>
+        <!-- Bảng xếp hạng -->
+    <div id="leaderboard-container" class="w-1/3 bg-blue-50 p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold text-blue-700 mb-4">🏆 Bảng xếp hạng</h2>
+            <table id="leaderboard" class="w-full border-collapse text-center">
+            <thead class="bg-blue-200">
+                <tr>
+                <th class="p-2 border">STT</th>
+                <th class="p-2 border">Tên</th>
+                <th class="p-2 border">Điểm</th>
+                <th class="p-2 border">Thời gian</th>
+                <th class="p-2 border">Cấp độ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JS sẽ render dữ liệu -->
+            </tbody>
+            </table>
+    </div>
     <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl">
         <h1 class="text-4xl font-bold text-center text-indigo-700 mb-6">🧠 Ứng Dụng Học Toán Tương Tác</h1>
-       <div class="w-2/3">  
-        <div class="w-2/3">
-        <div id="setup-screen" class="space-y-6">
-            <p class="text-lg text-gray-600 text-center">Chọn cấp độ để bắt đầu bài quiz ngẫu nhiên. Quiz kéo dài 30 phút.</p>
+        <div class="w-2/3">  
+            <div id="setup-screen" class="space-y-6">
+                <p class="text-lg text-gray-600 text-center">Chọn cấp độ để bắt đầu bài quiz ngẫu nhiên. Quiz kéo dài 30 phút.</p>
 
-            <!-- CHỌN CẤP ĐỘ: CỘNG TRỪ -->
-            <div class="p-4 bg-indigo-50 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold text-indigo-800 mb-3">Cộng Trừ (Addition/Subtraction):</h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="ADD_SUB" data-name="Cấp 1 (Phạm vi 0-9)">Cấp 1 (0-9)</button>
-                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="2" data-type="ADD_SUB" data-name="Cấp 2 (Phạm vi 0-99)">Cấp 2 (0-99)</button>
-                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="3" data-type="ADD_SUB" data-name="Cấp 3 (Phạm vi 0-999)">Cấp 3 (0-999)</button>
+                <!-- CHỌN CẤP ĐỘ: CỘNG TRỪ -->
+                <div class="p-4 bg-indigo-50 rounded-lg shadow-inner">
+                    <h2 class="text-xl font-semibold text-indigo-800 mb-3">Cộng Trừ (Addition/Subtraction):</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="ADD_SUB" data-name="Cấp 1 (Phạm vi 0-9)">Cấp 1 (0-9)</button>
+                        <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="2" data-type="ADD_SUB" data-name="Cấp 2 (Phạm vi 0-99)">Cấp 2 (0-99)</button>
+                        <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="3" data-type="ADD_SUB" data-name="Cấp 3 (Phạm vi 0-999)">Cấp 3 (0-999)</button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- CHỌN CẤP ĐỘ: NHÂN CHIA -->
-            <div class="p-4 bg-green-50 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold text-green-800 mb-3">Nhân Chia (Multiplication/Division):</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="MULT_DIV" data-name="Cấp 1 (Bảng x2, x3)">Cấp 1 (x2, x3)</button>
-                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="2" data-type="MULT_DIV" data-name="Cấp 2 (Bảng x4, x5)">Cấp 2 (x4, x5)</button>
-                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="3" data-type="MULT_DIV" data-name="Cấp 3 (Bảng x6, x7)">Cấp 3 (x6, x7)</button>
-                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="4" data-type="MULT_DIV" data-name="Cấp 4 (Bảng x8, x9)">Cấp 4 (x8, x9)</button>
+                <!-- CHỌN CẤP ĐỘ: NHÂN CHIA -->
+                <div class="p-4 bg-green-50 rounded-lg shadow-inner">
+                    <h2 class="text-xl font-semibold text-green-800 mb-3">Nhân Chia (Multiplication/Division):</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="MULT_DIV" data-name="Cấp 1 (Bảng x2, x3)">Cấp 1 (x2, x3)</button>
+                        <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="2" data-type="MULT_DIV" data-name="Cấp 2 (Bảng x4, x5)">Cấp 2 (x4, x5)</button>
+                        <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="3" data-type="MULT_DIV" data-name="Cấp 3 (Bảng x6, x7)">Cấp 3 (x6, x7)</button>
+                        <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="4" data-type="MULT_DIV" data-name="Cấp 4 (Bảng x8, x9)">Cấp 4 (x8, x9)</button>
+                    </div>
                 </div>
-            </div>
-			<!-- CHỌN CẤP ĐỘ: TIMO -->
-			<div class="p-4 bg-purple-50 rounded-lg shadow-inner">
-    		<h2 class="text-xl font-semibold text-purple-800 mb-3">🎯 TIMO </h2>
-   			<p class="text-sm text-gray-600 mb-3">Câu hỏi về ngày trong tuần, tính tuổi và logic thời gian</p>
-   			<div class="grid grid-cols-1 gap-4">
-        	<button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-purple-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="TIMO" data-name="TIMO - Logic">
-            Tư Duy & Logic
-        	</button>
-    		</div>
-			</div>
-            <p id="level-description" class="mt-4 text-sm text-indigo-700 text-center font-medium">Bạn đã chọn: Cấp 1 (Phạm vi số từ 0 đến 9).</p>
-<!-- Chọn số câu hỏi -->
-<div class="text-center mt-4">
-    <p class="text-md font-semibold text-gray-700 mb-2">Chọn số câu hỏi:</p>
-    <div id="question-count-options" class="flex justify-center space-x-4">
-        <button data-questions="10" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
-            10 câu
-        </button>
-        <button data-questions="20" class="q-count-btn px-4 py-2 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
-            20 câu
-        </button>
-        <button data-questions="30" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
-            30 câu
-        </button>
-    </div>
-</div>
+                <!-- CHỌN CẤP ĐỘ: TIMO -->
+                <div class="p-4 bg-purple-50 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-purple-800 mb-3">🎯 TIMO </h2>
+                <p class="text-sm text-gray-600 mb-3">Câu hỏi về ngày trong tuần, tính tuổi và logic thời gian</p>
+                    <div class="grid grid-cols-1 gap-4">
+                        <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-purple-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="TIMO" data-name="TIMO - Logic">
+                        Tư Duy & Logic
+                        </button>
+                    </div>
+                </div>
+                <p id="level-description" class="mt-4 text-sm text-indigo-700 text-center font-medium">Bạn đã chọn: Cấp 1 (Phạm vi số từ 0 đến 9).</p>
+                <!-- Chọn số câu hỏi -->
+                    <div class="text-center mt-4">
+                        <p class="text-md font-semibold text-gray-700 mb-2">Chọn số câu hỏi:</p>
+                        <div id="question-count-options" class="flex justify-center space-x-4">
+                            <button data-questions="10" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+                            10 câu
+                            </button>
+                            <button data-questions="20" class="q-count-btn px-4 py-2 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+                            20 câu
+                            </button>
+                            <button data-questions="30" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+                            30 câu
+                            </button>
+                        </div>
+                    </div>
 
-            <div class="text-center pt-4">
-                <button id="start-quiz-btn" class="px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105" disabled>
-                    Bắt Đầu Quiz
-                </button>
+                    <div class="text-center pt-4">
+                            <button id="start-quiz-btn" class="px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105" disabled>
+                            Bắt Đầu Quiz
+                            </button>
+                    </div>
             </div>
-        </div>		
-  <!-- Khối quiz -->
-  <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl w-2/3">
-    <!-- Nội dung quiz giữ nguyên -->
-  </div>
-</div>
+         </div> 
+     </div>  
+</div>    		
+        <!-- Khối quiz -->
+        <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl w-2/3">
+        <!-- Nội dung quiz giữ nguyên -->
+        </div>
         <!-- Màn Hình Quiz -->
         <div id="quiz-screen" class="hidden text-center">
             
@@ -296,8 +297,8 @@
                 Chơi lại
             </button>
         </div>
-        </div>
-        </div>
+        
+        
         <!-- Custom Modal for Confirmation (using Tailwind) -->
         <div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
             <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4">
@@ -309,7 +310,6 @@
                 </div>
             </div>
         </div>
-    </div> 
 	<script type="module" src="assets/js/quiz.js"></script>
 </body>
 </html>
