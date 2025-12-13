@@ -1429,4 +1429,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Setup mặc định nếu cần
   renderSetupScreen();
 });
+// ===== Fix lỗi AudioContext autoplay =====
+// Trình duyệt (Chrome, Edge, Safari) yêu cầu phải có hành động người dùng
+// trước khi AudioContext được phép chạy.
+// Đoạn này sẽ "resume" Tone khi người dùng click lần đầu.
+
+document.addEventListener('click', () => {
+  if (Tone.context.state !== 'running') {
+    Tone.context.resume().then(() => {
+      console.log('AudioContext đã được resume sau click.');
+    });
+  }
+}, { once: true });
 </script>
