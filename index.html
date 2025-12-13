@@ -626,93 +626,66 @@ function generateEvenOddNumberQuestion(level) {
     let question, answer;
     
     if (questionType === 0) {
-        // TẠO SỐ CHẴN NHỎ NHẤT
-        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
-                   Tạo số <span class="text-red-600 font-extrabold">CHẴN nhỏ nhất</span> có thể (dùng hết 4 chữ số).`;
-        
-        const evenDigits = digits.filter(d => d % 2 === 0);
-        if (evenDigits.length === 0) {
-            return generateEvenOddNumberQuestion(level);
-        }
-        
-        const sortedAsc = [...digits].sort((a, b) => a - b);
-        let evenDigit = null;
-        for (let d of sortedAsc) {
-            if (d % 2 === 0) {
-                evenDigit = d;
-                break;
-            }
-        }
-        
-        const remaining = sortedAsc.filter(d => d !== evenDigit);
-        answer = remaining.join('') + evenDigit;
-        
-    } else if (questionType === 1) {
-        // TẠO SỐ CHẴN LỚN NHẤT
-        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
-                   Tạo số <span class="text-red-600 font-extrabold">CHẴN lớn nhất</span> có thể (dùng hết 4 chữ số).`;
-        
-        const evenDigits = digits.filter(d => d % 2 === 0);
-        if (evenDigits.length === 0) {
-            return generateEvenOddNumberQuestion(level);
-        }
-        
-        const sortedDesc = [...digits].sort((a, b) => b - a);
-        let evenDigit = null;
-        for (let d of sortedDesc) {
-            if (d % 2 === 0) {
-                evenDigit = d;
-                break;
-            }
-        }
-        
-        const remaining = sortedDesc.filter(d => d !== evenDigit);
-        answer = remaining.join('') + evenDigit;
-        
-    } else if (questionType === 2) {
-        // TẠO SỐ LẺ NHỎ NHẤT
-        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
-                   Tạo số <span class="text-red-600 font-extrabold">LẺ nhỏ nhất</span> có thể (dùng hết 4 chữ số).`;
-        
-        const oddDigits = digits.filter(d => d % 2 !== 0);
-        if (oddDigits.length === 0) {
-            return generateEvenOddNumberQuestion(level);
-        }
-        
-        const sortedAsc = [...digits].sort((a, b) => a - b);
-        let oddDigit = null;
-        for (let d of sortedAsc) {
-            if (d % 2 !== 0) {
-                oddDigit = d;
-                break;
-            }
-        }
-        
-        const remaining = sortedAsc.filter(d => d !== oddDigit);
-        answer = remaining.join('') + oddDigit;
-        
-    } else {
-        // TẠO SỐ LẺ LỚN NHẤT
-        question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>. 
-                   Tạo số <span class="text-red-600 font-extrabold">LẺ lớn nhất</span> có thể (dùng hết 4 chữ số).`;
-        
-        const oddDigits = digits.filter(d => d % 2 !== 0);
-        if (oddDigits.length === 0) {
-            return generateEvenOddNumberQuestion(level);
-        }
-        
-        const sortedDesc = [...digits].sort((a, b) => b - a);
-        let oddDigit = null;
-        for (let d of sortedDesc) {
-            if (d % 2 !== 0) {
-                oddDigit = d;
-                break;
-            }
-        }
-        
-        const remaining = sortedDesc.filter(d => d !== oddDigit);
-        answer = remaining.join('') + oddDigit;
-    }
+    // ===== CHẴN NHỎ NHẤT =====
+    question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>.
+               Tạo số <span class="text-red-600 font-extrabold">CHẴN nhỏ nhất</span> có thể (dùng hết 4 chữ số).`;
+
+    const evenDigits = digits.filter(d => d % 2 === 0);
+    if (evenDigits.length === 0) return generateEvenOddNumberQuestion(level);
+
+    const lastDigit = Math.max(...evenDigits); // chẵn LỚN NHẤT
+    const remaining = digits
+        .filter(d => d !== lastDigit)
+        .sort((a, b) => a - b); // tăng dần
+
+    answer = remaining.join('') + lastDigit;
+
+} else if (questionType === 1) {
+    // ===== CHẴN LỚN NHẤT =====
+    question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>.
+               Tạo số <span class="text-red-600 font-extrabold">CHẴN lớn nhất</span> có thể (dùng hết 4 chữ số).`;
+
+    const evenDigits = digits.filter(d => d % 2 === 0);
+    if (evenDigits.length === 0) return generateEvenOddNumberQuestion(level);
+
+    const lastDigit = Math.min(...evenDigits); // chẵn NHỎ NHẤT
+    const remaining = digits
+        .filter(d => d !== lastDigit)
+        .sort((a, b) => b - a); // giảm dần
+
+    answer = remaining.join('') + lastDigit;
+
+} else if (questionType === 2) {
+    // ===== LẺ NHỎ NHẤT =====
+    question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>.
+               Tạo số <span class="text-red-600 font-extrabold">LẺ nhỏ nhất</span> có thể (dùng hết 4 chữ số).`;
+
+    const oddDigits = digits.filter(d => d % 2 !== 0);
+    if (oddDigits.length === 0) return generateEvenOddNumberQuestion(level);
+
+    const lastDigit = Math.max(...oddDigits); // lẻ LỚN NHẤT
+    const remaining = digits
+        .filter(d => d !== lastDigit)
+        .sort((a, b) => a - b); // tăng dần
+
+    answer = remaining.join('') + lastDigit;
+
+} else {
+    // ===== LẺ LỚN NHẤT =====
+    question = `Cho 4 chữ số: <span class="text-blue-700 font-extrabold">${digits.join(', ')}</span>.
+               Tạo số <span class="text-red-600 font-extrabold">LẺ lớn nhất</span> có thể (dùng hết 4 chữ số).`;
+
+    const oddDigits = digits.filter(d => d % 2 !== 0);
+    if (oddDigits.length === 0) return generateEvenOddNumberQuestion(level);
+
+    const lastDigit = Math.min(...oddDigits); // lẻ NHỎ NHẤT
+    const remaining = digits
+        .filter(d => d !== lastDigit)
+        .sort((a, b) => b - a); // giảm dần
+
+    answer = remaining.join('') + lastDigit;
+}
+
     
     return { question, answer, type: 'input' };
 }
