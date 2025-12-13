@@ -398,9 +398,6 @@ export function generateSequenceIncrement() {
     return { question, answer, type: 'input' };
 }
 
-export 
-
-
 export function generateSortingQuestion(level) {
             // Đảm bảo luôn là 5 số
             const count = 5; 
