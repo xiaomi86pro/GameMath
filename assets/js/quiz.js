@@ -21,14 +21,6 @@ export const DAYS_OF_WEEK = [
   'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'
 ];
 
-export const RELATIVE_DAY_OPTIONS = {
-  'Hôm nay': 0,
-  'Ngày mai': 1,
-  'Ngày kia': 2,
-  'Hôm qua': -1,
-  'Hôm kia': -2
-};
-
 export const MULT_DIV_FACTORS = {
   1: [2, 3],
   2: [4, 5],
