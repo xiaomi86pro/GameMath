@@ -820,12 +820,81 @@ function generateShapePattern() {
             };
         }
 
-        /**
-         * Hàm tạo câu hỏi về tuổi (đã được sửa đổi)
-         */
-        /**
- * Hàm tạo câu hỏi về xếp hàng
- */
+    // Hàm tạo câu hỏi về tuổi (đã được sửa đổi)
+		  function generateAgeProblem() {
+            const names = ['An', 'Bình', 'Chi', 'Dung', 'Em', 'Phong', 'Giang', 'Hà'];
+            const name = names[getRandomInt(names.length)];
+            
+            const questionType = getRandomInt(3); // 0, 1, 2 cho 3 loại mới
+            let question, answer;
+
+            if (questionType === 0) { // Loại 1: Tuổi tương đối (Quá khứ/Tương lai -> Hiện tại/Tương lai/Quá khứ)
+                const yearsOffset = getRandomInt(5) + 2; // Độ lệch thời gian gốc (2-6 năm)
+                const isPastReference = Math.random() > 0.5; // True: X năm trước (Past) là mốc
+                let currentAge;
+                
+                if (isPastReference) { 
+                    // Mốc: X năm trước bạn A n tuổi. Hỏi Hiện tại/Y năm sau bạn A bao tuổi
+                    const pastAge = getRandomInt(8) + 5; // 5-12 tuổi
+                    currentAge = pastAge + yearsOffset;
+                    
+                    const targetYears = getRandomInt(5) + 1; // 1-5 năm
+                    const targetType = Math.random() > 0.5 ? 'Hiện tại' : `${targetYears} năm sau`;
+                    
+                    let targetAge;
+                    
+                    if (targetType === 'Hiện tại') {
+                        targetAge = currentAge;
+                    } else {
+                        targetAge = currentAge + targetYears;
+                    }
+                    
+                    question = `${yearsOffset} năm trước, bạn <span class="text-purple-700 font-extrabold">${name}</span> ${pastAge} tuổi. Hỏi <span class="text-red-600 font-extrabold">${targetType}</span> bạn ấy bao nhiêu tuổi?`;
+                    answer = String(targetAge);
+                    
+                } else { 
+                    // Mốc: X năm sau bạn A n tuổi. Hỏi Hiện tại/Y năm trước bạn A bao tuổi
+                    const futureAge = getRandomInt(10) + 15; // 15-25 tuổi
+                    currentAge = futureAge - yearsOffset;
+                    
+                    const targetYears = getRandomInt(5) + 1; // 1-5 năm
+                    const targetType = Math.random() > 0.5 ? 'Hiện tại' : `${targetYears} năm trước`;
+                    
+                    let targetAge;
+
+                    if (targetType === 'Hiện tại') {
+                        targetAge = currentAge;
+                    } else {
+                        targetAge = currentAge - targetYears;
+                    }
+                    
+                    question = `${yearsOffset} năm sau, bạn <span class="text-purple-700 font-extrabold">${name}</span> ${futureAge} tuổi. Hỏi <span class="text-red-600 font-extrabold">${targetType}</span> bạn ấy bao nhiêu tuổi?`;
+                    answer = String(Math.max(1, targetAge)); // Đảm bảo tuổi không âm
+                }
+
+            } else if (questionType === 1) { // Loại 2: Bố X tuổi, Mẹ ít hơn bố n tuổi. Hỏi mẹ bao nhiêu tuổi.
+                const fatherAge = getRandomInt(20) + 30; // 30-50
+                const ageDiff = getRandomInt(5) + 2; // 2-6 years difference
+                const motherAge = fatherAge - ageDiff;
+                
+                question = `Bố <span class="text-purple-700 font-extrabold">${fatherAge}</span> tuổi. Mẹ <span class="text-red-600 font-extrabold">ít hơn</span> bố <span class="font-extrabold">${ageDiff}</span> tuổi. Hỏi mẹ bao nhiêu tuổi?`;
+                answer = String(motherAge);
+
+            } else { // questionType === 2 - Loại 3: Bố X tuổi, Mẹ Y tuổi. Hỏi bố hơn mẹ bao nhiêu tuổi.
+                const fatherAge = getRandomInt(20) + 30; // 30-50
+                const ageDiff = getRandomInt(5) + 2; // 2-6 years difference
+                const motherAge = fatherAge - ageDiff;
+                
+                question = `Bố <span class="text-purple-700 font-extrabold">${fatherAge}</span> tuổi, Mẹ <span class="text-purple-700 font-extrabold">${motherAge}</span> tuổi. Hỏi bố <span class="text-red-600 font-extrabold">hơn</span> mẹ bao nhiêu tuổi?`;
+                answer = String(ageDiff);
+            }
+            
+            return { question, answer, type: 'input' };
+        }
+         
+
+ // Hàm tạo câu hỏi về xếp hàng
+ 
 function generateQueueProblem() {
     const names = ['An', 'Bình', 'Chi', 'Dung', 'Em', 'Phong', 'Giang', 'Hà', 'Linh', 'Mai'];
     const name = names[getRandomInt(names.length)];
