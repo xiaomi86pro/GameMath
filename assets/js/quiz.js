@@ -648,43 +648,4 @@ export function generateTIMOQuestion() {
     } else {
         return generateQueueProblem();
     }
-}
-
-export {
-  // utils
-  getRandomInt,
-  getMaxRange,
-
-  // basic
-  generateBasicOpQuestion,
-  generateFindXQuestion,
-  generateBalanceEquation,
-
-  // mult/div
-  generateMultDivQuestion,
-  generateFindXMultDivQuestion,
-
-  // logic
-  generateEvenOddNumberQuestion,
-  generateMaxMinTwoNumbers,
-
-  // sequences
-  generateSequencePattern,
-  generateSequenceIncrement,
-  generateShapePattern,
-
-  // sorting / comparison
-  generateSortingQuestion,
-  generateComparisonQuestion,
-
-  // clock / word
-  generateClockQuestion,
-  createClockSVG,
-  generateWordProblem,
-
-  // TIMO
-  generateDayOfWeekQuestion,
-  generateQueueProblem,
-  generateTIMOQuestion,
-};
-
+} 
