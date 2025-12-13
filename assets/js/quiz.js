@@ -1,5 +1,3 @@
-const soundCorrect = new Audio('assets/sounds/correct.mp3');
-const soundWrong = new Audio('assets/sounds/wrong.mp3');
 // ===== State =====
 let currentLevel = null;
 let currentScore = 0;
@@ -14,7 +12,9 @@ function initState() {
 }
 
         // Constants
-        
+        const soundCorrect = new Audio('assets/sounds/correct.mp3');
+		const soundWrong = new Audio('assets/sounds/wrong.mp3');
+
         // Loại câu hỏi: Cộng/Trừ/So sánh/Sắp xếp/Tìm X, Nhân/Chia, Đọc giờ, Bài toán lời văn
         const QUESTION_TYPES_BASIC = [
     'basic-op', 
