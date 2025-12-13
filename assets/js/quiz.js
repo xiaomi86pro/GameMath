@@ -16,11 +16,6 @@ export const QUESTION_TYPES_BASIC = [
     'shape-pattern'          // MỚI: Hình vẽ quy luật
 ];
 
-export const DAYS_OF_WEEK = [
-  'Chủ Nhật', 'Thứ Hai', 'Thứ Ba',
-  'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'
-];
-
 export const MULT_DIV_FACTORS = {
   1: [2, 3],
   2: [4, 5],
