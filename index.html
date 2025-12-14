@@ -6,7 +6,11 @@
     <title>Game Math - Ứng Dụng Học Toán Tương Tác</title>
     <!-- Tải Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        .leader-top-1 { color: #d97706; font-weight: 700; }
+        .leader-top-2 { color: #6b7280; font-weight: 600; }
+        .leader-top-3 { color: #92400e; font-weight: 600; }
         /* Tùy chỉnh font cho dễ nhìn hơn */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         body {
@@ -110,8 +114,22 @@
     </style>
 </head>
 <body class="p-4">
+    <div id="leaderboard" class="fixed left-0 top-0 h-full w-64 bg-white shadow-xl p-4 overflow-auto">
+        <h2 class="text-xl font-extrabold text-indigo-700 mb-4">🏆 Bảng xếp hạng</h2>
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="font-bold border-b">
+                <td>#</td>
+                <td>Tên</td>
+                <td>Điểm</td>
+                <td>Cấp</td>
+            </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+        </table>
+    </div>
 
-    <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+    <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl ml-64">
         <h1 class="text-4xl font-bold text-center text-indigo-700 mb-6">🧠 Ứng Dụng Học Toán Tương Tác</h1>
         
         <div id="setup-screen" class="space-y-6">
@@ -206,11 +224,11 @@
             <!-- Khu vực câu hỏi -->
             <div id="question-area" class="min-h-[150px] flex flex-col justify-center items-center p-6 bg-blue-100 rounded-xl shadow-xl mb-3">
                 <!-- Vùng cho hình ảnh đồng hồ (Q19) -->
-                <div id="clock-image-container" class="hidden my-4">
+                <div id="clockImageContainer" class="hidden my-4 flex justify-center">
                     <!-- SVG clock will be generated here -->
-                </div>
+                </div
                 
-                <!-- Dạng bài so sánh -->
+                <-- Dạng bài so sánh -->
                 <div id="comparison-display-area" class="hidden w-full flex flex-col md:flex-row justify-center items-center space-x-0 md:space-x-4">
                     <p id="expression-left" class="text-4xl md:text-5xl font-extrabold text-blue-800 p-2"></p>
                     <div id="comparison-box" class="comparison-box w-16 h-16 md:w-20 md:h-20 border-4 border-indigo-400 rounded-lg bg-white shadow-inner text-4xl font-extrabold text-red-600 my-4 md:my-0">?</div>
@@ -286,8 +304,94 @@
         </div>
 
     </div>
+    <!-- MODAL NHẬP TÊN -->
+    <div id="name-modal"
+            class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+        <div class="bg-white p-6 rounded-xl w-80 shadow-xl">
+            <h2 class="text-xl font-bold mb-3 text-indigo-700">
+            🏆 Nhập tên của bạn
+            </h2>
+
+            <input id="player-name"
+                class="w-full border p-2 rounded mb-4"
+                placeholder="Tên người chơi">
+
+            <button id="submit-score"
+                    class="w-full bg-indigo-600 text-white font-bold py-2 rounded">
+            Lưu kết quả
+            </button>
+        </div>
+    </div>
 
     <script type="module">
+        const supabaseUrl = 'https://jeycrlggnebcasbrfygr.supabase.co';
+        const supabaseKey = 'sb_publishable_No04r_35Hg-FG8xf--9Zvg_pyUZPtkl';
+
+        const supabase = window.supabase.createClient(
+        supabaseUrl,
+        supabaseKey
+        );
+
+        document.getElementById('submit-score').onclick = async () => {
+        const nameInput = document.getElementById('player-name');
+        const name = nameInput.value.trim();
+
+        if (!name) {
+            alert('Vui lòng nhập tên');
+            return;
+        }
+
+        // GỬI LÊN SUPABASE
+        const { error } = await supabase
+            .from('leaderboard')
+            .insert([{
+            name,
+            score,
+            level: currentLevel,
+            final_score: window.finalScore
+            }]);
+
+        if (error) {
+            alert('Lỗi lưu kết quả');
+            console.error(error);
+            return;
+        }
+
+        // ĐÓNG MODAL
+        document.getElementById('name-modal').classList.add('hidden');
+        nameInput.value = '';
+
+        // LOAD LẠI BẢNG XẾP HẠNG
+        loadLeaderboard();
+        };
+
+        async function loadLeaderboard() {
+         const { data } = await supabase
+            .from('leaderboard')
+            .select('*')
+            .order('final_score', { ascending: false })
+            .limit(10);
+
+        const tbody = document.getElementById('leaderboard-body');
+        tbody.innerHTML = '';
+
+        data.forEach((row, index) => {
+            const cls =
+                index === 0 ? 'leader-top-1' :
+                index === 1 ? 'leader-top-2' :
+                index === 2 ? 'leader-top-3' : '';
+
+            tbody.innerHTML += `
+                <tr class="border-b ${cls}">
+                <td>${index + 1}</td>
+                <td>${row.name}</td>
+                <td class="text-right">${row.final_score}</td>
+                <td class="text-right">${row.level}</td>
+                </tr>
+            `;
+            });
+        }       
         import {
   getRandomInt,
   getMaxRange,
@@ -564,15 +668,14 @@ function playWrongSound() {
             let questionPool;
 
             if (currentQuizType === 'MULT_DIV') {
-     questionPool = QUESTION_TYPES_MULT_DIV;
-} else if (currentQuizType === 'TIMO') {
-     currentQuestion = generateTIMOQuestion();
-     displayQuestion(currentQuestion);
-     return;
-} else {
-    questionPool = QUESTION_TYPES_BASIC;
-}
-
+                questionPool = QUESTION_TYPES_MULT_DIV;
+                    } else if (currentQuizType === 'TIMO') {
+                        currentQuestion = generateTIMOQuestion();
+                        displayQuestion(currentQuestion);
+                        return;
+                    } else {
+                        questionPool = QUESTION_TYPES_BASIC;
+                    }
 
             // Xử lý 2 câu hỏi đặc biệt cuối cùng
             if (currentQuestionNumber === TOTAL_QUIZ_QUESTIONS - 1 && TOTAL_QUIZ_QUESTIONS >= 2) {
@@ -585,23 +688,23 @@ function playWrongSound() {
 
                 switch (randomType) {
 					case 'balance-equation':
-        currentQuestion = generateBalanceEquation(maxRange);
-        break;
-    case 'create-even-odd':
-        currentQuestion = generateEvenOddNumberQuestion(currentLevel);
-        break;
-    case 'create-max-min':
-        currentQuestion = generateMaxMinTwoNumbers(currentLevel);
-        break;
-    case 'sequence-pattern':
-        currentQuestion = generateSequencePattern();
-        break;
-    case 'sequence-increment':
-        currentQuestion = generateSequenceIncrement();
-        break;
-    case 'shape-pattern':
-        currentQuestion = generateShapePattern();
-        break;	
+                        currentQuestion = generateBalanceEquation(maxRange);
+                        break;
+                    case 'create-even-odd':
+                        currentQuestion = generateEvenOddNumberQuestion(currentLevel);
+                        break;
+                    case 'create-max-min':
+                        currentQuestion = generateMaxMinTwoNumbers(currentLevel);
+                        break;
+                    case 'sequence-pattern':
+                        currentQuestion = generateSequencePattern();
+                        break;
+                    case 'sequence-increment':
+                        currentQuestion = generateSequenceIncrement();
+                        break;
+                    case 'shape-pattern':
+                        currentQuestion = generateShapePattern();
+                        break;	
                     case 'basic-op':
                         currentQuestion = generateBasicOpQuestion(maxRange);
                         break;
@@ -618,7 +721,7 @@ function playWrongSound() {
                         currentQuestion = generateSortingQuestion(currentLevel);
                         break;
                     case 'comparison':
-                        currentQuestion = generateComparisonQuestion(currentLevel);
+                        currentQuestion = generateComparisonQuestion(currentLevel, currentQuizType);
                         break;
                     default:
                         // Default fallback
@@ -633,6 +736,16 @@ function playWrongSound() {
 
         function displayQuestion(q) {
             messageBox.textContent = '';
+            // ===== HIỂN THỊ SVG (DÙNG CHO CÂU ĐỒNG HỒ) =====
+            const clockContainer = document.getElementById('clockImageContainer');
+            clockContainer.innerHTML = '';
+            clockContainer.classList.add('hidden');
+
+            if (questionData.type === 'clock' && questionData.svg) {
+            clockContainer.innerHTML = questionData.svg;
+            clockContainer.classList.remove('hidden');
+            }
+
             nextQuestionBtn.classList.add('hidden');
             
             // Ẩn tất cả các khu vực trả lời và hiển thị
@@ -864,22 +977,52 @@ function playWrongSound() {
     processAnswerResult(isCorrect, correctAnswerText);
 }
 
-        // --- Logic Kết thúc Quiz ---
+/* ========================
+   UTILS – SCORE / RANKING
+======================== */
 
-        function endQuiz(isTimeout) {
-            stopTimer();
-            quizScreen.classList.add('hidden');
-            endScreen.classList.remove('hidden');
-            finalScoreSpan.textContent = currentScore;
-            document.getElementById('total-questions-display').textContent = TOTAL_QUIZ_QUESTIONS;
-            if (isTimeout) {
-                timeTakenMessage.textContent = 'Hết giờ! Quiz đã kết thúc.';
-            } else {
-                const totalSeconds = MAX_QUIZ_TIME_SECONDS - timeRemaining;
-                const timeStr = formatTime(totalSeconds);
-                timeTakenMessage.textContent = `Bạn đã hoàn thành trong ${timeStr}.`;
-            }
+        function getBonusByLevel(level) {
+        if (level === 2) return 5;
+        if (level === 3) return 10;
+        return 0;
         }
+
+                // --- Logic Kết thúc Quiz ---
+
+                function endQuiz(isTimeout) {
+        // 1. DỪNG TIMER
+        stopTimer();
+
+        // 2. HIỂN THỊ ĐIỂM
+        finalScoreSpan.textContent = currentScore;
+
+        // 3. TÍNH BONUS + FINAL SCORE (QUAN TRỌNG)
+        const bonus = getBonusByLevel(currentLevel);
+        window.finalScore = currentScore + bonus;
+
+        // 4. HIỆN END SCREEN
+        quizScreen.classList.add('hidden');
+        endScreen.classList.remove('hidden');
+
+        // 5. HIỆN MODAL NHẬP TÊN
+        const modal = document.getElementById('name-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // 6. HIỂN THỊ THÔNG TIN PHỤ
+        document.getElementById('total-questions-display').textContent =
+            TOTAL_QUIZ_QUESTIONS;
+
+        if (isTimeout) {
+            timeTakenMessage.textContent = 'Hết giờ! Quiz đã kết thúc.';
+        } else {
+            const totalSeconds = MAX_QUIZ_TIME_SECONDS - timeRemaining;
+            const timeStr = formatTime(totalSeconds);
+            timeTakenMessage.textContent =
+            `Bạn đã hoàn thành trong ${timeStr}.`;
+        }
+        }
+
         
         // --- Logic Modal ---
         function showModal() {
@@ -935,7 +1078,7 @@ function playWrongSound() {
         });
         
         startQuizBtn.addEventListener('click', () => {
-            
+           
             if (!currentLevel) { return; }
 
             currentScore = 0;
@@ -1038,14 +1181,33 @@ function playWrongSound() {
         });
 	});
 });
+        loadLeaderboard();
 </script>
 	<audio id="sound-correct" src="./assets/sounds/correct.mp3" preload="auto"></audio>
 	<audio id="sound-wrong" src="./assets/sounds/wrong.mp3" preload="auto"></audio>
 
+    <!-- MODAL NHẬP TÊN -->
+<div id="name-modal"
+     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+  <div class="bg-white p-6 rounded-xl w-80 shadow-xl">
+    <h2 class="text-xl font-bold mb-3 text-indigo-700">
+      🏆 Nhập tên của bạn
+    </h2>
+
+    <input id="player-name"
+           class="w-full border p-2 rounded mb-4"
+           placeholder="Tên người chơi">
+
+    <button id="submit-score"
+            class="w-full bg-indigo-600 text-white font-bold py-2 rounded">
+      Lưu kết quả
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
-
-
 
 
 
