@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Math - Ứng Dụng Học Toán Tương Tác</title>
     <!-- Tải Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">  
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .leader-top-1 { color: #d97706; font-weight: 700; }
         .leader-top-2 { color: #6b7280; font-weight: 600; }
         .leader-top-3 { color: #92400e; font-weight: 600; }
         /* Tùy chỉnh font cho dễ nhìn hơn */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap'); */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f7f7f7;
@@ -450,8 +450,7 @@ function playWrongSound() {
         const QUESTION_TYPES_MULT_DIV = ['mult-div', 'find-x-mult-div', 'sorting', 'comparison'];
 		const QUESTION_TYPES_TIMO = ['day-of-week', 'age-problem', 'queue-problem'];
 		const DAYS_OF_WEEK = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-        const MAX_QUIZ_TIME_SECONDS = 30 * 60; // 30 phút
-        
+        // const MAX_QUIZ_TIME_SECONDS = 30 * 60; //
         // Thêm hằng số cho câu hỏi ngày trong tuần phức tạp
         const RELATIVE_DAY_OPTIONS = {
             'Hôm nay': 0,
