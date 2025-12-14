@@ -1,6 +1,19 @@
 // ===============================
 // QUIZ ENGINE – DÙNG CHUNG GAME + ADMIN
 // ===============================
+export const quizState = {
+    // Khởi tạo các biến trạng thái
+        let currentLevel = 1;
+        let currentLevelName = 'Cấp 1 (Phạm vi 0-9)';
+        let currentQuizType = 'ADD_SUB'; // Thêm biến theo dõi loại quiz đang chọn
+        let currentScore = 0;
+        let currentQuestionNumber = 0; 
+        let currentQuestion = null;
+        let quizTimer = null; // Biến cho setInterval
+        let timeRemaining = MAX_QUIZ_TIME_SECONDS;
+        let startTime = 0;
+        let TOTAL_QUIZ_QUESTIONS = 20; // Mặc định
+};
 
 // ===== CONSTANTS =====
 export const QUESTION_TYPES_BASIC = [
@@ -180,9 +193,54 @@ export function generateFindXQuestion(max) {
             } while (answer <= 0 || answer >= max * 2);
             return { question, answer: String(answer), type: 'input' };
         }
+export function generateSimpleExpression(max, quizType) {
+            let A, B, op, result;
+            
+            if (quizType === 'MULT_DIV') {
+                const factors = MULT_DIV_FACTORS[currentLevel];
+                let A_factor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở
+                let B_factor = getRandomInt(10) + 1; // Nhân tử còn lại (1 đến 10)
 
+                op = (Math.random() > 0.5) ? '×' : '÷';
+
+                if (op === '×') {
+                    A = A_factor;
+                    B = B_factor;
+                    result = A * B;
+                } else {
+                    // Division (A ÷ B = result)
+                    const Divisor = A_factor;
+                    const Quotient = B_factor;
+                    const Dividend = Divisor * Quotient;
+                    
+                    // Randomly choose form: Dividend ÷ Divisor = ? or Dividend ÷ Quotient = ?
+                    if (Math.random() > 0.5) { 
+                        A = Dividend;
+                        B = Divisor;
+                        result = Quotient;
+                    } else {
+                        A = Dividend;
+                        B = Quotient;
+                        result = Divisor;
+                    }
+                }
+            } else { // ADD_SUB
+                A = getRandomInt(max) + 1;
+                B = getRandomInt(max) + 1;
+                op = (Math.random() > 0.5) ? '+' : '-';
+                
+                if (op === '-') {
+                    if (A < B) [A, B] = [B, A];
+                }
+                
+                result = (op === '+') ? A + B : A - B;
+            }
+            // Thay thế '×' và '÷' bằng '*' và '/' để eval() có thể tính
+            const expression = `${A} ${op} ${B}`; 
+            return { expression: expression.replace('×', '*').replace('÷', '/'), result: result };
+        }
 export function generateComparisonQuestion(level, quizType) {
-  const isMultiDivLevel = (quizType === 'MULT_DIV');
+  const isMultDivLevel = (quizType === 'MULT_DIV');
             // Max range cho ADD_SUB trong comparison, MULT_DIV sẽ dùng factors
             const max = isMultDivLevel ? 10 : (level === 1) ? 15 : (level === 2) ? 100 : 500;
             
