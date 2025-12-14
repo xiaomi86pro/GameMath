@@ -3,16 +3,16 @@
 // ===============================
 export const quizState = {
     // Khởi tạo các biến trạng thái
-        let currentLevel = 1;
-        let currentLevelName = 'Cấp 1 (Phạm vi 0-9)';
-        let currentQuizType = 'ADD_SUB'; // Thêm biến theo dõi loại quiz đang chọn
-        let currentScore = 0;
-        let currentQuestionNumber = 0; 
-        let currentQuestion = null;
-        let quizTimer = null; // Biến cho setInterval
-        let timeRemaining = MAX_QUIZ_TIME_SECONDS;
-        let startTime = 0;
-        let TOTAL_QUIZ_QUESTIONS = 20; // Mặc định
+        let currentLevel:  1;
+        let currentLevelName:  'Cấp 1 (Phạm vi 0-9)';
+        let currentQuizType:  'ADD_SUB'; // Thêm biến theo dõi loại quiz đang chọn
+        let currentScore:  0;
+        let currentQuestionNumber:  0; 
+        let currentQuestion:  null;
+        let quizTimer:  null; // Biến cho setInterval
+        let timeRemaining:  MAX_QUIZ_TIME_SECONDS;
+        let startTime:  0;
+        let TOTAL_QUIZ_QUESTIONS: 20; // Mặc định
 };
 
 // ===== CONSTANTS =====
