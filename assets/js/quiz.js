@@ -1,12 +1,12 @@
 // ===============================
 // QUIZ ENGINE – DÙNG CHUNG GAME + ADMIN
-// ===============================
+// =============================== 
 export const MAX_QUIZ_TIME_SECONDS = 30 * 60; // 30 phút
 export const quizState = {
   // Khởi tạo các biến trạng thái
       currentLevel: 1 ,
       currentLevelName:  'Cấp 1 (Phạm vi 0-9)',
-      currentQuizType:  'ADD_SUB', // Thêm biến theo dõi loại quiz đang chọn
+      currentQuizType:   'ADD_SUB', // Thêm biến theo dõi loại quiz đang chọn
       currentScore:  0,
       currentQuestionNumber:  0,
       currentQuestion:  null,
