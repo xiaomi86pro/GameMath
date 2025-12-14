@@ -23,29 +23,6 @@ export const MULT_DIV_FACTORS = {
   4: [8, 9]
 };
 
-export function generateMultDivQuestion() {
-            // Sử dụng bảng cửu chương theo cấp độ
-            const factors = MULT_DIV_FACTORS[currentLevel];
-            const baseFactor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở (2, 3, 4,...)
-            const otherFactor = getRandomInt(10) + 1; // Số nhân còn lại (1 đến 10)
-
-            let A, B, op, answer, question;
-            
-            if (Math.random() > 0.5) { // Multiplication: A x B = ?
-                A = baseFactor; 
-                B = otherFactor;
-                answer = A * B;
-                question = `${A} × ${B} = ?`;
-            } else { // Division: C ÷ B = ?
-                // Đảm bảo phép chia hết và nằm trong phạm vi bảng cửu chương
-                B = baseFactor; // Số chia (phải là factor)
-                answer = otherFactor; // Thương (từ 1 đến 10)
-                A = B * answer; // Số bị chia
-                question = `${A} ÷ ${B} = ?`;
-            }
-            return { question, answer: String(answer), type: 'input' };
-        }
-   
 export const DAY_OF_WEEK_HINT = `
             <div class="flex flex-col sm:flex-row justify-center items-center text-center space-y-2 sm:space-y-0 sm:space-x-4 p-2">
                 <span class="text-red-600 font-semibold text-xs md:text-sm text-right sm:text-left">Hôm kia, Hôm qua, Trước đó là TRỪ (-)</span>
@@ -99,7 +76,29 @@ export function generateBasicOpQuestion(max) {
             } while (answer < 0 || answer >= max * 2);
             return { question, answer: String(answer), type: 'input' };
 }
+export function generateMultDivQuestion() {
+            // Sử dụng bảng cửu chương theo cấp độ
+            const factors = MULT_DIV_FACTORS[currentLevel];
+            const baseFactor = factors[getRandomInt(factors.length)]; // Nhân tử cơ sở (2, 3, 4,...)
+            const otherFactor = getRandomInt(10) + 1; // Số nhân còn lại (1 đến 10)
 
+            let A, B, op, answer, question;
+            
+            if (Math.random() > 0.5) { // Multiplication: A x B = ?
+                A = baseFactor; 
+                B = otherFactor;
+                answer = A * B;
+                question = `${A} × ${B} = ?`;
+            } else { // Division: C ÷ B = ?
+                // Đảm bảo phép chia hết và nằm trong phạm vi bảng cửu chương
+                B = baseFactor; // Số chia (phải là factor)
+                answer = otherFactor; // Thương (từ 1 đến 10)
+                A = B * answer; // Số bị chia
+                question = `${A} ÷ ${B} = ?`;
+            }
+            return { question, answer: String(answer), type: 'input' };
+        }
+   
 export function generateBalanceEquation(max) {
     const A_right = getRandomInt(max) + 1;
     const B_right = getRandomInt(max) + 1;
@@ -182,8 +181,8 @@ export function generateFindXQuestion(max) {
             return { question, answer: String(answer), type: 'input' };
         }
 
-export function generateComparisonQuestion(level) {
-            const isMultDivLevel = (currentQuizType === 'MULT_DIV');
+export function generateComparisonQuestion(level, quizType) {
+  const isMultiDivLevel = (quizType === 'MULT_DIV');
             // Max range cho ADD_SUB trong comparison, MULT_DIV sẽ dùng factors
             const max = isMultDivLevel ? 10 : (level === 1) ? 15 : (level === 2) ? 100 : 500;
             
@@ -479,22 +478,22 @@ export function createClockSVG(hour, minute) {
         }
 
 export function generateClockQuestion() {
-            // Chỉ tạo giờ chẵn (ví dụ: 1:00, 1:30, 2:00, 2:30)
-            const randomHour = getRandomInt(12) + 1; // 1 đến 12
-            const randomMinute = getRandomInt(2) * 30; // 0 hoặc 30
+                                            const randomHour = getRandomInt(12) + 1;
+                                            const randomMinute = getRandomInt(2) * 30;
 
-            // Định dạng HH:MM cho đáp án
-            const hour = String(randomHour).padStart(2, '0');
-            const minute = String(randomMinute).padStart(2, '0');
-            const answer = `${hour}:${minute}`;
+                                            const hour = String(randomHour).padStart(2, '0');
+                                            const minute = String(randomMinute).padStart(2, '0');
+                                            const answer = `${hour}:${minute}`;
 
-            // Tạo và hiển thị đồng hồ SVG
-            const svgHtml = createClockSVG(randomHour, randomMinute);
-            clockImageContainer.innerHTML = svgHtml;
+                                            const svgHtml = createClockSVG(randomHour, randomMinute);
 
-            const question = `Đồng hồ này đang chỉ mấy giờ? (Nhập dưới dạng HH:MM)`;
-            return { question, answer: answer, type: 'input', special: 'clock' };
-        }
+                                            return {
+                                                question: 'Đồng hồ này đang chỉ mấy giờ?',
+                                                answer,
+                                                svg: svgHtml,
+                                                type: 'clock'
+                                            };
+                                            }
 
 export  function generateWordProblem() {
             const ops = ['+', '-'];
@@ -671,4 +670,9 @@ export function generateTIMOQuestion() {
     } else {
         return generateQueueProblem();
     }
-} 
+}
+    function getBonusByLevel(level) {
+  if (level === 2) return 5;
+  if (level === 3) return 10;
+  return 0;
+}
