@@ -348,7 +348,7 @@
             .insert([{
             name,
             score,
-            level: currentLevel,
+            level: quizState.currentLevel,
             final_score: window.finalScore
             }]);
 
@@ -482,35 +482,70 @@ function playWrongSound() {
 
 
         // Các phần tử DOM
-        const setupScreen = document.getElementById('setup-screen');
-        const quizScreen = document.getElementById('quiz-screen');
-        const endScreen = document.getElementById('end-screen');
-        const levelSelectBtns = document.querySelectorAll('.level-select-btn');
-        const startQuizBtn = document.getElementById('start-quiz-btn');
-        const nextQuestionBtn = document.getElementById('next-question-btn');
-        const restartQuizBtn = document.getElementById('restart-quiz-btn');
-        const exitQuizBtn = document.getElementById('exit-quiz-btn');
-        const questionText = document.getElementById('question-text');
-        const currentLevelNameSpan = document.getElementById('current-level-name');
-        const currentQuestionNumberSpan = document.getElementById('current-question-number');
-        const totalQuestionsSpan = document.getElementById('total-questions');
-        const currentScoreSpan = document.getElementById('current-score');
-        const finalScoreSpan = document.getElementById('final-score');
-        const mathAnswerInput = document.getElementById('math-answer-input');
-        const submitAnswerBtn = document.getElementById('submit-answer-btn');
-        const messageBox = document.getElementById('message-box');
-        const inputAnswerContainer = document.getElementById('input-answer-container');
-        const sortingNumbersContainer = document.getElementById('sorting-numbers-container');
-        const sortingTargetContainer = document.getElementById('sorting-target-container');
-        const sortingControls = document.getElementById('sorting-controls');
-        const resetSortingBtn = document.getElementById('reset-sorting-btn');
-        const submitSortingBtn = document.getElementById('submit-sorting-btn');
-        const progressBar = document.getElementById('progress-bar');
-        const scoreEffect = document.getElementById('score-effect');
-        const quizTimerDisplay = document.getElementById('quiz-timer');
-        const timeTakenMessage = document.getElementById('time-taken-message');
-        const clockImageContainer = document.getElementById('clock-image-container');
-        const levelDescription = document.getElementById('level-description');
+        document.addEventListener('DOMContentLoaded', () => {
+
+              const setupScreen = document.getElementById('setup-screen');
+              const quizScreen = document.getElementById('quiz-screen');
+              const endScreen = document.getElementById('end-screen');
+              const levelSelectBtns = document.querySelectorAll('.level-select-btn');
+              const startQuizBtn = document.getElementById('start-quiz-btn');
+              const nextQuestionBtn = document.getElementById('next-question-btn');
+              const restartQuizBtn = document.getElementById('restart-quiz-btn');
+              const exitQuizBtn = document.getElementById('exit-quiz-btn');
+              const questionText = document.getElementById('question-text');
+              const currentLevelNameSpan = document.getElementById('current-level-name');
+              const currentQuestionNumberSpan = document.getElementById('current-question-number');
+              const totalQuestionsSpan = document.getElementById('total-questions');
+              const currentScoreSpan = document.getElementById('current-score');
+              const finalScoreSpan = document.getElementById('final-score');
+              const mathAnswerInput = document.getElementById('math-answer-input');
+              const submitAnswerBtn = document.getElementById('submit-answer-btn');
+              const messageBox = document.getElementById('message-box');
+              const inputAnswerContainer = document.getElementById('input-answer-container');
+              const sortingNumbersContainer = document.getElementById('sorting-numbers-container');
+              const sortingTargetContainer = document.getElementById('sorting-target-container');
+              const sortingControls = document.getElementById('sorting-controls');
+              const resetSortingBtn = document.getElementById('reset-sorting-btn');
+              const submitSortingBtn = document.getElementById('submit-sorting-btn');
+              const progressBar = document.getElementById('progress-bar');
+              const scoreEffect = document.getElementById('score-effect');
+              const quizTimerDisplay = document.getElementById('quiz-timer');
+              const timeTakenMessage = document.getElementById('time-taken-message');
+              const clockImageContainer = document.getElementById('clock-image-container');
+              const levelDescription = document.getElementById('level-description');
+
+          // ⬇️ TOÀN BỘ hàm dùng các biến trên PHẢI nằm trong đây
+          // displayQuestion, genera
+          // --- Xử lý Sự kiện Giao diện ---
+
+        levelSelectBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                quizState.currentLevel = parseInt(btn.getAttribute('data-level'));
+                quizState.currentLevelName = btn.getAttribute('data-name');
+                quizState.currentQuizType = btn.getAttribute('data-type'); // Lấy loại quiz
+
+
+                levelSelectBtns.forEach(b => {
+                    // Xóa màu nền xanh (ADD_SUB) và xanh lá (MULT_DIV) cũ
+                    b.classList.remove('bg-indigo-500', 'text-white', 'bg-green-500', 'bg-purple-500');
+                    // Thêm màu nền xám mặc định
+                    b.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                
+                // Thiết lập màu mới dựa trên loại quiz
+                if (quizState.currentQuizType === 'ADD_SUB') {
+                    btn.classList.add('bg-indigo-500', 'text-white');
+                } else if (quizState.currentQuizType === 'TIMO') {
+                    btn.classList.add('bg-purple-500', 'text-white');
+                } else {
+                    btn.classList.add('bg-green-500', 'text-white');
+                }
+                btn.classList.remove('bg-gray-200', 'text-gray-700');
+                startQuizBtn.disabled = false;
+                levelDescription.textContent = `Bạn đã chọn: ${quizState.currentLevelName }`;
+            });
+        });
+          });
 	
         // Phần tử mới cho Gợi ý (MỚI)
         const hintArea = document.getElementById('hint-area');
@@ -539,8 +574,8 @@ function playWrongSound() {
         }
 
         function updateTimerDisplay() {
-            quizTimerDisplay.textContent = formatTime(timeRemaining);
-            if (timeRemaining <= 60) {
+            quizTimerDisplay.textContent = formatTime(quizState.timeRemaining);
+            if (quizState.timeRemaining <= 60) {
                 quizTimerDisplay.classList.add('text-4xl');
                 quizTimerDisplay.classList.remove('text-3xl');
             } else {
@@ -550,25 +585,25 @@ function playWrongSound() {
         }
 
         function startTimer() {
-            startTime = Date.now();
-            timeRemaining = MAX_QUIZ_TIME_SECONDS;
+            quizState.startTime = Date.now();
+            quizState.timeRemaining = quizState.MAX_QUIZ_TIME_SECONDS;
             updateTimerDisplay();
             
-            if (quizTimer) clearInterval(quizTimer);
+            if (quizState.quizTimer) clearInterval(quizState.quizTimer);
 
-            quizTimer = setInterval(() => {
-                timeRemaining--;
+            quizState.quizTimer = setInterval(() => {
+                quizState.timeRemaining--;
                 updateTimerDisplay();
-                if (timeRemaining <= 0) {
-                    clearInterval(quizTimer);
+                if (quizState.timeRemaining <= 0) {
+                    clearInterval(quizState.quizTimer);
                     endQuiz(true); // Kết thúc do hết giờ
                 }
             }, 1000);
         }
 
         function stopTimer() {
-            if (quizTimer) clearInterval(quizTimer);
-            quizTimer = null;
+            if (quizState.quizTimer) clearInterval(quizState.quizTimer);
+            quizState.quizTimer = null;
         }
 		
         // --- Logic Hiệu ứng Điểm ---
@@ -597,85 +632,85 @@ function playWrongSound() {
          * Hàm chính để tạo câu hỏi ngẫu nhiên và kiểm tra kết thúc
          */
         function generateQuestion() {
-            if (currentQuestionNumber >= TOTAL_QUIZ_QUESTIONS) {
+            if (quizState.currentQuestionNumber >= quizState.TOTAL_QUIZ_QUESTIONS) {
                 endQuiz(false); // Kết thúc do hoàn thành
                 return;
             }
 
-            currentQuestionNumber++;
-            currentQuestionNumberSpan.textContent = currentQuestionNumber;
+            quizState.currentQuestionNumber++;
+            currentQuestionNumberSpan.textContent = quizState.currentQuestionNumber;
             
             // Cập nhật Progress Bar
-            const percentage = (currentQuestionNumber / TOTAL_QUIZ_QUESTIONS) * 100;
+            const percentage = (quizState.currentQuestionNumber / quizState.TOTAL_QUIZ_QUESTIONS) * 100;
             progressBar.style.width = `${percentage}%`;
 
             let randomType;
-            let maxRange = getMaxRange(currentLevel);
+            let maxRange = getMaxRange(quizState.currentLevel);
             let questionPool;
 
-            if (currentQuizType === 'MULT_DIV') {
+            if (quizState.currentQuizType === 'MULT_DIV') {
                 questionPool = QUESTION_TYPES_MULT_DIV;
-                    } else if (currentQuizType === 'TIMO') {
-                        currentQuestion = generateTIMOQuestion();
-                        displayQuestion(currentQuestion);
+                    } else if (quizState.currentQuizType === 'TIMO') {
+                        quizState.currentQuestion = generateTIMOQuestion();
+                        displayQuestion(quizState.currentQuestion);
                         return;
                     } else {
                         questionPool = QUESTION_TYPES_BASIC;
                     }
 
             // Xử lý 2 câu hỏi đặc biệt cuối cùng
-            if (currentQuestionNumber === TOTAL_QUIZ_QUESTIONS - 1 && TOTAL_QUIZ_QUESTIONS >= 2) {
-                currentQuestion = generateClockQuestion();
-            } else if (currentQuestionNumber === TOTAL_QUIZ_QUESTIONS) {
-                currentQuestion = generateWordProblem();
+            if (quizState.currentQuestionNumber === quizState.TOTAL_QUIZ_QUESTIONS - 1 && quizState.TOTAL_QUIZ_QUESTIONS >= 2) {
+                quizState.currentQuestion = generateClockQuestion();
+            } else if (quizState.currentQuestionNumber === quizState.TOTAL_QUIZ_QUESTIONS) {
+                quizState.currentQuestion = generateWordProblem();
             } else {
                 // Tạo câu hỏi ngẫu nhiên
                 randomType = questionPool[getRandomInt(questionPool.length)];
 
                 switch (randomType) {
 					case 'balance-equation':
-                        currentQuestion = generateBalanceEquation(maxRange);
+                        quizState.currentQuestion = generateBalanceEquation(maxRange);
                         break;
                     case 'create-even-odd':
-                        currentQuestion = generateEvenOddNumberQuestion(currentLevel);
+                        quizState.currentQuestion = generateEvenOddNumberQuestion(quizState.currentLevel);
                         break;
                     case 'create-max-min':
-                        currentQuestion = generateMaxMinTwoNumbers(currentLevel);
+                        quizState.currentQuestion = generateMaxMinTwoNumbers(quizState.currentLevel);
                         break;
                     case 'sequence-pattern':
-                        currentQuestion = generateSequencePattern();
+                        quizState.currentQuestion = generateSequencePattern();
                         break;
                     case 'sequence-increment':
-                        currentQuestion = generateSequenceIncrement();
+                        quizState.currentQuestion = generateSequenceIncrement();
                         break;
                     case 'shape-pattern':
-                        currentQuestion = generateShapePattern();
+                        quizState.currentQuestion = generateShapePattern();
                         break;	
                     case 'basic-op':
-                        currentQuestion = generateBasicOpQuestion(maxRange);
+                        quizState.currentQuestion = generateBasicOpQuestion(maxRange);
                         break;
                     case 'mult-div':
-                        currentQuestion = generateMultDivQuestion();
+                        quizState.currentQuestion = generateMultDivQuestion();
                         break;
                     case 'find-x':
-                        currentQuestion = generateFindXQuestion(maxRange);
+                        quizState.currentQuestion = generateFindXQuestion(maxRange);
                         break;
                     case 'find-x-mult-div':
-                        currentQuestion = generateFindXMultDivQuestion();
+                        quizState.currentQuestion = generateFindXMultDivQuestion();
                         break;
                     case 'sorting':
-                        currentQuestion = generateSortingQuestion(currentLevel);
+                        quizState.currentQuestion = generateSortingQuestion(quizState.currentLevel);
                         break;
                     case 'comparison':
-                        currentQuestion = generateComparisonQuestion(currentLevel, currentQuizType);
+                        quizState.currentQuestion = generateComparisonQuestion(quizState.currentLevel, quizState.currentQuizType);
                         break;
                     default:
                         // Default fallback
-                        currentQuestion = generateBasicOpQuestion(10); 
+                        quizState.currentQuestion = generateBasicOpQuestion(10); 
                 }
             }
 
-            displayQuestion(currentQuestion);
+            displayQuestion(quizState.currentQuestion);
         }
 
         // --- Logic Hiển Thị Câu Hỏi và Đáp Án ---
@@ -807,15 +842,15 @@ function playWrongSound() {
 
         function processAnswerResult(isCorrect, correctAnswerText) {
             if (isCorrect) {
-                currentScore++;
+                quizState.currentScore++;
                 // Cập nhật message box dựa trên loại câu hỏi
-                if (currentQuestion.type === 'input') {
+                if (quizState.currentQuestion.type === 'input') {
                      messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> Đáp án là: <span class="text-green-600 font-extrabold">${correctAnswerText}</span>`;
-                } else if (currentQuestion.type === 'comparison') {
+                } else if (quizState.currentQuestion.type === 'comparison') {
                     // Đối với so sánh, correctAnswerText đã là thông điệp đầy đủ có kết quả
                     messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> ${correctAnswerText}`;
                     comparisonBox.classList.add('correct-answer-box');
-                } else if (currentQuestion.type === 'multiple-choice') {
+                } else if (quizState.currentQuestion.type === 'multiple-choice') {
                      messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> Đáp án là: ${correctAnswerText}`;
                 } else { // sorting
                      messageBox.innerHTML = `🎉 <span class="text-green-800">Chính xác!</span> Thứ tự đúng là: ${correctAnswerText}`;
@@ -825,10 +860,10 @@ function playWrongSound() {
                 showScoreEffect(true);
                 playCorrectSound();
             } else {
-                if (currentQuestion.type === 'comparison') {
+                if (quizState.currentQuestion.type === 'comparison') {
                     // Đối với so sánh, correctAnswerText đã là thông điệp đầy đủ có kết quả
                     messageBox.innerHTML = `❌ <span class="text-red-800">Sai rồi!</span> ${correctAnswerText}`;
-                } else if (currentQuestion.type === 'multiple-choice') {
+                } else if (quizState.currentQuestion.type === 'multiple-choice') {
                     messageBox.innerHTML = `❌ <span class="text-red-800">Sai rồi!</span> Đáp án đúng là: ${correctAnswerText}`;
                 } else {
                     messageBox.innerHTML = `❌ <span class="text-red-800">Sai rồi!</span> Đáp án đúng là: <span class="text-red-600 font-extrabold">${correctAnswerText}</span>`;
@@ -838,17 +873,17 @@ function playWrongSound() {
                 showScoreEffect(false);
                 playWrongSound();
 
-                if (currentQuestion.type === 'comparison') {
+                if (quizState.currentQuestion.type === 'comparison') {
                     comparisonBox.classList.add('incorrect-answer-box');
                 }
             }
-            currentScoreSpan.textContent = currentScore;
+            currentScoreSpan.textContent = quizState.currentScore;
             nextQuestionBtn.classList.remove('hidden');
         }
 
         function checkMathAnswer() {
             const userAnswer = mathAnswerInput.value.trim();
-            const correctAnswer = currentQuestion.answer;
+            const correctAnswer = quizState.currentQuestion.answer;
             
             if (userAnswer === '') {
                 messageBox.textContent = 'Vui lòng nhập đáp án!';
@@ -863,7 +898,7 @@ function playWrongSound() {
         function checkSortingAnswer() {
             const selectedElements = Array.from(sortingTargetContainer.children);
             const userAnswerArray = selectedElements.map(el => el.getAttribute('data-value')).join(',');
-            const correctAnswer = currentQuestion.answer;
+            const correctAnswer = quizState.currentQuestion.answer;
             const isCorrect = (userAnswerArray === correctAnswer);
 
             submitSortingBtn.disabled = true;
@@ -891,11 +926,11 @@ function playWrongSound() {
 
         function checkComparisonAnswer(userOp) {
             comparisonButtons.forEach(btn => btn.disabled = true);
-            const isCorrect = (userOp === currentQuestion.answer);
+            const isCorrect = (userOp === quizState.currentQuestion.answer);
             
             // Xây dựng thông điệp hiển thị kết quả chi tiết
             // Loại bỏ ** và thêm span với màu xanh/đỏ cho nổi bật
-            const resultMsg = `(${currentQuestion.exp1} = <span class="text-indigo-600 font-extrabold">${currentQuestion.result1}</span>) ${currentQuestion.answer} (${currentQuestion.exp2} = <span class="text-indigo-600 font-extrabold">${currentQuestion.result2}</span>).`;
+            const resultMsg = `(${quizState.currentQuestion.exp1} = <span class="text-indigo-600 font-extrabold">${quizState.currentQuestion.result1}</span>) ${quizState.currentQuestion.answer} (${quizState.currentQuestion.exp2} = <span class="text-indigo-600 font-extrabold">${quizState.currentQuestion.result2}</span>).`;
 
             // Hiển thị dấu so sánh đã chọn trong ô
             comparisonBox.textContent = userOp;
@@ -911,11 +946,11 @@ function playWrongSound() {
         }
     });
     
-    const isCorrect = (userChoice === currentQuestion.answer);
-    const correctAnswerText = `<span class="text-purple-600 font-extrabold">${currentQuestion.answer}</span>`;
+    const isCorrect = (userChoice === quizState.currentQuestion.answer);
+    const correctAnswerText = `<span class="text-purple-600 font-extrabold">${quizState.currentQuestion.answer}</span>`;
     
     choiceBtns.forEach(btn => {
-        if (btn.getAttribute('data-choice') === currentQuestion.answer) {
+        if (btn.getAttribute('data-choice') === quizState.currentQuestion.answer) {
             btn.classList.add('bg-green-500', 'text-white', 'border-green-700');
             btn.classList.remove('bg-purple-500', 'bg-purple-100');
         }
@@ -941,11 +976,11 @@ function playWrongSound() {
         stopTimer();
 
         // 2. HIỂN THỊ ĐIỂM
-        finalScoreSpan.textContent = currentScore;
+        finalScoreSpan.textContent = quizState.currentScore;
 
         // 3. TÍNH BONUS + FINAL SCORE (QUAN TRỌNG)
-        const bonus = getBonusByLevel(currentLevel);
-        window.finalScore = currentScore + bonus;
+        const bonus = getBonusByLevel(quizState.currentLevel);
+        window.finalScore = quizState.currentScore + bonus;
 
         // 4. HIỆN END SCREEN
         quizScreen.classList.add('hidden');
@@ -958,12 +993,12 @@ function playWrongSound() {
 
         // 6. HIỂN THỊ THÔNG TIN PHỤ
         document.getElementById('total-questions-display').textContent =
-            TOTAL_QUIZ_QUESTIONS;
+            quizState.TOTAL_QUIZ_QUESTIONS;
 
         if (isTimeout) {
             timeTakenMessage.textContent = 'Hết giờ! Quiz đã kết thúc.';
         } else {
-            const totalSeconds = MAX_QUIZ_TIME_SECONDS - timeRemaining;
+            const totalSeconds = quizState.MAX_QUIZ_TIME_SECONDS - quizState.timeRemaining;
             const timeStr = formatTime(totalSeconds);
             timeTakenMessage.textContent =
             `Bạn đã hoàn thành trong ${timeStr}.`;
@@ -994,45 +1029,17 @@ function playWrongSound() {
             levelSelectBtns[0].click();
         }
 
-        // --- Xử lý Sự kiện Giao diện ---
-
-        levelSelectBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentLevel = parseInt(btn.getAttribute('data-level'));
-                currentLevelName = btn.getAttribute('data-name');
-                currentQuizType = btn.getAttribute('data-type'); // Lấy loại quiz
-
-
-                levelSelectBtns.forEach(b => {
-                    // Xóa màu nền xanh (ADD_SUB) và xanh lá (MULT_DIV) cũ
-                    b.classList.remove('bg-indigo-500', 'text-white', 'bg-green-500', 'bg-purple-500');
-                    // Thêm màu nền xám mặc định
-                    b.classList.add('bg-gray-200', 'text-gray-700');
-                });
-                
-                // Thiết lập màu mới dựa trên loại quiz
-                if (currentQuizType === 'ADD_SUB') {
-                    btn.classList.add('bg-indigo-500', 'text-white');
-                } else if (currentQuizType === 'TIMO') {
-                    btn.classList.add('bg-purple-500', 'text-white');
-                } else {
-                    btn.classList.add('bg-green-500', 'text-white');
-                }
-                btn.classList.remove('bg-gray-200', 'text-gray-700');
-                startQuizBtn.disabled = false;
-                levelDescription.textContent = `Bạn đã chọn: ${currentLevelName}`;
-            });
-        });
+        
         
         startQuizBtn.addEventListener('click', () => {
            
-            if (!currentLevel) { return; }
+            if (!quizState.currentLevel) { return; }
 
-            currentScore = 0;
-            currentQuestionNumber = 0;
+            quizState.currentScore = 0;
+            quizState.currentQuestionNumber = 0;
             currentScoreSpan.textContent = 0;
-            totalQuestionsSpan.textContent = TOTAL_QUIZ_QUESTIONS;
-            currentLevelNameSpan.textContent = currentLevelName;
+            totalQuestionsSpan.textContent = quizState.TOTAL_QUIZ_QUESTIONS;
+            currentLevelNameSpan.textContent = quizState.currentLevelName ;
 
             setupScreen.classList.add('hidden');
             endScreen.classList.add('hidden');
@@ -1045,9 +1052,9 @@ function playWrongSound() {
     
 		restartQuizBtn.addEventListener('click', () => {
     // Reset toàn bộ trạng thái
-    currentScore = 0;
-    currentQuestionNumber = 0;
-    timeRemaining = MAX_QUIZ_TIME_SECONDS;
+    quizState.currentScore = 0;
+    quizState.currentQuestionNumber = 0;
+    quizState.timeRemaining = quizState.MAX_QUIZ_TIME_SECONDS;
     
     // Ẩn màn hình kết thúc
     endScreen.classList.add('hidden');
@@ -1072,7 +1079,7 @@ function playWrongSound() {
     // Chọn mặc định 20 câu (nút thứ 2)
     questionCountBtns[1].classList.add('bg-indigo-500', 'text-white');
     questionCountBtns[1].classList.remove('bg-gray-200', 'text-gray-700');
-    TOTAL_QUIZ_QUESTIONS = 20;
+    quizState.TOTAL_QUIZ_QUESTIONS = 20;
 });
 
 
@@ -1116,7 +1123,7 @@ function playWrongSound() {
 
     	questionCountBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            TOTAL_QUIZ_QUESTIONS = parseInt(btn.getAttribute('data-questions'));
+            quizState.TOTAL_QUIZ_QUESTIONS = parseInt(btn.getAttribute('data-questions'));
 
             questionCountBtns.forEach(b => {
                 b.classList.remove('bg-indigo-500', 'text-white');
