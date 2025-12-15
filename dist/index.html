@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Math - Ứng Dụng Học Toán Tương Tác</title>
+    <!-- Tải Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">  
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .leader-top-1 { color: #d97706; font-weight: 700; }
+        .leader-top-2 { color: #6b7280; font-weight: 600; }
+        .leader-top-3 { color: #92400e; font-weight: 600; }
+        /* Tùy chỉnh font cho dễ nhìn hơn */
+        /* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap'); */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 90%;
+            width: 800px;
+        }
+        .math-input {
+            width: 120px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        .sorting-number {
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            user-select: none;
+        }
+        .sorting-number:hover:not(.selected) {
+            background-color: #d1e5ff;
+        }
+        .selected {
+            border: 3px solid #10b981;
+            transform: scale(1.05);
+        }
+        /* Cập nhật CSS cho độ tương phản cao hơn: Nền nhạt, Chữ đậm */
+        .correct-answer-box {
+            background-color: #d1fae5 !important; /* light green (green-100) */
+            animation: pulse-green 0.5s;
+        }
+        .incorrect-answer-box {
+            background-color: #fee2e2 !important; /* light red (red-100) */
+            animation: pulse-red 0.5s;
+        }
+        /* Cập nhật CSS cho hộp thông báo lỗi/chưa nhập đáp án (vàng) */
+        .warning-answer-box {
+            background-color: #fef9c3 !important; /* light yellow (yellow-100) */
+        }
+        /* --- Score Pop-up Effect --- */
+        .score-effect {
+            position: absolute;
+            top: 0px; /* Vị trí ban đầu */
+            right: 0px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            opacity: 0;
+            transition: all 0.5s ease-out;
+            pointer-events: none;
+        }
+        .score-container-relative {
+            position: relative;
+        }
+        /* Dùng keyframes cho các hiệu ứng nền */
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        /* Styling cho đồng hồ kim SVG */
+        .clock-face {
+            fill: #f9fafb;
+            stroke: #374151;
+            stroke-width: 4;
+        }
+        .hour-hand {
+            stroke: #1f2937;
+            stroke-linecap: round;
+            stroke-width: 6;
+            transform-origin: 50% 50%;
+        }
+        .minute-hand {
+            stroke: #ef4444;
+            stroke-linecap: round;
+            stroke-width: 4;
+            transform-origin: 50% 50%;
+        }
+        /* Styling đặc biệt cho ô so sánh */
+        .comparison-box {
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/index-cpwLiQN8.js"></script>
+</head>
+<body class="p-4">
+    <div id="leaderboard" class="fixed left-0 top-0 h-full w-64 bg-white shadow-xl p-4 overflow-auto">
+        <h2 class="text-xl font-extrabold text-indigo-700 mb-4">🏆 Bảng xếp hạng</h2>
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="font-bold border-b">
+                <td>#</td>
+                <td>Tên</td>
+                <td>Điểm</td>
+                <td>Cấp</td>
+            </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+        </table>
+    </div>
+
+    <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl ml-64">
+        <h1 class="text-4xl font-bold text-center text-indigo-700 mb-6">🧠 Ứng Dụng Học Toán Tương Tác</h1>
+        
+        <div id="setup-screen" class="space-y-6">
+            <p class="text-lg text-gray-600 text-center">Chọn cấp độ để bắt đầu bài quiz ngẫu nhiên. Quiz kéo dài 30 phút.</p>
+
+            <!-- CHỌN CẤP ĐỘ: CỘNG TRỪ -->
+            <div class="p-4 bg-indigo-50 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-indigo-800 mb-3">Cộng Trừ (Addition/Subtraction):</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="ADD_SUB" data-name="Cấp 1 (Phạm vi 0-9)">Cấp 1 (0-9)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="2" data-type="ADD_SUB" data-name="Cấp 2 (Phạm vi 0-99)">Cấp 2 (0-99)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-indigo-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="3" data-type="ADD_SUB" data-name="Cấp 3 (Phạm vi 0-999)">Cấp 3 (0-999)</button>
+                </div>
+            </div>
+
+            <!-- CHỌN CẤP ĐỘ: NHÂN CHIA -->
+            <div class="p-4 bg-green-50 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-green-800 mb-3">Nhân Chia (Multiplication/Division):</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="MULT_DIV" data-name="Cấp 1 (Bảng x2, x3)">Cấp 1 (x2, x3)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="2" data-type="MULT_DIV" data-name="Cấp 2 (Bảng x4, x5)">Cấp 2 (x4, x5)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="3" data-type="MULT_DIV" data-name="Cấp 3 (Bảng x6, x7)">Cấp 3 (x6, x7)</button>
+                    <button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-green-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="4" data-type="MULT_DIV" data-name="Cấp 4 (Bảng x8, x9)">Cấp 4 (x8, x9)</button>
+                </div>
+            </div>
+			<!-- CHỌN CẤP ĐỘ: TIMO -->
+			<div class="p-4 bg-purple-50 rounded-lg shadow-inner">
+    		<h2 class="text-xl font-semibold text-purple-800 mb-3">🎯 TIMO </h2>
+   			<p class="text-sm text-gray-600 mb-3">Câu hỏi về ngày trong tuần, tính tuổi và logic thời gian</p>
+   			<div class="grid grid-cols-1 gap-4">
+        	<button class="level-select-btn p-3 rounded-lg font-bold text-lg transition duration-150 hover:bg-purple-600 hover:text-white bg-gray-200 text-gray-700 shadow-md" data-level="1" data-type="TIMO" data-name="TIMO - Logic">
+            Tư Duy & Logic
+        	</button>
+    		</div>
+			</div>
+            <p id="level-description" class="mt-4 text-sm text-indigo-700 text-center font-medium">Bạn đã chọn: Cấp 1 (Phạm vi số từ 0 đến 9).</p>
+<!-- Chọn số câu hỏi -->
+<div class="text-center mt-4">
+    <p class="text-md font-semibold text-gray-700 mb-2">Chọn số câu hỏi:</p>
+    <div id="question-count-options" class="flex justify-center space-x-4">
+        <button data-questions="10" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+            10 câu
+        </button>
+        <button data-questions="20" class="q-count-btn px-4 py-2 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+            20 câu
+        </button>
+        <button data-questions="30" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+            30 câu
+        </button>
+    </div>
+</div>
+
+            <div class="text-center pt-4">
+                <button id="start-quiz-btn" class="px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105" disabled>
+                    Bắt Đầu Quiz
+                </button>
+            </div>
+        </div>
+
+        <!-- Màn Hình Quiz -->
+        <div id="quiz-screen" class="hidden text-center">
+            
+            <!-- Header Bar -->
+            <div class="mb-6 flex justify-between items-center text-gray-600">
+                <button id="exit-quiz-btn" class="px-4 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    Quay lại Màn hình Chính
+                </button>
+                
+                <!-- Timer -->
+                <p class="text-xl font-semibold text-red-600">
+                    ⏰ <span id="quiz-timer" class="font-extrabold text-3xl">30:00</span>
+                </p>
+
+                <!-- Score Container with Relative Positioning for Effect -->
+                <p class="text-xl font-semibold score-container-relative">
+                    Điểm: <span id="current-score" class="text-green-600 font-extrabold text-2xl">0</span>
+                    <span id="score-effect" class="score-effect"></span>
+                </p>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div id="progress-bar-container" class="w-full bg-gray-200 rounded-full h-4 mb-4 overflow-hidden shadow-inner">
+                <div id="progress-bar" class="bg-indigo-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+            
+            <p class="text-lg font-semibold mb-4">Cấp độ: <span id="current-level-name">Cấp 1</span> | Câu hỏi: <span id="current-question-number">0</span> / <span id="total-questions">20</span></p>
+
+
+            <!-- Khu vực câu hỏi -->
+            <div id="question-area" class="min-h-[150px] flex flex-col justify-center items-center p-6 bg-blue-100 rounded-xl shadow-xl mb-3">
+                <!-- Vùng cho hình ảnh đồng hồ (Q19) -->
+                <div id="clockImageContainer" class="hidden my-4 flex justify-center">
+                    <!-- SVG clock will be generated here -->
+                </div>
+                
+                <!-- Dạng bài so sánh -->
+                <div id="comparison-display-area" class="hidden w-full flex flex-col md:flex-row justify-center items-center space-x-0 md:space-x-4">
+                    <p id="expression-left" class="text-4xl md:text-5xl font-extrabold text-blue-800 p-2"></p>
+                    <div id="comparison-box" class="comparison-box w-16 h-16 md:w-20 md:h-20 border-4 border-indigo-400 rounded-lg bg-white shadow-inner text-4xl font-extrabold text-red-600 my-4 md:my-0">?</div>
+                    <p id="expression-right" class="text-4xl md:text-5xl font-extrabold text-blue-800 p-2"></p>
+                </div>
+
+                <!-- Dạng bài thông thường (kể cả bài toán lời văn) -->
+                <p id="question-text" class="text-xl md:text-3xl font-extrabold text-blue-800">Câu hỏi sẽ hiện ở đây...</p>
+            </div>
+
+            <!-- Khu vực GỢI Ý (MỚI) -->
+            <div id="hint-area" class="w-full text-center p-3 bg-yellow-100 rounded-lg shadow-md mb-6 hidden">
+                <p class="font-bold text-yellow-800 mb-2">💡 Gợi ý Logic:</p>
+                <div id="hint-text" class="text-sm text-yellow-700"></div>
+            </div>
+            <!-- Kết thúc Khu vực GỢI Ý -->
+
+            <!-- Khu vực trả lời -->
+            <div id="answer-area" class="flex flex-col items-center space-y-4">
+                <!-- Vùng cho Bài tập Cộng/Trừ, Tìm X, Lời Văn, Đọc Giờ -->
+                <div id="input-answer-container" class="flex items-center space-x-3 hidden">
+                    <input type="number" id="math-answer-input" placeholder="Nhập đáp án" class="math-input p-3 border-2 border-indigo-300 rounded-lg focus:ring-4 focus:ring-indigo-500 focus:border-indigo-500">
+                    <button id="submit-answer-btn" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300">Kiểm tra</button>
+                </div>
+                
+                <!-- Vùng cho Bài tập So sánh (nút bấm) -->
+                <div id="comparison-buttons-container" class="space-x-4 hidden">
+                    <button data-op=">" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800">></button>
+                    <button data-op="<" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800"></button>
+                    <button data-op="=" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800">=</button>
+                </div>
+
+                <!-- Vùng cho Bài tập Sắp xếp -->
+                <div id="sorting-numbers-container" class="flex flex-wrap justify-center gap-3 hidden">
+                    <!-- Các ô số sẽ được thêm vào đây -->
+                </div>
+                <div id="sorting-target-container" class="flex flex-wrap justify-center gap-3 p-4 bg-gray-200 rounded-lg w-full max-w-md min-h-[70px] hidden">
+                    <!-- Các ô số đã chọn sẽ được thêm vào đây -->
+                </div>
+                <div id="sorting-controls" class="space-x-4 hidden">
+                    <button id="reset-sorting-btn" class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-300">Đặt lại</button>
+                    <button id="submit-sorting-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300">Hoàn thành</button>
+                </div>
+            </div>
+
+            <!-- Message Box -->
+            <p id="message-box" class="mt-4 text-xl font-bold min-h-[30px]"></p>
+
+            <button id="next-question-btn" class="mt-6 px-6 py-3 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition duration-300 hidden">Câu hỏi tiếp theo</button>
+            </div>
+        
+        <!-- Màn Hình Kết thúc Quiz -->
+        <div id="end-screen" class="hidden text-center p-8 bg-white rounded-xl shadow-2xl">
+            <h2 class="text-4xl font-extrabold text-green-700 mb-4">Hoàn thành Quiz! 🎉</h2>
+            <p class="text-2xl text-gray-700 mb-6">Bạn đã hoàn thành quiz.</p>
+            <p class="text-5xl font-extrabold text-indigo-600">Điểm của bạn: <span id="final-score">0</span> / <span id="total-questions-display">20</span></p>
+            <p id="time-taken-message" class="text-xl text-gray-600 mt-4"></p>
+            <button id="restart-quiz-btn" class="mt-8 px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
+                Chơi lại
+            </button>
+        </div>
+
+        <!-- Custom Modal for Confirmation (using Tailwind) -->
+        <div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4">
+                <h3 class="text-xl font-bold text-red-600 mb-4">Xác nhận Quay lại</h3>
+                <p class="text-gray-700 mb-6">Bạn có chắc chắn muốn quay lại màn hình chính? Mọi tiến trình quiz hiện tại sẽ bị mất.</p>
+                <div class="flex justify-end space-x-4">
+                    <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Hủy</button>
+                    <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Quay lại</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- MODAL NHẬP TÊN -->
+    <div id="name-modal"
+            class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+        <div class="bg-white p-6 rounded-xl w-80 shadow-xl">
+            <h2 class="text-xl font-bold mb-3 text-indigo-700">
+            🏆 Nhập tên của bạn
+            </h2>
+
+            <input id="player-name"
+                class="w-full border p-2 rounded mb-4"
+                placeholder="Tên người chơi">
+
+            <button id="submit-score"
+                    class="w-full bg-indigo-600 text-white font-bold py-2 rounded">
+            Lưu kết quả
+            </button>
+        </div>
+    </div>
+
+	<audio id="sound-correct" src="./assets/sounds/correct.mp3" preload="auto"></audio>
+	<audio id="sound-wrong" src="./assets/sounds/wrong.mp3" preload="auto"></audio>
+
+    <!-- MODAL NHẬP TÊN -->
+<div id="name-modal"
+     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+  <div class="bg-white p-6 rounded-xl w-80 shadow-xl">
+    <h2 class="text-xl font-bold mb-3 text-indigo-700">
+      🏆 Nhập tên của bạn
+    </h2>
+
+    <input id="player-name"
+           class="w-full border p-2 rounded mb-4"
+           placeholder="Tên người chơi">
+
+    <button id="submit-score"
+            class="w-full bg-indigo-600 text-white font-bold py-2 rounded">
+      Lưu kết quả
+    </button>
+  </div>
+</div>
+
+</body>
+</html>
