@@ -158,7 +158,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   hintArea = document.getElementById('hint-area');
   hintText = document.getElementById('hint-text');
-
+  
+  submitAnswerBtn.addEventListener('click', checkAnswer);
+  nextQuestionBtn.addEventListener('click', nextQuestion);
+  
   bindEvents();
 });
 
@@ -247,27 +250,22 @@ function startQuiz() {
 
   totalQuestionsSpan.textContent = quizState.TOTAL_QUIZ_QUESTIONS;
   currentLevelNameSpan.textContent = quizState.currentLevelName;
-  questionText.textContent = 'Đang tạo câu hỏi...';
   startTimer();
   nextQuestion();
 }
 
-function nextQuestion() {
-  messageBox.textContent = '';
-  nextQuestionBtn.classList.add('hidden');
+function nextQuestion() 
+{
+    quizState.currentQuestionNumber++;
 
-  hideAllAnswerAreas();
+    mathAnswerInput.value = '';
+    messageBox.textContent = '';
+    submitAnswerBtn.disabled = false;
+  
+    nextQuestionBtn.classList.add('hidden');
+  
+    generateQuestion();
 
-  quizState.currentQuestionNumber++;
-  currentQuestionNumberSpan.textContent = quizState.currentQuestionNumber;
-  currentScoreSpan.textContent = quizState.currentScore;
-
-  if (quizState.currentQuestionNumber > quizState.TOTAL_QUIZ_QUESTIONS) {
-    endQuiz();
-    return;
-  }
-
-  generateQuestion();
 }
 
 function restartQuiz() {
@@ -282,19 +280,77 @@ function exitQuiz() {
 /* =========================
    7. QUESTION / DISPLAY
 ========================= */
-
-function generateQuestion() {
-  console.log('generateQuestion chạy');
-
-  quizState.currentQuestion = {
-    text: `Câu hỏi ${quizState.currentQuestionNumber}: ${quizState.currentLevelName}`,
-    answer: 1
-  };
-
-  console.log('currentQuestion =', quizState.currentQuestion);
-
-  displayQuestion();
+function getRandomNumberByLevel(level) 
+{
+    switch (level) {
+      case 1: return Math.floor(Math.random() * 10);   // 0–9
+      case 2: return Math.floor(Math.random() * 100);  // 0–99
+      case 3: return Math.floor(Math.random() * 1000); // 0–999
+      default: return 0;
+    }
 }
+
+function generateAddSubQuestion()
+{
+    const a = getRandomNumberByLevel(quizState.currentLevel);
+    const b = getRandomNumberByLevel(quizState.currentLevel);
+    const isAdd = Math.random() < 0.5;
+  
+    return {
+      text: isAdd ? `${a} + ${b} = ?` : `${a} - ${b} = ?`,
+      answer: isAdd ? a + b : a - b,
+      type: 'ADD_SUB'
+    };
+}
+
+function generateMultDivQuestion()
+{
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
+    const isMult = Math.random() < 0.5;
+  
+    if (isMult) {
+      return {
+        text: `${a} × ${b} = ?`,
+        answer: a * b,
+        type: 'MULT_DIV'
+      };
+    } else {
+      return {
+        text: `${a * b} ÷ ${a} = ?`,
+        answer: b,
+        type: 'MULT_DIV'
+      };
+    }
+}
+  
+
+function generateQuestion() 
+{
+    console.log('generateQuestion chạy');
+  
+    let question;
+  
+    if (quizState.currentQuizType === 'ADD_SUB') {
+      question = generateAddSubQuestion();
+    } 
+    else if (quizState.currentQuizType === 'MULT_DIV') {
+      question = generateMultDivQuestion();
+    } 
+    else {
+      question = {
+        text: 'Chưa hỗ trợ loại quiz này',
+        answer: null
+      };
+    }
+  
+    quizState.currentQuestion = question;
+  
+    console.log('currentQuestion =', quizState.currentQuestion);
+  
+    displayQuestion();
+}
+  
 
 function displayQuestion() {
   questionText.classList.remove('hidden');
@@ -324,7 +380,29 @@ function submitAnswer() {
 }
 
 function checkAnswer(answer) {
-  return answer == quizState.currentQuestion.answer;
+    if (!quizState.currentQuestion) return;
+
+    const userAnswer = Number(mathAnswerInput.value);
+  
+    if (mathAnswerInput.value.trim() === '') {
+      messageBox.textContent = '⚠️ Bạn chưa nhập đáp án';
+      messageBox.className = 'text-yellow-600 font-bold';
+      return;
+    }
+  
+    if (userAnswer === quizState.currentQuestion.answer) {
+      quizState.currentScore += 1;
+  
+      currentScoreSpan.textContent = quizState.currentScore;
+      messageBox.textContent = '✅ Chính xác!';
+      messageBox.className = 'text-green-600 font-bold';
+  
+      nextQuestionBtn.classList.remove('hidden');
+      submitAnswerBtn.disabled = true;
+    } else {
+      messageBox.textContent = '❌ Sai rồi, thử lại nhé!';
+      messageBox.className = 'text-red-600 font-bold';
+    }
 }
 
 /* =========================
