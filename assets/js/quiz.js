@@ -123,6 +123,9 @@ let nameModal, playerNameInput, submitScoreBtn, leaderboardBody;
 
 let soundCorrect, soundWrong;
 
+let clockQuestionContainer, hourHand, minuteHand, clockChoices;
+
+
 
 
 /* =========================
@@ -196,6 +199,12 @@ document.addEventListener('DOMContentLoaded', () => {
   soundCorrect = document.getElementById('sound-correct');
   soundWrong = document.getElementById('sound-wrong');
   
+  /* Clock */
+  clockQuestionContainer = document.getElementById('clock-question');
+  hourHand = document.getElementById('hour-hand');
+  minuteHand = document.getElementById('minute-hand');
+  clockChoices = document.getElementById('clock-choices');
+
   //submitAnswerBtn.addEventListener('click', checkAnswer);
   nextQuestionBtn.addEventListener('click', nextQuestion);
   
@@ -431,11 +440,16 @@ function generateQuestion() {
     if (quizState.currentQuizType === 'ADD_SUB') {
 
         const rand = Math.random();
-      
-        if (rand < 0.2) {
-          question = generateCompareQuestion(quizState);
+        if (
+          (quizState.currentLevel === 1 || quizState.currentLevel === 2)
+          && rand < 0.2
+        ) {
+          question = generateClockQuestion(quizState);
         }
         else if (rand < 0.35) {
+          question = generateCompareQuestion(quizState);
+        }
+        else if (rand < 0.5) {
           question = generateSortingQuestion(quizState.currentLevel);
         }
         else {
@@ -527,7 +541,52 @@ function displayQuestion() {
 
       comparisonButtonsContainer.classList.remove('hidden');
       break;
+    
+      case 'CLOCK':
+        clockImageContainer.classList.remove('hidden');
+      
+        // rotate hands
+        const minuteDeg = quizState.currentQuestion.minute * 6;
+        const hourDeg =
+          (quizState.currentQuestion.hour % 12) * 30 +
+          quizState.currentQuestion.minute * 0.5;
+      
+        minuteHand.style.transform =
+          `translateX(-50%) translateY(-100%) rotate(${minuteDeg}deg)`;
+      
+        hourHand.style.transform =
+          `translateX(-50%) translateY(-100%) rotate(${hourDeg}deg)`;
+      
+        // render choices
+        clockChoices.innerHTML = '';
+        quizState.currentQuestion.choices.forEach(choice => {
+          const btn = document.createElement('button');
 
+          const [hour, minute] = choice.split(':');
+
+          btn.innerHTML = `
+            <span class="text-red-500 font-bold">${hour}</span>
+            :
+            <span class="text-green-500 font-bold">${minute}</span>
+          `;
+
+          btn.className =
+            'bg-white border rounded px-4 py-2 font-bold hover:bg-indigo-100';
+          btn.onclick = () => {
+            lockUserInput();
+            if (choice ===
+                `${quizState.currentQuestion.hour}:${quizState.currentQuestion.minute
+                  .toString().padStart(2, '0')}`) {
+              handleCorrectAnswer();
+            } else {
+              handleWrongAnswer();
+            }
+          };
+      
+          clockChoices.appendChild(btn);
+        });
+        break;
+        
     default:
       questionText.textContent = 'Loại câu hỏi chưa hỗ trợ';
       questionText.classList.remove('hidden');
@@ -538,6 +597,46 @@ function displayQuestion() {
 /* =========================
    7. QUESTION / DISPLAY
 ========================= */
+/* Clock Question */
+function generateClockQuestion(quizState) {
+  const hour = Math.floor(Math.random() * 12) + 1;
+  let minute;
+
+  if (quizState.currentLevel === 1) {
+    minute = Math.random() < 0.5 ? 0 : 30;
+  } else if (quizState.currentLevel === 2) {
+    minute = Math.floor(Math.random() * 12) * 5;
+  } else {
+    return null;
+  }
+
+  const correct = `${hour}:${minute.toString().padStart(2, '0')}`;
+
+  const choices = new Set([correct]);
+
+  while (choices.size < 4) {
+    let h = hour;
+    let m = minute;
+
+    if (Math.random() < 0.5) {
+      h = ((hour + (Math.random() < 0.5 ? -1 : 1) + 12 - 1) % 12) + 1;
+    } else {
+      m = quizState.currentLevel === 1
+        ? (minute === 0 ? 30 : 0)
+        : (minute + (Math.random() < 0.5 ? -5 : 5) + 60) % 60;
+    }
+
+    choices.add(`${h}:${m.toString().padStart(2, '0')}`);
+  }
+
+  return {
+    type: 'CLOCK',
+    hour,
+    minute,
+    choices: Array.from(choices)
+  };
+}
+
 /* Hàm câu hỏi */
 
 function renderSortingNumbers(numbers) {
@@ -892,24 +991,29 @@ function showScoreEffect(text, color) {
   }, 600);
 }
 
-
-
 function hideAllAnswerAreas() {
-  //inputAnswerContainer.classList.add('hidden');
+  inputAnswerContainer.classList.add('hidden');
   mathAnswerInput.classList.add('hidden');
-  mathAnswerInput.classList.remove('hidden');
+  
+
   sortingNumbersContainer.classList.add('hidden');
   sortingTargetContainer.classList.add('hidden');
   sortingControls.classList.add('hidden');
+
   comparisonDisplayArea.classList.add('hidden');
   comparisonButtonsContainer.classList.add('hidden');
+
   clockImageContainer.classList.add('hidden');
+  clockChoices.innerHTML = '';
+  
+  nextQuestionBtn.classList.add('hidden');
+
+  mathAnswerInput.classList.remove('hidden');
 
   //submitAnswerBtn.classList.add('hidden');
-  nextQuestionBtn.classList.add('hidden');
+  //clockQuestionContainer.classList.add('hidden');
+  mathAnswerInput.classList.remove('hidden');
 }
-
-  
 
 function showMessage(text, type) {
   messageBox.textContent = text;
