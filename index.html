@@ -307,49 +307,51 @@
                 <!-- Vùng cho hình ảnh đồng hồ (Q19) -->
                 <div id="clockImageContainer" class="hidden my-4 flex justify-center">
                     <!-- ⏰ CLOCK QUESTION -->
-                    <div id="clock-question" class="flex flex-col items-center gap-4">
-
-                    <!-- Clock face -->
-                    <div class="relative w-48 h-48 rounded-full border-4 border-gray-700 bg-white">
+                    <svg id="clock-question" viewBox="0 0 200 200" class="w-52 h-52">
+    
+                        <!-- Face -->
+                        <circle cx="100" cy="100" r="95"
+                                fill="#ffffff" stroke="#374151" stroke-width="4" />
+                    
                         <!-- Numbers -->
-                        <div class="absolute inset-0 text-sm font-bold text-gray-700">
-                            <span class="absolute top-2 left-1/2 -translate-x-1/2">12</span>
-                            <span class="absolute right-2 top-1/2 -translate-y-1/2">3</span>
-                            <span class="absolute bottom-2 left-1/2 -translate-x-1/2">6</span>
-                            <span class="absolute left-2 top-1/2 -translate-y-1/2">9</span>
-                        
-                            <span class="absolute top-5 right-8">1</span>
-                            <span class="absolute top-14 right-4">2</span>
-                            <span class="absolute bottom-14 right-4">4</span>
-                            <span class="absolute bottom-5 right-8">5</span>
-                            <span class="absolute bottom-5 left-8">7</span>
-                            <span class="absolute bottom-14 left-4">8</span>
-                            <span class="absolute top-14 left-4">10</span>
-                            <span class="absolute top-5 left-8">11</span>
-                        </div>
-  
-                        <!-- Center dot -->
-                        <div class="absolute w-4 h-4 bg-gray-700 rounded-full 
-                        top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30"></div>
-
+                        <g font-size="14" font-weight="bold" fill="#1f2937" text-anchor="middle">
+                          <text x="100" y="28">12</text>
+                          <text x="172" y="105">3</text>
+                          <text x="100" y="182">6</text>
+                          <text x="28" y="105">9</text>
+                    
+                          <text x="140" y="40">1</text>
+                          <text x="165" y="70">2</text>
+                          <text x="165" y="145">4</text>
+                          <text x="140" y="170">5</text>
+                          <text x="60" y="170">7</text>
+                          <text x="35" y="145">8</text>
+                          <text x="35" y="70">10</text>
+                          <text x="60" y="40">11</text>
+                        </g>
+                    
                         <!-- Hour hand -->
-                        <div id="hour-hand"
-                            class="absolute w-2 h-14 bg-red-500 rounded 
-                                    top-1/2 left-1/2 origin-bottom 
-                                    -translate-x-1/2 -translate-y-full z-10">
-                        </div>
-
+                        <line id="hour-hand"
+                              x1="100" y1="100"
+                              x2="100" y2="55"
+                              stroke="#ef4444"
+                              stroke-width="6"
+                              stroke-linecap="round" />
+                    
                         <!-- Minute hand -->
-                        <div id="minute-hand"
-                            class="absolute w-1 h-18 bg-green-500 rounded 
-                                    top-1/2 left-1/2 origin-bottom 
-                                    -translate-x-1/2 -translate-y-full z-10">
-                        </div>
-                    </div>
-
-                    <!-- Multiple choice -->
-                    <div id="clock-choices" class="grid grid-cols-2 gap-3"></div>
-                    </div>
+                        <line id="minute-hand"
+                              x1="100" y1="100"
+                              x2="100" y2="35"
+                              stroke="#22c55e"
+                              stroke-width="4"
+                              stroke-linecap="round" />
+                    
+                        <!-- Center -->
+                        <circle cx="100" cy="100" r="5" fill="#374151" />
+                    
+                      </svg>
+                    
+                      <div id="clock-choices" class="grid grid-cols-2 gap-3"></div>
                 </div>
                 
                 <!-- Dạng bài so sánh -->

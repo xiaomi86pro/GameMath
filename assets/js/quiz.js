@@ -543,19 +543,24 @@ function displayQuestion() {
       break;
     
       case 'CLOCK':
+        questionText.classList.add('hidden');
         clockImageContainer.classList.remove('hidden');
-      
+
         // rotate hands
         const minuteDeg = quizState.currentQuestion.minute * 6;
         const hourDeg =
           (quizState.currentQuestion.hour % 12) * 30 +
           quizState.currentQuestion.minute * 0.5;
       
-        minuteHand.style.transform =
-          `translateX(-50%) translateY(-100%) rotate(${minuteDeg}deg)`;
-      
-        hourHand.style.transform =
-          `translateX(-50%) translateY(-100%) rotate(${hourDeg}deg)`;
+          minuteHand.setAttribute(
+            'transform',
+            `rotate(${minuteDeg} 100 100)`
+          );
+          
+          hourHand.setAttribute(
+            'transform',
+            `rotate(${hourDeg} 100 100)`
+          );
       
         // render choices
         clockChoices.innerHTML = '';
