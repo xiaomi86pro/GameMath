@@ -90,6 +90,7 @@ export const quizState = {
   quizTimer: null,
   timeRemaining: MAX_QUIZ_TIME_SECONDS,
   startTime: 0,
+  correctStreak: 0,
   TOTAL_QUIZ_QUESTIONS: 20
 };
 
@@ -341,6 +342,7 @@ function bindEvents() {
 ========================= */
 
 function startQuiz() {
+  quizState.correctStreak = 0;
   quizState.currentScore = 0;
   quizState.currentQuestionNumber = 0;
   quizState.timeRemaining = MAX_QUIZ_TIME_SECONDS;
@@ -355,6 +357,15 @@ function startQuiz() {
 
   totalQuestionsSpan.textContent = quizState.TOTAL_QUIZ_QUESTIONS;
   currentLevelNameSpan.textContent = quizState.currentLevelName;
+
+  const scoreBall = document.getElementById('score-ball');
+    if (scoreBall) {
+      scoreBall.textContent = 0;
+      scoreBall.classList.remove('bg-yellow-400', 'animate-pulse');
+      scoreBall.classList.add('bg-blue-500');
+      scoreBall.style.left = '0%';
+    }
+  
   startTimer();
   nextQuestion();
 }
@@ -375,6 +386,13 @@ function nextQuestion(){
      // Cập nhật progress bar
      const progress = (quizState.currentQuestionNumber / quizState.TOTAL_QUIZ_QUESTIONS) * 100;
      progressBar.style.width = progress + '%';
+
+     const scoreBall = document.getElementById('score-ball');
+      if (scoreBall) {
+        scoreBall.style.left = `calc(${progress}% - 20px)`;
+        scoreBall.textContent = quizState.currentScore;
+      }
+
      
      // Cập nhật số câu hỏi hiển thị
      currentQuestionNumberSpan.textContent = quizState.currentQuestionNumber;
@@ -571,34 +589,59 @@ function generateSortingQuestion(level) {
     };
   }
   
-function handleCorrectAnswer() {
+  function handleCorrectAnswer() {
     quizState.currentScore += 1;
-    // Phát âm thanh đúng
-    if (soundCorrect) {
-      soundCorrect.currentTime = 0;
-      soundCorrect.play();
+    quizState.correctStreak += 1;
+  
+    showScoreEffect('+1', 'text-yellow-400');
+  
+    const scoreBall = document.getElementById('score-ball');
+    if (scoreBall) {
+      scoreBall.textContent = quizState.currentScore;
+  
+      if (quizState.correctStreak >= 3) {
+        const scoreBall = document.getElementById('score-ball');
+        if (scoreBall) {
+          scoreBall.textContent = quizState.currentScore;
+
+          if (quizState.correctStreak >= 3) {
+            scoreBall.classList.add('score-ball-fire');
+            scoreBall.textContent = '🔥 ' + quizState.currentScore;
+          }
+        }
+        scoreBall.classList.remove('bg-blue-500');
+      }
     }
-    currentScoreSpan.textContent = quizState.currentScore;
+  
+    soundCorrect?.play();
   
     messageBox.textContent = '✅ Chính xác!';
     messageBox.className = 'text-green-600 font-bold';
   
     nextQuestionBtn.classList.remove('hidden');
-    nextQuestionBtn.focus();
   }
   
-function handleWrongAnswer() {
-  // Phát âm thanh đúng
-  if (soundWrong) {
-    soundWrong.currentTime = 0;
-    soundWrong.play();
-  }
+  
+  function handleWrongAnswer() {
+    quizState.currentScore -= 1;
+    quizState.correctStreak = 0;
+  
+    showScoreEffect('-1', 'text-red-500');
+  
+    const scoreBall = document.getElementById('score-ball');
+    if (scoreBall) {
+      scoreBall.textContent = quizState.currentScore;
+      scoreBall.classList.remove('score-ball-fire');
+    }
+  
+    soundWrong?.play();
+  
     messageBox.textContent = '❌ Sai rồi!';
     messageBox.className = 'text-red-600 font-bold';
   
     nextQuestionBtn.classList.remove('hidden');
-    nextQuestionBtn.focus();
   }
+  
 
 function handleCompareAnswer(selectedOp) {
     if (submitAnswerBtn.disabled) return;
@@ -825,6 +868,20 @@ function endQuiz() {
 /* =========================
    11. UTILITIES
 ========================= */
+/* Score Effect */
+function showScoreEffect(text, color) {
+  scoreEffect.textContent = text;
+  scoreEffect.className = `absolute text-2xl font-bold ${color}`;
+  scoreEffect.style.opacity = 1;
+  scoreEffect.style.transform = 'translateY(0)';
+
+  setTimeout(() => {
+    scoreEffect.style.opacity = 0;
+    scoreEffect.style.transform = 'translateY(-30px)';
+  }, 600);
+}
+
+
 
 function hideAllAnswerAreas() {
   //inputAnswerContainer.classList.add('hidden');

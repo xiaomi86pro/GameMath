@@ -13,7 +13,35 @@
         .leader-top-2 { color: #6b7280; font-weight: 600; }
         .leader-top-3 { color: #92400e; font-weight: 600; }
         /* Tùy chỉnh font cho dễ nhìn hơn */
-    
+        
+        /* 🔥 Score Ball – Fire Mode */
+        .score-ball-fire {
+        background: radial-gradient(circle at 30% 30%, #fff3a0, #ffb300, #ff6f00);
+        box-shadow:
+            0 0 8px #ffb300,
+            0 0 16px #ff6f00,
+            0 0 24px rgba(255, 120, 0, 0.9);
+        border: 2px solid #ffd54f;
+        animation: fire-flame 0.4s infinite alternate;
+        }
+
+        /* 🔥 Lửa cháy nhẹ */
+        @keyframes fire-flame {
+        0% {
+            box-shadow:
+            0 0 6px #ffb300,
+            0 0 14px #ff6f00,
+            0 0 22px rgba(255, 120, 0, 0.8);
+        }
+        100% {
+            box-shadow:
+            0 0 10px #ffd54f,
+            0 0 20px #ff8f00,
+            0 0 30px rgba(255, 140, 0, 1);
+        }
+        }
+
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f7f7f7;
@@ -212,15 +240,31 @@
                 </p>
 
                 <!-- Score Container with Relative Positioning for Effect -->
-                <p class="text-xl font-semibold score-container-relative">
-                    Điểm: <span id="current-score" class="text-green-600 font-extrabold text-2xl">0</span>
-                    <span id="score-effect" class="score-effect"></span>
-                </p>
+                <!-- <p class="text-xl font-semibold score-container-relative"> -->
+                <!--    Điểm: <span id="current-score" class="text-green-600 font-extrabold text-2xl">0</span> -->
+                <!--    <span id="score-effect" class="score-effect"></span> -->
+                <!-- </p> -->
             </div>
             
             <!-- Progress Bar -->
-            <div id="progress-bar-container" class="w-full bg-gray-200 rounded-full h-4 mb-4 overflow-hidden shadow-inner">
+            <div id="progress-bar-container" class="relative w-full bg-gray-200 rounded-full h-4 mb-6 shadow-inner">
                 <div id="progress-bar" class="bg-indigo-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                <div
+                    id="score-effect"
+                    class="pointer-events-none transition-all duration-500
+                        absolute left-1/2 -translate-x-1/2 -top-6
+                        text-2xl font-bold">
+                </div>
+                <div
+                        id="score-ball"
+                        class="absolute -top-3 
+                            w-10 h-10 rounded-full bg-blue-500 
+                            flex items-center justify-center
+                            text-white font-bold transition-all duration-300"
+                        style="left: 0%"
+                >
+                0
+                </div>
             </div>
             
             <p class="text-lg font-semibold mb-4">Cấp độ: <span id="current-level-name">Cấp 1</span> | Câu hỏi: <span id="current-question-number">0</span> / <span id="total-questions">20</span></p>
