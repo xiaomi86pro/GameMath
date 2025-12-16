@@ -857,6 +857,8 @@ function updateLevelUI() {
     if (currentLevelNameSpan) {
       currentLevelNameSpan.textContent = quizState.currentLevelName;
     }
+  }
+  
     /* =========================
     SUPABASE & LEADERBOARD
     ========================= */
@@ -923,11 +925,14 @@ function updateLevelUI() {
 
       // Xử lý sự kiện submit score (phải đặt sau khi hàm saveScore đã được định nghĩa)
     document.addEventListener('DOMContentLoaded', () => {
+        console.log('🟣🟣🟣 DOMContentLoaded THỨ HAI đã chạy!');
+        console.log('🟣 Kiểm tra biến global:', { submitScoreBtn, playerNameInput, nameModal });
         //const submitScoreBtn = document.getElementById('submit-score');
         //const playerNameInput = document.getElementById('player-name');
-        const nameModal = document.getElementById('name-modal');
-        
+        //const nameModal = document.getElementById('name-modal');
+      
         if (submitScoreBtn) {
+          console.log('🟣 submitScoreBtn TỒN TẠI, đang bind event...');
           submitScoreBtn.addEventListener('click', async () => {
             console.log('🔵 Đã click nút Lưu kết quả'); 
             const name = playerNameInput.value.trim();
@@ -944,6 +949,7 @@ function updateLevelUI() {
             playerNameInput.value = '';
             location.reload();
           });
+          console.log('🟣 Đã bind event xong!');
         } else {
           console.log('🔴 Không tìm thấy submitScoreBtn');
         }
@@ -956,6 +962,7 @@ function updateLevelUI() {
 
       // Gọi loadLeaderboard khi trang load xong
       document.addEventListener('DOMContentLoaded', () => {
+        console.log('🟣🟣🟣 DOMContentLoaded THỨ HAI đã chạy!');
         // Đợi một chút để đảm bảo tất cả biến đã được khởi tạo
         setTimeout(() => {
           if (typeof loadLeaderboard === 'function') {
@@ -963,4 +970,4 @@ function updateLevelUI() {
           }
         }, 500);
       });
-}
+
