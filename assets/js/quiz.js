@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
   inputAnswerContainer = document.getElementById('input-answer-container');
   mathAnswerInput = document.getElementById('math-answer-input');
   submitAnswerBtn = document.getElementById('submit-answer-btn');
-  console.log('submitAnswerBtn =', submitAnswerBtn);
+  //console.log('submitAnswerBtn =', submitAnswerBtn);
 
 
   /* === Sorting === */
@@ -333,6 +333,108 @@ function exitQuiz() {
   location.reload();
 }
 
+function generateQuestion() 
+{
+    //console.log('generateQuestion chạy');
+  
+    let question;
+  
+    if (quizState.currentQuizType === 'ADD_SUB') {
+
+        const rand = Math.random();
+      
+        if (rand < 0.2) {
+          question = generateCompareQuestion(quizState);
+        }
+        else if (rand < 0.35) {
+          question = generateSortingQuestion(quizState.currentLevel);
+        }
+        else {
+          question = generateAddSubQuestion(quizState);
+        }
+      
+      }
+    else if (quizState.currentQuizType === 'MULT_DIV') {
+      question = generateMultDivQuestion(quizState);
+    } 
+    else if (quizState.currentQuizType === 'COMPARE') {
+        question = generateCompareQuestion(quizState);
+    }
+    else if (quizState.currentQuizType === 'SORT') {
+        question = generateSortingQuestion(quizState.currentLevel);
+    }      
+    else {
+      question = {
+        text: 'Chưa hỗ trợ loại quiz này',
+        answer: null
+      };
+    }
+    quizState.currentQuestion = question;
+  
+    console.log('currentQuestion =', quizState.currentQuestion);
+    console.log('TYPE =', quizState.currentQuestion?.type);
+    displayQuestion();
+}
+
+function displayQuestion() {
+  hideAllAnswerAreas();
+  resetSubmitButton();
+
+  const q = quizState.currentQuestion;
+  if (!q) return;
+
+  switch (q.type) {
+
+    case 'SORT':
+      questionText.textContent =
+        q.order === 'ASC'
+          ? 'Sắp xếp các số theo thứ tự tăng dần'
+          : 'Sắp xếp các số theo thứ tự giảm dần';
+
+      questionText.classList.remove('hidden');
+
+      sortingNumbersContainer.classList.remove('hidden');
+      sortingTargetContainer.classList.remove('hidden');
+
+      renderSortingNumbers(q.numbers);
+
+      submitAnswerBtn.classList.remove('hidden');
+      submitAnswerBtn.textContent = 'Kiểm tra';
+
+      submitAnswerBtn.onclick = () => {
+        const selected = Array.from(
+          sortingTargetContainer.children
+        ).map(el => Number(el.textContent));
+
+        lockUserInput();
+        checkSortingAnswer(selected);
+      };
+      break;
+
+    case 'ADD_SUB':
+      questionText.textContent = q.text;
+      questionText.classList.remove('hidden');
+      inputAnswerContainer.classList.remove('hidden');
+      break;
+
+    case 'COMPARE':
+      questionText.classList.add('hidden');
+      comparisonDisplayArea.classList.remove('hidden');
+
+      expressionLeft.textContent = q.left;
+      expressionRight.textContent = q.right;
+      comparisonBox.textContent = '?';
+
+      comparisonButtonsContainer.classList.remove('hidden');
+      break;
+
+    default:
+      questionText.textContent = 'Loại câu hỏi chưa hỗ trợ';
+      questionText.classList.remove('hidden');
+  }
+}
+
+
 /* =========================
    7. QUESTION / DISPLAY
 ========================= */
@@ -465,6 +567,7 @@ function getRandomNumberByLevel(level) {
  * - Level 1: KHÔNG có số âm
  * - Level 2+: có thể có số âm (giữ đúng logic cũ)
  */
+
 function generateAddSubQuestion(quizState) {
     let a = getRandomNumberByLevel(quizState.currentLevel);
     let b = getRandomNumberByLevel(quizState.currentLevel);
@@ -520,92 +623,7 @@ function generateCompareQuestion(quizState) {
       type: 'COMPARE'
     };
   }
-  
 
-/* Tạo câu hỏi */  
-function generateQuestion() 
-{
-    console.log('generateQuestion chạy');
-  
-    let question;
-  
-    if (quizState.currentQuizType === 'ADD_SUB') {
-
-        const rand = Math.random();
-      
-        if (rand < 0.2) {
-          question = generateCompareQuestion(quizState);
-        }
-        else if (rand < 0.35) {
-          question = generateSortingQuestion(quizState.currentLevel);
-        }
-        else {
-          question = generateAddSubQuestion(quizState);
-        }
-      
-      }
-    else if (quizState.currentQuizType === 'MULT_DIV') {
-      question = generateMultDivQuestion(quizState);
-    } 
-    else if (quizState.currentQuizType === 'COMPARE') {
-        question = generateCompareQuestion(quizState);
-    }
-    else if (quizState.currentQuizType === 'SORT') {
-        question = generateSortingQuestion(quizState.currentLevel);
-    }      
-    else {
-      question = {
-        text: 'Chưa hỗ trợ loại quiz này',
-        answer: null
-      };
-    }
-    quizState.currentQuestion = question;
-  
-    console.log('currentQuestion =', quizState.currentQuestion);
-    console.log('TYPE =', quizState.currentQuestion?.type);
-    displayQuestion();
-}
-  
-
-function displayQuestion() {
-    hideAllAnswerAreas();
-    resetSubmitButton();
-
-    const q = quizState.currentQuestion;
-    if (!q) return;
-    // Câu sắp xếp 
-    if (q.type === 'SORT') {
-        questionText.textContent =
-            q.order === 'ASC'
-                ? 'Sắp xếp các số theo thứ tự tăng dần'
-                : 'Sắp xếp các số theo thứ tự giảm dần';
-    
-        questionText.classList.remove('hidden');
-    
-        sortingNumbersContainer.classList.remove('hidden');
-        sortingTargetContainer.classList.remove('hidden');
-    
-        renderSortingNumbers(q.numbers);
-    
-        submitAnswerBtn.classList.remove('hidden');
-        submitAnswerBtn.textContent = 'Kiểm tra';
-    
-        resetSubmitButton();
-    
-        submitAnswerBtn.onclick = () => {
-            const selected = Array.from(
-                sortingTargetContainer.children
-            ).map(el => Number(el.textContent));
-    
-            console.log('SORT user chọn:', selected);
-    
-            lockUserInput();
-            checkSortingAnswer(selected);
-        };
-    
-        return;
-    }
-    
     // ===== SO SÁNH =====
     if (q.type === 'COMPARE') {
       questionText.classList.add('hidden');
@@ -738,16 +756,14 @@ function endQuiz() {
 ========================= */
 
 function hideAllAnswerAreas() {
-    questionText.classList.add('hidden');
+    //questionText.classList.add('hidden');
     inputAnswerContainer.classList.add('hidden');
-  
-    comparisonDisplayArea.classList.add('hidden');
-    comparisonButtonsContainer.classList.add('hidden');
-  
-    clockImageContainer.classList.add('hidden');
     sortingNumbersContainer.classList.add('hidden');
     sortingTargetContainer.classList.add('hidden');
     sortingControls.classList.add('hidden');
+    comparisonDisplayArea.classList.add('hidden');
+    comparisonButtonsContainer.classList.add('hidden');
+    clockImageContainer.classList.add('hidden');
   }
   
 
