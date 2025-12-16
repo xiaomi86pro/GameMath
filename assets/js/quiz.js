@@ -82,7 +82,7 @@ export const quizState = {
 /* =========================
    3. DOM REFERENCES
 ========================= */
-
+let expressionLeft, expressionRight, comparisonBox;
 let setupScreen, quizScreen, endScreen;
 let startQuizBtn, nextQuestionBtn, restartQuizBtn, exitQuizBtn;
 let levelSelectBtns;
@@ -94,7 +94,7 @@ let currentLevelNameSpan, finalScoreSpan;
 
 let inputAnswerContainer, mathAnswerInput, submitAnswerBtn;
 let sortingNumbersContainer, sortingTargetContainer, sortingControls;
-let resetSortingBtn, submitSortingBtn;
+
 
 let comparisonButtonsContainer, comparisonDisplayArea;
 let progressBar, scoreEffect, quizTimerDisplay;
@@ -131,7 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
   totalQuestionsSpan = document.getElementById('total-questions');
   currentScoreSpan = document.getElementById('current-score');
   finalScoreSpan = document.getElementById('final-score');
-
+  expressionLeft = document.getElementById('expression-left');
+  expressionRight = document.getElementById('expression-right');
+  comparisonBox = document.getElementById('comparison-box');
   /* === Input Answer === */
   inputAnswerContainer = document.getElementById('input-answer-container');
   mathAnswerInput = document.getElementById('math-answer-input');
@@ -143,9 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
   sortingNumbersContainer = document.getElementById('sorting-numbers-container');
   sortingTargetContainer = document.getElementById('sorting-target-container');
   sortingControls = document.getElementById('sorting-controls');
-  resetSortingBtn = document.getElementById('reset-sorting-btn');
-  submitSortingBtn = document.getElementById('submit-sorting-btn');
-
+  
+ 
   /* === Comparison === */
   comparisonButtonsContainer = document.getElementById('comparison-buttons-container');
   comparisonDisplayArea = document.getElementById('comparison-display-area');
@@ -161,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
   hintArea = document.getElementById('hint-area');
   hintText = document.getElementById('hint-text');
   
-  submitAnswerBtn.addEventListener('click', checkAnswer);
+  //submitAnswerBtn.addEventListener('click', checkAnswer);
   nextQuestionBtn.addEventListener('click', nextQuestion);
   
   const compButtons = document.querySelectorAll('.comp-btn');
@@ -172,14 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  submitSortingBtn.addEventListener('click', () => {
-    const selected = Array.from(
-      sortingTargetContainer.children
-    ).map(el => Number(el.textContent));
-  
-    checkSortingAnswer(selected);
-  })
-    
   bindEvents();
 });
 
@@ -204,16 +197,14 @@ function lockUserInput() {
         .forEach(btn => btn.disabled = true);
   }
   
-  function unlockUserInput() {
+function unlockUserInput() {
     submitAnswerBtn.disabled = false;
     submitAnswerBtn.classList.remove('opacity-50');
   
     mathAnswerInput.disabled = false;
   
     setCompareButtonsDisabled(false);
-  
-    submitSortingBtn.disabled = false;
-    submitSortingBtn.classList.remove('opacity-50');
+
   }
   
 function setCompareButtonsDisabled(disabled) {
@@ -395,9 +386,9 @@ function displayQuestion() {
 
       renderSortingNumbers(q.numbers);
 
-      submitAnswerBtn.classList.remove('hidden');
       submitAnswerBtn.textContent = 'Kiểm tra';
-
+      submitAnswerBtn.classList.remove('hidden');
+      
       submitAnswerBtn.onclick = () => {
         const selected = Array.from(
           sortingTargetContainer.children
@@ -490,7 +481,7 @@ function handleCorrectAnswer() {
     nextQuestionBtn.focus();
   }
   
-  function handleWrongAnswer() {
+function handleWrongAnswer() {
     messageBox.textContent = '❌ Sai rồi!';
     messageBox.className = 'text-red-600 font-bold';
   
@@ -626,17 +617,19 @@ function generateCompareQuestion(quizState) {
    8. ANSWER CHECKING
 ========================= */
 function checkSortingAnswer(userOrder) {
-    const correct = quizState.currentQuestion.answer;
-  
-    if (
-      JSON.stringify(userOrder) ===
-      JSON.stringify(correct)
-    ) {
-      handleCorrectAnswer();
-    } else {
-      handleWrongAnswer();
-    }
+  const correct = quizState.currentQuestion.answer;
+  const isCorrect =
+    JSON.stringify(userOrder) === JSON.stringify(correct);
+
+  if (isCorrect) {
+    handleCorrectAnswer();
+  } else {
+    handleWrongAnswer();
   }
+
+  nextQuestionBtn.classList.remove('hidden');
+}
+
 
 function submitAnswer() {
   const userAnswer = mathAnswerInput.value.trim();
@@ -720,15 +713,18 @@ function endQuiz() {
 ========================= */
 
 function hideAllAnswerAreas() {
-    //questionText.classList.add('hidden');
-    inputAnswerContainer.classList.add('hidden');
-    sortingNumbersContainer.classList.add('hidden');
-    sortingTargetContainer.classList.add('hidden');
-    sortingControls.classList.add('hidden');
-    comparisonDisplayArea.classList.add('hidden');
-    comparisonButtonsContainer.classList.add('hidden');
-    clockImageContainer.classList.add('hidden');
-  }
+  inputAnswerContainer.classList.add('hidden');
+  sortingNumbersContainer.classList.add('hidden');
+  sortingTargetContainer.classList.add('hidden');
+  sortingControls.classList.add('hidden');
+  comparisonDisplayArea.classList.add('hidden');
+  comparisonButtonsContainer.classList.add('hidden');
+  clockImageContainer.classList.add('hidden');
+
+  submitAnswerBtn.classList.add('hidden');
+  nextQuestionBtn.classList.add('hidden');
+}
+
   
 
 function showMessage(text, type) {
