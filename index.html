@@ -16,32 +16,81 @@
         
         /* 🔥 Score Ball – Fire Mode */
         .score-ball-fire {
-        background: radial-gradient(circle at 30% 30%, #fff3a0, #ffb300, #ff6f00);
+            
+            background: linear-gradient(135deg, #ffeb3b, #ffc107);
+            border-color: #ffe082;
+            
+            }
+        /* halo chung */
+            .score-ball-fire::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(255, 200, 0, 0.6),
+                rgba(255, 120, 0, 0.4),
+                transparent 70%
+            );
+            filter: blur(6px);
+            animation: flame-move 1.2s ease-in-out infinite;
+            z-index: -1;
+            }  
+        /* 🔥 level 1 – streak ≥ 3 */
+        .fire-lv1 {
         box-shadow:
-            0 0 8px #ffb300,
-            0 0 16px #ff6f00,
-            0 0 24px rgba(255, 120, 0, 0.9);
-        border: 2px solid #ffd54f;
-        animation: fire-flame 0.4s infinite alternate;
+            0 0 8px rgba(255, 193, 7, 0.8),
+            0 0 16px rgba(255, 152, 0, 0.6);
         }
 
-        /* 🔥 Lửa cháy nhẹ */
-        @keyframes fire-flame {
+        /* 🔥🔥 level 2 – streak ≥ 5 */
+        .fire-lv2 {
+        box-shadow:
+            0 0 12px rgba(255, 193, 7, 0.9),
+            0 0 24px rgba(255, 152, 0, 0.8),
+            0 0 36px rgba(255, 87, 34, 0.6);
+        }
+
+        /* 🔥🔥🔥 level 3 – streak ≥ 10 */
+        .fire-lv3 {
+        box-shadow:
+            0 0 16px rgba(255, 213, 79, 1),
+            0 0 32px rgba(255, 152, 0, 0.9),
+            0 0 48px rgba(255, 87, 34, 0.8);
+        }
+
+        @keyframes flame-move {
         0% {
-            box-shadow:
-            0 0 6px #ffb300,
-            0 0 14px #ff6f00,
-            0 0 22px rgba(255, 120, 0, 0.8);
+            transform: scale(1) rotate(0deg);
+            opacity: 0.7;
+        }
+        50% {
+            transform: scale(1.08) rotate(6deg);
+            opacity: 0.9;
         }
         100% {
-            box-shadow:
-            0 0 10px #ffd54f,
-            0 0 20px #ff8f00,
-            0 0 30px rgba(255, 140, 0, 1);
+            transform: scale(1) rotate(-4deg);
+            opacity: 0.7;
         }
-        }
-
-
+        }      
+        /* lớp lửa bao quanh */
+            .score-ball-fire::before {
+                content: '';
+                position: absolute;
+                inset: -6px;
+                border-radius: 50%;
+                background: radial-gradient(
+                    circle,
+                    rgba(255, 200, 0, 0.6),
+                    rgba(255, 120, 0, 0.4),
+                    transparent 70%
+                );
+                filter: blur(6px);
+                animation: flame-move 1.2s ease-in-out infinite;
+                z-index: -1;
+                }
+                
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f7f7f7;
@@ -257,8 +306,10 @@
                 </div>
                 <div
                         id="score-ball"
-                        class="absolute -top-3 
-                            w-10 h-10 rounded-full bg-blue-500 
+                        class="absolute -top-3
+                            w-10 h-10 rounded-full
+                            bg-blue-500
+                            border-2 border-transparent
                             flex items-center justify-center
                             text-white font-bold transition-all duration-300"
                         style="left: 0%"

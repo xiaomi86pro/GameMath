@@ -282,7 +282,7 @@ function bindEvents() {
   restartQuizBtn.addEventListener('click', restartQuiz);
   exitQuizBtn.addEventListener('click', exitQuiz);
 
-  submitAnswerBtn.addEventListener('click', submitAnswer);
+ // submitAnswerBtn.addEventListener('click', submitAnswer);
 
   levelSelectBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -389,7 +389,7 @@ function nextQuestion(){
 
      const scoreBall = document.getElementById('score-ball');
       if (scoreBall) {
-        scoreBall.style.left = `calc(${progress}% - 20px)`;
+        scoreBall.style.left = `calc(${progress}% - 10px)`;
         scoreBall.textContent = quizState.currentScore;
       }
 
@@ -596,23 +596,29 @@ function generateSortingQuestion(level) {
     showScoreEffect('+1', 'text-yellow-400');
   
     const scoreBall = document.getElementById('score-ball');
-    if (scoreBall) {
-      scoreBall.textContent = quizState.currentScore;
-  
-      if (quizState.correctStreak >= 3) {
-        const scoreBall = document.getElementById('score-ball');
-        if (scoreBall) {
-          scoreBall.textContent = quizState.currentScore;
+      if (scoreBall) {
+        scoreBall.textContent = quizState.currentScore;
 
-          if (quizState.correctStreak >= 3) {
-            scoreBall.classList.add('score-ball-fire');
-            scoreBall.textContent = '🔥 ' + quizState.currentScore;
-          }
+        // reset class lửa
+        scoreBall.classList.remove(
+          'score-ball-fire',
+          'fire-lv1',
+          'fire-lv2',
+          'fire-lv3'
+        );
+
+        if (quizState.correctStreak >= 3) {
+          scoreBall.classList.add('score-ball-fire', 'fire-lv1');
         }
-        scoreBall.classList.remove('bg-blue-500');
+        if (quizState.correctStreak >= 5) {
+          scoreBall.classList.add('fire-lv2');
+        }
+        if (quizState.correctStreak >= 10) {
+          scoreBall.classList.add('fire-lv3');
+        }
       }
-    }
-  
+    //        scoreBall.classList.remove('bg-blue-500');
+
     soundCorrect?.play();
   
     messageBox.textContent = '✅ Chính xác!';
@@ -629,10 +635,15 @@ function generateSortingQuestion(level) {
     showScoreEffect('-1', 'text-red-500');
   
     const scoreBall = document.getElementById('score-ball');
-    if (scoreBall) {
-      scoreBall.textContent = quizState.currentScore;
-      scoreBall.classList.remove('score-ball-fire');
-    }
+      if (scoreBall) {
+        scoreBall.textContent = quizState.currentScore;
+        scoreBall.classList.remove(
+          'score-ball-fire',
+          'fire-lv1',
+          'fire-lv2',
+          'fire-lv3'
+        );
+      }
   
     soundWrong?.play();
   
