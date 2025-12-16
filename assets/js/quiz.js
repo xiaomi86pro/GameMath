@@ -310,8 +310,7 @@ function startQuiz() {
   nextQuestion();
 }
 
-function nextQuestion() 
-{
+function nextQuestion(){
     quizState.currentQuestionNumber++;
     unlockUserInput();
     mathAnswerInput.value = '';
@@ -321,7 +320,6 @@ function nextQuestion()
     nextQuestionBtn.classList.add('hidden');
   
     generateQuestion();
-
 }
 
 function restartQuiz() {
@@ -333,8 +331,7 @@ function exitQuiz() {
   location.reload();
 }
 
-function generateQuestion() 
-{
+function generateQuestion() {
     //console.log('generateQuestion chạy');
   
     let question;
@@ -588,7 +585,7 @@ function generateAddSubQuestion(quizState) {
     };
   }
 
-  function generateSimpleExpression(level) {
+function generateSimpleExpression(level) {
     let a = getRandomNumberByLevel(level);
     let b = getRandomNumberByLevel(level);
   
@@ -624,39 +621,6 @@ function generateCompareQuestion(quizState) {
     };
   }
 
-    // ===== SO SÁNH =====
-    if (q.type === 'COMPARE') {
-      questionText.classList.add('hidden');
-  
-      comparisonDisplayArea.classList.remove('hidden');
-      comparisonButtonsContainer.classList.remove('hidden');
-
-      setCompareButtonsDisabled(false);
-  
-      document.getElementById('expression-left').textContent = q.left;
-      document.getElementById('expression-right').textContent = q.right;
-      document.getElementById('comparison-box').textContent = '?';
-  
-      return;
-    }
-  
-    // ===== CÂU NHẬP ĐÁP ÁN =====
-    comparisonButtonsContainer.classList.add('hidden');
-    comparisonDisplayArea.classList.add('hidden');
-  
-    questionText.classList.remove('hidden');
-    questionText.textContent = q.text;
-  
-    inputAnswerContainer.classList.remove('hidden');
-    mathAnswerInput.value = '';
-
-    unlockUserInput();
-    messageBox.textContent = '';
-    nextQuestionBtn.classList.add('hidden');
-
-  }
-  
-  
 
 /* =========================
    8. ANSWER CHECKING
