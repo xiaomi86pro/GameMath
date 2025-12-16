@@ -852,11 +852,11 @@ function getBonusByLevel() {
 }
 
 function updateLevelUI() {
-  levelDescription.textContent = quizState.currentLevelName;
-  // Cập nhật tên level ở màn hình quiz
-  if (currentLevelNameSpan) {
-    currentLevelNameSpan.textContent = quizState.currentLevelName;
-  }
+    levelDescription.textContent = quizState.currentLevelName;
+    // Cập nhật tên level ở màn hình quiz
+    if (currentLevelNameSpan) {
+      currentLevelNameSpan.textContent = quizState.currentLevelName;
+    }
     /* =========================
     SUPABASE & LEADERBOARD
     ========================= */
@@ -894,8 +894,10 @@ function updateLevelUI() {
       }
     }
 
-      async function saveScore(playerName, score, level) {
-        console.log('🔵 Đang lưu điểm:', { playerName, score, level });
+    async function saveScore(playerName, score, level) {
+      console.log('🟡 saveScore được gọi với:', { playerName, score, level }); // THÊM
+      console.log('🟡 Supabase client:', supabase); // THÊM
+      console.log('🟡 SUPABASE_URL:', SUPABASE_URL); // THÊM
         try {
           const { error } = await supabase
             .from('leaderboard')
@@ -907,8 +909,10 @@ function updateLevelUI() {
                 created_at: new Date().toISOString()
               }
             ]);
-        console.log('🟢 Lưu thành công, error:', error);
-          if (error) throw error;
+          
+            console.log('🟢 Kết quả insert:', { data, error }); // THÊM
+        
+         if (error) throw error;
           
           await loadLeaderboard();
         } catch (error) {
@@ -918,29 +922,33 @@ function updateLevelUI() {
       }
 
       // Xử lý sự kiện submit score (phải đặt sau khi hàm saveScore đã được định nghĩa)
-      document.addEventListener('DOMContentLoaded', () => {
-        const submitScoreBtn = document.getElementById('submit-score');
-        const playerNameInput = document.getElementById('player-name');
+    document.addEventListener('DOMContentLoaded', () => {
+        //const submitScoreBtn = document.getElementById('submit-score');
+        //const playerNameInput = document.getElementById('player-name');
         const nameModal = document.getElementById('name-modal');
         
         if (submitScoreBtn) {
           submitScoreBtn.addEventListener('click', async () => {
+            console.log('🔵 Đã click nút Lưu kết quả'); 
             const name = playerNameInput.value.trim();
-            
+            console.log('🔵 Tên người chơi:', name);
             if (name === '') {
               alert('Vui lòng nhập tên!');
               return;
             }
-            
+            console.log('🔵 Chuẩn bị gọi saveScore');
             await saveScore(name, quizState.currentScore, quizState.currentLevel);
-            
+            console.log('🔵 Đã gọi saveScore xong');
             nameModal.classList.add('hidden');
             nameModal.classList.remove('flex');
             playerNameInput.value = '';
             location.reload();
           });
+        } else {
+          console.log('🔴 Không tìm thấy submitScoreBtn');
         }
-      });
+        }
+    );
 
       /* =========================
         INIT LEADERBOARD
