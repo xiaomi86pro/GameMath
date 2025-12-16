@@ -523,22 +523,29 @@ function displayQuestion() {
 /* Hàm câu hỏi */
 
 function renderSortingNumbers(numbers) {
-    sortingNumbersContainer.innerHTML = '';
-    sortingTargetContainer.innerHTML = '';
-  
-    numbers.forEach(num => {
+  sortingNumbersContainer.innerHTML = '';
+  sortingTargetContainer.innerHTML = '';
+
+  numbers.forEach(num => {
       const div = document.createElement('div');
       div.textContent = num;
-      div.className =
-        'sorting-number px-4 py-2 bg-white rounded shadow font-bold text-lg';
-  
+      div.className = 'sorting-number px-4 py-2 bg-white rounded shadow font-bold text-lg cursor-pointer hover:bg-indigo-50 transition-colors';
+
+      // Xử lý sự kiện click
       div.addEventListener('click', () => {
-        sortingTargetContainer.appendChild(div);
+          // Nếu đang ở khung nguồn thì chuyển xuống khung đáp án
+          if (div.parentNode === sortingNumbersContainer) {
+              sortingTargetContainer.appendChild(div);
+          } 
+          // Nếu đang ở khung đáp án thì chuyển ngược lại khung nguồn
+          else {
+              sortingNumbersContainer.appendChild(div);
+          }
       });
-  
+
       sortingNumbersContainer.appendChild(div);
-    });
-  }
+  });
+}
   
 function generateSortingQuestion(level) {
     const count = level + 3; // level 1 → 4 số
@@ -858,7 +865,7 @@ function updateLevelUI() {
       currentLevelNameSpan.textContent = quizState.currentLevelName;
     }
   }
-  
+
     /* =========================
     SUPABASE & LEADERBOARD
     ========================= */
@@ -901,7 +908,7 @@ function updateLevelUI() {
       console.log('🟡 Supabase client:', supabase); // THÊM
       console.log('🟡 SUPABASE_URL:', SUPABASE_URL); // THÊM
         try {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('leaderboard')
             .insert([
               { 
