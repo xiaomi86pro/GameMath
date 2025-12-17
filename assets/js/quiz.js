@@ -53,7 +53,8 @@ export const QUESTION_WEIGHTS = {
       'ADD_SUB': 40,
       'COMPARE': 30,
       'SORT': 20,
-      'CLOCK': 10
+      'CLOCK': 10,
+      'FIND-X': 20
     },
     2: {
       'ADD_SUB': 30,
@@ -149,15 +150,9 @@ let soundCorrect, soundWrong;
 
 let clockQuestionContainer, hourHand, minuteHand, clockChoices;
 
-
-
-
-/* =========================
-   4. DOMContentLoaded
-========================= */
-
-document.addEventListener('DOMContentLoaded', () => {
-
+/* DOM mới */
+// === Thay thế: gom tất cả khởi tạo vào init ===
+function init() {
   /* === Screen === */
   setupScreen = document.getElementById('setup-screen');
   quizScreen = document.getElementById('quiz-screen');
@@ -182,19 +177,17 @@ document.addEventListener('DOMContentLoaded', () => {
   expressionLeft = document.getElementById('expression-left');
   expressionRight = document.getElementById('expression-right');
   comparisonBox = document.getElementById('comparison-box');
+
   /* === Input Answer === */
   inputAnswerContainer = document.getElementById('input-answer-container');
   mathAnswerInput = document.getElementById('math-answer-input');
   submitAnswerBtn = document.getElementById('submit-answer-btn');
-  //console.log('submitAnswerBtn =', submitAnswerBtn);
-
 
   /* === Sorting === */
   sortingNumbersContainer = document.getElementById('sorting-numbers-container');
   sortingTargetContainer = document.getElementById('sorting-target-container');
   sortingControls = document.getElementById('sorting-controls');
-  
- 
+
   /* === Comparison === */
   comparisonButtonsContainer = document.getElementById('comparison-buttons-container');
   comparisonDisplayArea = document.getElementById('comparison-display-area');
@@ -222,27 +215,24 @@ document.addEventListener('DOMContentLoaded', () => {
   /* === Audio === */
   soundCorrect = document.getElementById('sound-correct');
   soundWrong = document.getElementById('sound-wrong');
-  
+
   /* Clock */
   clockQuestionContainer = document.getElementById('clock-question');
   hourHand = document.getElementById('hour-hand');
   minuteHand = document.getElementById('minute-hand');
   clockChoices = document.getElementById('clock-choices');
 
-  //submitAnswerBtn.addEventListener('click', checkAnswer);
-  nextQuestionBtn.addEventListener('click', nextQuestion);
-  
-  const compButtons = document.querySelectorAll('.comp-btn');
-  compButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const selectedOp = btn.dataset.op;
-      handleCompareAnswer(selectedOp);
-    });
-  });
-
+  // Bind events once
   bindEvents();
 
-});
+  // Load leaderboard after small delay to ensure DOM ready
+  setTimeout(() => {
+    if (typeof loadLeaderboard === 'function') loadLeaderboard();
+  }, 300);
+}
+
+// Single DOMContentLoaded that calls init
+document.addEventListener('DOMContentLoaded', init);
 
 /* =========================
    5. EVENT BINDINGS
@@ -284,91 +274,124 @@ function setCompareButtonsDisabled(disabled) {
     });
   }
 
-function enableQuestionCount() {
-  questionCountBtns.forEach(btn => {
-    btn.disabled = false;
-
-    btn.addEventListener('click', () => {
-
-      // Reset UI
-      questionCountBtns.forEach(b => {
-        b.classList.remove('bg-indigo-500', 'text-white');
-        b.classList.add('bg-gray-200', 'text-gray-700');
-      });
-
-      // Highlight
-      btn.classList.remove('bg-gray-200', 'text-gray-700');
-      btn.classList.add('bg-indigo-500', 'text-white');
-
-      // Update state
-      quizState.TOTAL_QUIZ_QUESTIONS = parseInt(btn.dataset.questions, 10);
-      totalQuestionsSpan.textContent = quizState.TOTAL_QUIZ_QUESTIONS;
+  /* NEW */
+  function enableQuestionCount() {
+    questionCountBtns.forEach(btn => {
+      btn.disabled = false;
+      if (!btn.dataset.boundQCount) {
+        btn.addEventListener('click', () => {
+          // Reset UI
+          questionCountBtns.forEach(b => {
+            b.classList.remove('bg-indigo-500', 'text-white');
+            b.classList.add('bg-gray-200', 'text-gray-700');
+          });
+  
+          // Highlight
+          btn.classList.remove('bg-gray-200', 'text-gray-700');
+          btn.classList.add('bg-indigo-500', 'text-white');
+  
+          // Update state
+          quizState.TOTAL_QUIZ_QUESTIONS = parseInt(btn.dataset.questions, 10);
+          if (totalQuestionsSpan) totalQuestionsSpan.textContent = quizState.TOTAL_QUIZ_QUESTIONS;
+        });
+        btn.dataset.boundQCount = '1';
+      }
     });
-  });
-}
+  }
+  
 
-
+/* Bind Events NEW */
 function bindEvents() {
+  if (startQuizBtn) startQuizBtn.addEventListener('click', startQuiz);
+  if (nextQuestionBtn) nextQuestionBtn.addEventListener('click', nextQuestion);
+  if (restartQuizBtn) restartQuizBtn.addEventListener('click', restartQuiz);
+  if (exitQuizBtn) exitQuizBtn.addEventListener('click', exitQuiz);
 
-  startQuizBtn.addEventListener('click', startQuiz);
-  nextQuestionBtn.addEventListener('click', nextQuestion);
-  restartQuizBtn.addEventListener('click', restartQuiz);
-  exitQuizBtn.addEventListener('click', exitQuiz);
+  // submitAnswerBtn may be null in some screens
+  if (submitAnswerBtn) submitAnswerBtn.addEventListener('click', submitAnswer);
 
- // submitAnswerBtn.addEventListener('click', submitAnswer);
-
+  // Level select buttons
   levelSelectBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-  
-      // 1. Reset UI các nút level
-      levelSelectBtns.forEach(b => {
-        b.classList.remove('bg-indigo-600', 'text-white');
-        b.classList.add('bg-gray-200', 'text-gray-700');
-      });
-      
-      // 2. Highlight nút được chọn
-      btn.classList.remove('bg-gray-200', 'text-gray-700');
-      btn.classList.add('bg-indigo-600', 'text-white');
-  
-      // 3. Update state
-      quizState.currentLevel = parseInt(btn.dataset.level, 10);
-      quizState.currentLevelName = btn.dataset.name;
-      quizState.currentQuizType = btn.dataset.type;
-  
-      // 4. Update UI
-      updateLevelUI();
-  
-      // 5. Cho phép chọn số câu + start
-      enableQuestionCount();
-      startQuizBtn.disabled = false;
-    });
-       
-  });
-  modalCancelBtn.addEventListener('click', () => {
-    confirmModal.classList.add('hidden');
-    confirmModal.classList.remove('flex');
-  });
-  
-  modalConfirmBtn.addEventListener('click', () => {
-    location.reload();
-  });
+    // ensure idempotent: only bind once
+    if (!btn.dataset.boundLevel) {
+      btn.addEventListener('click', () => {
+        levelSelectBtns.forEach(b => {
+          b.classList.remove('bg-indigo-600', 'text-white');
+          b.classList.add('bg-gray-200', 'text-gray-700');
+        });
 
-  // Xử lý phím Enter cho ô nhập đáp án
-  mathAnswerInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      
-      // Nếu nút "Kiểm tra" đang hiện và không bị disabled
-      if (!submitAnswerBtn.classList.contains('hidden') && !submitAnswerBtn.disabled) {
-        submitAnswerBtn.click();
-      }
-      // Nếu nút "Câu hỏi tiếp theo" đang hiện
-      else if (!nextQuestionBtn.classList.contains('hidden')) {
-        nextQuestionBtn.click();
-      }
+        btn.classList.remove('bg-gray-200', 'text-gray-700');
+        btn.classList.add('bg-indigo-600', 'text-white');
+
+        quizState.currentLevel = parseInt(btn.dataset.level, 10);
+        quizState.currentLevelName = btn.dataset.name;
+        quizState.currentQuizType = btn.dataset.type;
+
+        updateLevelUI();
+        enableQuestionCount();
+        if (startQuizBtn) startQuizBtn.disabled = false;
+      });
+      btn.dataset.boundLevel = '1';
     }
   });
+
+  // Comparison buttons (if present)
+  const compButtons = document.querySelectorAll('.comp-btn');
+  compButtons.forEach(btn => {
+    if (!btn.dataset.boundComp) {
+      btn.addEventListener('click', () => {
+        const selectedOp = btn.dataset.op;
+        handleCompareAnswer(selectedOp);
+      });
+      btn.dataset.boundComp = '1';
+    }
+  });
+
+  // Modal buttons
+  if (modalCancelBtn) {
+    modalCancelBtn.addEventListener('click', () => {
+      confirmModal?.classList.add('hidden');
+      confirmModal?.classList.remove('flex');
+    });
+  }
+  if (modalConfirmBtn) {
+    modalConfirmBtn.addEventListener('click', () => {
+      location.reload();
+    });
+  }
+
+  // Enter key handling for mathAnswerInput
+  if (mathAnswerInput) {
+    mathAnswerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (submitAnswerBtn && !submitAnswerBtn.classList.contains('hidden') && !submitAnswerBtn.disabled) {
+          submitAnswerBtn.click();
+        } else if (nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden')) {
+          nextQuestionBtn.click();
+        }
+      }
+    });
+  }
+
+  // Bind submit score button safely
+  if (submitScoreBtn && !submitScoreBtn.dataset.boundSubmitScore) {
+    submitScoreBtn.addEventListener('click', async () => {
+      const name = playerNameInput?.value?.trim() || '';
+      if (name === '') {
+        alert('Vui lòng nhập tên!');
+        return;
+      }
+      await saveScore(name, quizState.currentScore, quizState.currentLevel);
+      nameModal?.classList.add('hidden');
+      nameModal?.classList.remove('flex');
+      if (playerNameInput) playerNameInput.value = '';
+      location.reload();
+    });
+    submitScoreBtn.dataset.boundSubmitScore = '1';
+  }
 }
+
 
 /* =========================
    6. FLOW CONTROL
@@ -457,13 +480,11 @@ function exitQuiz() {
 }
 
 async function generateQuestion() {
-  console.log('generateQuestion chạy');
   
   // Lấy trọng số theo quiz type và level
   const weights = QUESTION_WEIGHTS[quizState.currentQuizType]?.[quizState.currentLevel];
   
   if (!weights) {
-    console.error('Không tìm thấy weights cho', quizState.currentQuizType, quizState.currentLevel);
     quizState.currentQuestion = {
       text: 'Chưa cấu hình dạng bài cho level này',
       answer: null,
@@ -475,13 +496,11 @@ async function generateQuestion() {
   
   // Chọn loại câu hỏi theo trọng số
   const selectedType = weightedRandom(weights);
-  console.log('Đã chọn type:', selectedType);
   
   // Load module tương ứng
   const module = await loadQuestionModule(selectedType);
   
   if (!module || !module.generate) {
-    console.error('Module không hợp lệ:', selectedType);
     quizState.currentQuestion = {
       text: 'Lỗi khi load câu hỏi',
       answer: null,
@@ -494,8 +513,6 @@ async function generateQuestion() {
   // Generate câu hỏi từ module
   quizState.currentQuestion = module.generate(quizState);
   
-  console.log('currentQuestion =', quizState.currentQuestion);
-  console.log('TYPE =', quizState.currentQuestion?.type);
   
   displayQuestion();
 }
@@ -515,7 +532,6 @@ async function displayQuestion() {
   const module = await loadQuestionModule(q.type);
   
   if (!module || !module.display) {
-    console.error('Module không có hàm display:', q.type);
     questionText.textContent = 'Lỗi hiển thị câu hỏi';
     questionText.classList.remove('hidden');
     return;
@@ -684,27 +700,35 @@ function submitAnswer() {
   checkAnswer();
 }
 
+/* NEW */
 function checkAnswer() {
   if (!quizState.currentQuestion) return false;
 
-  const userAnswer = Number(mathAnswerInput.value);
-
-  if (mathAnswerInput.value.trim() === '') {
+  const raw = (mathAnswerInput?.value || '').trim();
+  if (raw === '') {
     messageBox.textContent = '⚠️ Bạn chưa nhập đáp án';
     messageBox.className = 'text-yellow-600 font-bold';
     return false;
   }
 
+  const userAnswer = Number(raw);
+  if (Number.isNaN(userAnswer)) {
+    messageBox.textContent = '⚠️ Đáp án không hợp lệ';
+    messageBox.className = 'text-yellow-600 font-bold';
+    return false;
+  }
+
   const isCorrect = userAnswer === quizState.currentQuestion.answer;
-  
+
   if (isCorrect) {
     handleCorrectAnswer();
   } else {
     handleWrongAnswer();
   }
-  
+
   return isCorrect;
 }
+
 
 /* =========================
    9. TIMER
@@ -772,7 +796,6 @@ async function loadQuestionModule(type) {
     questionModules[type] = module;
     return module;
   } catch (error) {
-    console.error(`Không thể load module ${type}:`, error);
     return null;
   }
 }
@@ -874,29 +897,37 @@ function updateLevelUI() {
         
         data.forEach((row, index) => {
           const tr = document.createElement('tr');
-          const rankClass = index === 0 ? 'leader-top-1' : 
-                          index === 1 ? 'leader-top-2' : 
-                          index === 2 ? 'leader-top-3' : '';
-          
+          const rankClass = index === 0 ? 'leader-top-1' :
+                            index === 1 ? 'leader-top-2' :
+                            index === 2 ? 'leader-top-3' : '';
           tr.className = rankClass;
-          tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${row.player_name}</td>
-            <td>${row.score}</td>
-            <td>${row.level}</td>
-          `;
-          
+        
+          const tdRank = document.createElement('td');
+          tdRank.textContent = index + 1;
+        
+          const tdName = document.createElement('td');
+          tdName.textContent = row.player_name ?? '';
+        
+          const tdScore = document.createElement('td');
+          tdScore.textContent = String(row.score ?? '');
+        
+          const tdLevel = document.createElement('td');
+          tdLevel.textContent = row.level ?? '';
+        
+          tr.appendChild(tdRank);
+          tr.appendChild(tdName);
+          tr.appendChild(tdScore);
+          tr.appendChild(tdLevel);
+        
           leaderboardBody.appendChild(tr);
         });
+        
+        
       } catch (error) {
-        console.error('Error loading leaderboard:', error);
       }
     }
 
     async function saveScore(playerName, score, level) {
-      console.log('🟡 saveScore được gọi với:', { playerName, score, level }); // THÊM
-      console.log('🟡 Supabase client:', supabase); // THÊM
-      console.log('🟡 SUPABASE_URL:', SUPABASE_URL); // THÊM
         try {
           const { data, error } = await supabase
             .from('leaderboard')
@@ -909,62 +940,12 @@ function updateLevelUI() {
               }
             ]);
           
-            console.log('🟢 Kết quả insert:', { data, error }); // THÊM
         
          if (error) throw error;
           
           await loadLeaderboard();
         } catch (error) {
-          console.error('🔴 Lỗi khi lưu điểm:', error);
           alert('Lỗi khi lưu điểm: ' + error.message);
         }
       }
-
-      // Xử lý sự kiện submit score (phải đặt sau khi hàm saveScore đã được định nghĩa)
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('🟣🟣🟣 DOMContentLoaded THỨ HAI đã chạy!');
-        console.log('🟣 Kiểm tra biến global:', { submitScoreBtn, playerNameInput, nameModal });
-        //const submitScoreBtn = document.getElementById('submit-score');
-        //const playerNameInput = document.getElementById('player-name');
-        //const nameModal = document.getElementById('name-modal');
-      
-        if (submitScoreBtn) {
-          console.log('🟣 submitScoreBtn TỒN TẠI, đang bind event...');
-          submitScoreBtn.addEventListener('click', async () => {
-            console.log('🔵 Đã click nút Lưu kết quả'); 
-            const name = playerNameInput.value.trim();
-            console.log('🔵 Tên người chơi:', name);
-            if (name === '') {
-              alert('Vui lòng nhập tên!');
-              return;
-            }
-            console.log('🔵 Chuẩn bị gọi saveScore');
-            await saveScore(name, quizState.currentScore, quizState.currentLevel);
-            console.log('🔵 Đã gọi saveScore xong');
-            nameModal.classList.add('hidden');
-            nameModal.classList.remove('flex');
-            playerNameInput.value = '';
-            location.reload();
-          });
-          console.log('🟣 Đã bind event xong!');
-        } else {
-          console.log('🔴 Không tìm thấy submitScoreBtn');
-        }
-        }
-    );
-
-      /* =========================
-        INIT LEADERBOARD
-      ========================= */
-
-      // Gọi loadLeaderboard khi trang load xong
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('🟣🟣🟣 DOMContentLoaded THỨ HAI đã chạy!');
-        // Đợi một chút để đảm bảo tất cả biến đã được khởi tạo
-        setTimeout(() => {
-          if (typeof loadLeaderboard === 'function') {
-            loadLeaderboard();
-          }
-        }, 500);
-      });
 
