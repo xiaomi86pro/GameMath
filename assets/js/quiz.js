@@ -554,8 +554,8 @@ async function displayQuestion() {
     hourHand,
     minuteHand,
     clockChoices,
-    // Các hàm cần thiết
     lockUserInput,
+    checkAnswer,
     checkSortingAnswer,
     submitAnswer,
     handleCorrectAnswer,
