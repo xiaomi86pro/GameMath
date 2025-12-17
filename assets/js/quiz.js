@@ -10,12 +10,6 @@ const SUPABASE_URL = 'https://jeycrlggnebcasbrfygr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_No04r_35Hg-FG8xf--9Zvg_pyUZPtkl';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ↑↑↑ HẾT PHẦN CHÈN
-
-/* =========================
-   1. CONFIG / CONSTANTS
-========================= */
-
 /* =========================
    1. CONFIG / CONSTANTS
 ========================= */
@@ -52,6 +46,36 @@ export const DAYS_OF_WEEK = [
   'Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư',
   'Thứ Năm','Thứ Sáu','Thứ Bảy'
 ];
+
+export const QUESTION_WEIGHTS = {
+  ADD_SUB: {
+    1: {
+      'ADD_SUB': 40,
+      'COMPARE': 30,
+      'SORT': 20,
+      'CLOCK': 10
+    },
+    2: {
+      'ADD_SUB': 30,
+      'COMPARE': 25,
+      'SORT': 20,
+      'CLOCK': 15,
+      'MULT_DIV': 10
+    },
+    3: {
+      'ADD_SUB': 35,
+      'COMPARE': 25,
+      'SORT': 20,
+      'MULT_DIV': 20
+    }
+  },
+  MULT_DIV: {
+    1: { 'MULT_DIV': 70, 'SORT': 30 },
+    2: { 'MULT_DIV': 60, 'SORT': 25, 'COMPARE': 15 },
+    3: { 'MULT_DIV': 65, 'SORT': 20, 'COMPARE': 15 },
+    4: { 'MULT_DIV': 70, 'SORT': 20, 'COMPARE': 10 }
+  }
+};
 
 export const MULT_DIV_FACTORS = {
   1: [2, 3],
@@ -379,7 +403,7 @@ function startQuiz() {
   nextQuestion();
 }
 
-function nextQuestion(){
+async function nextQuestion(){
     quizState.currentQuestionNumber++;
     if (quizState.currentQuestionNumber > quizState.TOTAL_QUIZ_QUESTIONS) {
       endQuiz();
@@ -419,7 +443,7 @@ function nextQuestion(){
     }, 100);
     // ↑↑↑ HẾT PHẦN CHÈN
   
-    generateQuestion();
+    await generateQuestion();
 }
 
 function restartQuiz() {
@@ -432,218 +456,101 @@ function exitQuiz() {
   confirmModal.classList.add('flex');
 }
 
-function generateQuestion() {
-    //console.log('generateQuestion chạy');
+async function generateQuestion() {
+  console.log('generateQuestion chạy');
   
-    let question;
+  // Lấy trọng số theo quiz type và level
+  const weights = QUESTION_WEIGHTS[quizState.currentQuizType]?.[quizState.currentLevel];
   
-    if (quizState.currentQuizType === 'ADD_SUB') {
-
-        const rand = Math.random();
-        if (
-          (quizState.currentLevel === 1 || quizState.currentLevel === 2)
-          && rand < 0.2
-        ) {
-          question = generateClockQuestion(quizState);
-        }
-        else if (rand < 0.35) {
-          question = generateCompareQuestion(quizState);
-        }
-        else if (rand < 0.5) {
-          question = generateSortingQuestion(quizState.currentLevel);
-        }
-        else {
-          question = generateAddSubQuestion(quizState);
-        }
-      
-      }
-    else if (quizState.currentQuizType === 'MULT_DIV') {
-      question = generateMultDivQuestion(quizState);
-    } 
-    else if (quizState.currentQuizType === 'COMPARE') {
-        question = generateCompareQuestion(quizState);
-    }
-    else if (quizState.currentQuizType === 'SORT') {
-        question = generateSortingQuestion(quizState.currentLevel);
-    }      
-    else {
-      question = {
-        text: 'Chưa hỗ trợ loại quiz này',
-        answer: null
-      };
-    }
-    quizState.currentQuestion = question;
-  
-    console.log('currentQuestion =', quizState.currentQuestion);
-    console.log('TYPE =', quizState.currentQuestion?.type);
+  if (!weights) {
+    console.error('Không tìm thấy weights cho', quizState.currentQuizType, quizState.currentLevel);
+    quizState.currentQuestion = {
+      text: 'Chưa cấu hình dạng bài cho level này',
+      answer: null,
+      type: 'ERROR'
+    };
     displayQuestion();
+    return;
+  }
+  
+  // Chọn loại câu hỏi theo trọng số
+  const selectedType = weightedRandom(weights);
+  console.log('Đã chọn type:', selectedType);
+  
+  // Load module tương ứng
+  const module = await loadQuestionModule(selectedType);
+  
+  if (!module || !module.generate) {
+    console.error('Module không hợp lệ:', selectedType);
+    quizState.currentQuestion = {
+      text: 'Lỗi khi load câu hỏi',
+      answer: null,
+      type: 'ERROR'
+    };
+    displayQuestion();
+    return;
+  }
+  
+  // Generate câu hỏi từ module
+  quizState.currentQuestion = module.generate(quizState);
+  
+  console.log('currentQuestion =', quizState.currentQuestion);
+  console.log('TYPE =', quizState.currentQuestion?.type);
+  
+  displayQuestion();
 }
 
-function displayQuestion() {
+async function displayQuestion() {
   hideAllAnswerAreas();
   resetSubmitButton();
   submitAnswerBtn.classList.add('hidden');
   const q = quizState.currentQuestion;
-  if (!q) return;
-
-  switch (q.type) {
-
-    case 'SORT':
-      questionText.textContent =
-        q.order === 'ASC'
-          ? 'Sắp xếp các số theo thứ tự tăng dần'
-          : 'Sắp xếp các số theo thứ tự giảm dần';
-
-      questionText.classList.remove('hidden');
-
-      sortingNumbersContainer.classList.remove('hidden');
-      sortingTargetContainer.classList.remove('hidden');
-
-      renderSortingNumbers(q.numbers);
-
-      inputAnswerContainer.classList.remove('hidden');
-      mathAnswerInput.classList.add('hidden');
-
-      submitAnswerBtn.textContent = 'Kiểm tra';
-      submitAnswerBtn.classList.remove('hidden');
-      console.log('Đã remove hidden khỏi submitAnswerBtn:', submitAnswerBtn); // DEBUG
-      console.log('submitAnswerBtn classes:', submitAnswerBtn.className); // DEBUG
-      submitAnswerBtn.disabled = false;
-      
-      submitAnswerBtn.onclick = () => {
-        const selected = Array.from(
-          sortingTargetContainer.children
-        ).map(el => Number(el.textContent));
-
-        lockUserInput();
-        checkSortingAnswer(selected);
-      };
-      break;
-
-    case 'ADD_SUB':
-      questionText.textContent = q.text;
-      questionText.classList.remove('hidden');
-      inputAnswerContainer.classList.remove('hidden');
-      submitAnswerBtn.textContent = 'Kiểm tra';
-      submitAnswerBtn.classList.remove('hidden');
-      submitAnswerBtn.disabled = false;
-      submitAnswerBtn.onclick = submitAnswer;
-      break;
-
-    case 'COMPARE':
-      questionText.classList.add('hidden');
-      comparisonDisplayArea.classList.remove('hidden');
-      mathAnswerInput.classList.add('hidden');
-
-      expressionLeft.textContent = q.left;
-      expressionRight.textContent = q.right;
-      comparisonBox.textContent = '?';
-
-      comparisonButtonsContainer.classList.remove('hidden');
-      break;
-    
-      case 'CLOCK':
-        questionText.classList.add('hidden');
-        clockImageContainer.classList.remove('hidden');
-
-        // rotate hands
-        const minuteDeg = quizState.currentQuestion.minute * 6;
-        const hourDeg =
-          (quizState.currentQuestion.hour % 12) * 30 +
-          quizState.currentQuestion.minute * 0.5;
-      
-          minuteHand.setAttribute(
-            'transform',
-            `rotate(${minuteDeg} 100 100)`
-          );
-          
-          hourHand.setAttribute(
-            'transform',
-            `rotate(${hourDeg} 100 100)`
-          );
-      
-        // render choices
-        clockChoices.innerHTML = '';
-        quizState.currentQuestion.choices.forEach(choice => {
-          const btn = document.createElement('button');
-
-          const [hour, minute] = choice.split(':');
-
-          btn.innerHTML = `
-            <span class="text-red-500 font-bold">${hour}</span>
-            :
-            <span class="text-green-500 font-bold">${minute}</span>
-          `;
-
-          btn.className =
-            'bg-white border rounded px-4 py-2 font-bold hover:bg-indigo-100';
-          btn.onclick = () => {
-            lockUserInput();
-            if (choice ===
-                `${quizState.currentQuestion.hour}:${quizState.currentQuestion.minute
-                  .toString().padStart(2, '0')}`) {
-              handleCorrectAnswer();
-            } else {
-              handleWrongAnswer();
-            }
-          };
-      
-          clockChoices.appendChild(btn);
-        });
-        break;
-        
-    default:
-      questionText.textContent = 'Loại câu hỏi chưa hỗ trợ';
-      questionText.classList.remove('hidden');
+  if (!q || q.type === 'ERROR') {
+    questionText.textContent = q?.text || 'Lỗi không xác định';
+    questionText.classList.remove('hidden');
+    return;
   }
+  
+  // Load module tương ứng
+  const module = await loadQuestionModule(q.type);
+  
+  if (!module || !module.display) {
+    console.error('Module không có hàm display:', q.type);
+    questionText.textContent = 'Lỗi hiển thị câu hỏi';
+    questionText.classList.remove('hidden');
+    return;
+  }
+  
+  // Gọi hàm display của module
+  module.display(q, {
+    questionText,
+    inputAnswerContainer,
+    mathAnswerInput,
+    submitAnswerBtn,
+    sortingNumbersContainer,
+    sortingTargetContainer,
+    comparisonDisplayArea,
+    expressionLeft,
+    expressionRight,
+    comparisonBox,
+    comparisonButtonsContainer,
+    clockImageContainer,
+    hourHand,
+    minuteHand,
+    clockChoices,
+    // Các hàm cần thiết
+    lockUserInput,
+    checkSortingAnswer,
+    submitAnswer,
+    handleCorrectAnswer,
+    handleWrongAnswer,
+    renderSortingNumbers
+  });
 }
-
 
 /* =========================
    7. QUESTION / DISPLAY
 ========================= */
-/* Clock Question */
-function generateClockQuestion(quizState) {
-  const hour = Math.floor(Math.random() * 12) + 1;
-  let minute;
-
-  if (quizState.currentLevel === 1) {
-    minute = Math.random() < 0.5 ? 0 : 30;
-  } else if (quizState.currentLevel === 2) {
-    minute = Math.floor(Math.random() * 12) * 5;
-  } else {
-    return null;
-  }
-
-  const correct = `${hour}:${minute.toString().padStart(2, '0')}`;
-
-  const choices = new Set([correct]);
-
-  while (choices.size < 4) {
-    let h = hour;
-    let m = minute;
-
-    if (Math.random() < 0.5) {
-      h = ((hour + (Math.random() < 0.5 ? -1 : 1) + 12 - 1) % 12) + 1;
-    } else {
-      m = quizState.currentLevel === 1
-        ? (minute === 0 ? 30 : 0)
-        : (minute + (Math.random() < 0.5 ? -5 : 5) + 60) % 60;
-    }
-
-    choices.add(`${h}:${m.toString().padStart(2, '0')}`);
-  }
-
-  return {
-    type: 'CLOCK',
-    hour,
-    minute,
-    choices: Array.from(choices)
-  };
-}
-
-/* Hàm câu hỏi */
-
 function renderSortingNumbers(numbers) {
   sortingNumbersContainer.innerHTML = '';
   sortingTargetContainer.innerHTML = '';
@@ -667,32 +574,8 @@ function renderSortingNumbers(numbers) {
 
       sortingNumbersContainer.appendChild(div);
   });
-}
-  
-function generateSortingQuestion(level) {
-    const count = level + 3; // level 1 → 4 số
-  
-    const set = new Set();
-    while (set.size < count) {
-      set.add(Math.floor(Math.random() * 50));
-    }
-  
-    const numbers = Array.from(set);
-  
-    const order = Math.random() < 0.5 ? 'ASC' : 'DESC';
-  
-    const answer = [...numbers].sort((a, b) =>
-      order === 'ASC' ? a - b : b - a
-    );
-  
-    return {
-      numbers,
-      order,
-      answer,
-      type: 'SORT'
-    };
-  }
-  
+}  
+
   function handleCorrectAnswer() {
     quizState.currentScore += 1;
     quizState.correctStreak += 1;
@@ -731,7 +614,6 @@ function generateSortingQuestion(level) {
     nextQuestionBtn.classList.remove('hidden');
   }
   
-  
   function handleWrongAnswer() {
     quizState.currentScore -= 1;
     quizState.correctStreak = 0;
@@ -756,7 +638,6 @@ function generateSortingQuestion(level) {
   
     nextQuestionBtn.classList.remove('hidden');
   }
-  
 
 function handleCompareAnswer(selectedOp) {
     if (submitAnswerBtn.disabled) return;
@@ -772,116 +653,6 @@ function handleCompareAnswer(selectedOp) {
   }
   }
   
-function getMultipliersByLevel(level) {
-    switch (level) {
-      case 1: return [2, 3];
-      case 2: return [4, 5];
-      case 3: return [6, 7];
-      case 4: return [8, 9];
-      default: return [2];
-    }
-  }
-
-/**
- * Sinh câu hỏi Nhân / Chia
- * - Luôn ra số nguyên
- * - Không âm
- * - Đúng bảng theo level
- */
-function generateMultDivQuestion(quizState) {
-    const multipliers = getMultipliersByLevel(quizState.currentLevel);
-    const base = multipliers[Math.floor(Math.random() * multipliers.length)];
-  
-    const x = Math.floor(Math.random() * 10) + 1; // 1–10
-    const result = base * x;
-  
-    const isMultiply = Math.random() < 0.5;
-  
-    return isMultiply
-      ? {
-          text: `${base} × ${x} = ?`,
-          answer: result,
-          type: 'MULT_DIV'
-        }
-      : {
-          text: `${result} ÷ ${base} = ?`,
-          answer: x,
-          type: 'MULT_DIV'
-        };
-  }
-    
-function getRandomNumberByLevel(level) {
-    switch (level) {
-      case 1: return Math.floor(Math.random() * 10);   // 0–9
-      case 2: return Math.floor(Math.random() * 100);  // 0–99
-      case 3: return Math.floor(Math.random() * 1000); // 0–999
-      default: return 0;
-    }
-  }
-  
-/**
- * Sinh câu hỏi Cộng / Trừ theo level
- * - Level 1: KHÔNG có số âm
- * - Level 2+: có thể có số âm (giữ đúng logic cũ)
- */
-
-function generateAddSubQuestion(quizState) {
-    let a = getRandomNumberByLevel(quizState.currentLevel);
-    let b = getRandomNumberByLevel(quizState.currentLevel);
-  
-    const isAdd = Math.random() < 0.5;
-  
-    // ❗ Level 1: không cho phép kết quả âm
-    if (!isAdd && quizState.currentLevel === 1) {
-      if (b > a) {
-        [a, b] = [b, a];
-      }
-    }
-  
-    return {
-      text: isAdd ? `${a} + ${b} = ?` : `${a} - ${b} = ?`,
-      answer: isAdd ? a + b : a - b,
-      type: 'ADD_SUB'
-    };
-  }
-
-function generateSimpleExpression(level) {
-    let a = getRandomNumberByLevel(level);
-    let b = getRandomNumberByLevel(level);
-  
-    const isAdd = Math.random() < 0.5;
-  
-    if (!isAdd && level === 1 && b > a) {
-      [a, b] = [b, a];
-    }
-  
-    return {
-      text: isAdd ? `${a} + ${b}` : `${a} - ${b}`,
-      value: isAdd ? a + b : a - b
-    };
-  }
-
-/**
- * Sinh câu hỏi So sánh (> < =)
- */
-function generateCompareQuestion(quizState) {
-    const leftExp = generateSimpleExpression(quizState.currentLevel);
-    const rightExp = generateSimpleExpression(quizState.currentLevel);
-  
-    let answer = '=';
-  
-    if (leftExp.value > rightExp.value) answer = '>';
-    else if (leftExp.value < rightExp.value) answer = '<';
-  
-    return {
-      left: leftExp.text,
-      right: rightExp.text,
-      answer,
-      type: 'COMPARE'
-    };
-  }
-
-
 /* =========================
    8. ANSWER CHECKING
 ========================= */
@@ -983,6 +754,48 @@ function endQuiz() {
 /* =========================
    11. UTILITIES
 ========================= */
+
+/* =========================
+   DYNAMIC MODULE LOADER
+========================= */
+
+const questionModules = {};
+
+async function loadQuestionModule(type) {
+  // Nếu đã load rồi thì return cache
+  if (questionModules[type]) {
+    return questionModules[type];
+  }
+  
+  try {
+    const module = await import(`./questions/${type.toLowerCase()}.js`);
+    questionModules[type] = module;
+    return module;
+  } catch (error) {
+    console.error(`Không thể load module ${type}:`, error);
+    return null;
+  }
+}
+
+/* =========================
+   WEIGHTED RANDOM
+========================= */
+
+function weightedRandom(weights) {
+  const total = Object.values(weights).reduce((sum, w) => sum + w, 0);
+  let random = Math.random() * total;
+  
+  for (const [key, weight] of Object.entries(weights)) {
+    random -= weight;
+    if (random <= 0) {
+      return key;
+    }
+  }
+  
+  // Fallback
+  return Object.keys(weights)[0];
+}
+
 /* Score Effect */
 function showScoreEffect(text, color) {
   scoreEffect.textContent = text;
