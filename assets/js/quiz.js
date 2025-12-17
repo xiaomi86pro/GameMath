@@ -10,12 +10,6 @@ const SUPABASE_URL = 'https://jeycrlggnebcasbrfygr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_No04r_35Hg-FG8xf--9Zvg_pyUZPtkl';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ↑↑↑ HẾT PHẦN CHÈN
-
-/* =========================
-   1. CONFIG / CONSTANTS
-========================= */
-
 /* =========================
    1. CONFIG / CONSTANTS
 ========================= */
@@ -52,6 +46,37 @@ export const DAYS_OF_WEEK = [
   'Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư',
   'Thứ Năm','Thứ Sáu','Thứ Bảy'
 ];
+
+export const QUESTION_WEIGHTS = {
+  ADD_SUB: {
+    1: {
+      'ADD_SUB': 40,
+      'COMPARE': 30,
+      'SORT': 20,
+      'CLOCK': 10,
+      'FIND-X': 20
+    },
+    2: {
+      'ADD_SUB': 30,
+      'COMPARE': 25,
+      'SORT': 20,
+      'CLOCK': 15,
+      'MULT_DIV': 10
+    },
+    3: {
+      'ADD_SUB': 35,
+      'COMPARE': 25,
+      'SORT': 20,
+      'MULT_DIV': 20
+    }
+  },
+  MULT_DIV: {
+    1: { 'MULT_DIV': 70, 'SORT': 30 },
+    2: { 'MULT_DIV': 60, 'SORT': 25, 'COMPARE': 15 },
+    3: { 'MULT_DIV': 65, 'SORT': 20, 'COMPARE': 15 },
+    4: { 'MULT_DIV': 70, 'SORT': 20, 'COMPARE': 10 }
+  }
+};
 
 export const MULT_DIV_FACTORS = {
   1: [2, 3],
@@ -125,15 +150,9 @@ let soundCorrect, soundWrong;
 
 let clockQuestionContainer, hourHand, minuteHand, clockChoices;
 
-
-
-
-/* =========================
-   4. DOMContentLoaded
-========================= */
-
-document.addEventListener('DOMContentLoaded', () => {
-
+/* DOM mới */
+// === Thay thế: gom tất cả khởi tạo vào init ===
+function init() {
   /* === Screen === */
   setupScreen = document.getElementById('setup-screen');
   quizScreen = document.getElementById('quiz-screen');
@@ -158,19 +177,17 @@ document.addEventListener('DOMContentLoaded', () => {
   expressionLeft = document.getElementById('expression-left');
   expressionRight = document.getElementById('expression-right');
   comparisonBox = document.getElementById('comparison-box');
+
   /* === Input Answer === */
   inputAnswerContainer = document.getElementById('input-answer-container');
   mathAnswerInput = document.getElementById('math-answer-input');
   submitAnswerBtn = document.getElementById('submit-answer-btn');
-  //console.log('submitAnswerBtn =', submitAnswerBtn);
-
 
   /* === Sorting === */
   sortingNumbersContainer = document.getElementById('sorting-numbers-container');
   sortingTargetContainer = document.getElementById('sorting-target-container');
   sortingControls = document.getElementById('sorting-controls');
-  
- 
+
   /* === Comparison === */
   comparisonButtonsContainer = document.getElementById('comparison-buttons-container');
   comparisonDisplayArea = document.getElementById('comparison-display-area');
@@ -198,27 +215,24 @@ document.addEventListener('DOMContentLoaded', () => {
   /* === Audio === */
   soundCorrect = document.getElementById('sound-correct');
   soundWrong = document.getElementById('sound-wrong');
-  
+
   /* Clock */
   clockQuestionContainer = document.getElementById('clock-question');
   hourHand = document.getElementById('hour-hand');
   minuteHand = document.getElementById('minute-hand');
   clockChoices = document.getElementById('clock-choices');
 
-  //submitAnswerBtn.addEventListener('click', checkAnswer);
-  nextQuestionBtn.addEventListener('click', nextQuestion);
-  
-  const compButtons = document.querySelectorAll('.comp-btn');
-  compButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const selectedOp = btn.dataset.op;
-      handleCompareAnswer(selectedOp);
-    });
-  });
-
+  // Bind events once
   bindEvents();
 
-});
+  // Load leaderboard after small delay to ensure DOM ready
+  setTimeout(() => {
+    if (typeof loadLeaderboard === 'function') loadLeaderboard();
+  }, 300);
+}
+
+// Single DOMContentLoaded that calls init
+document.addEventListener('DOMContentLoaded', init);
 
 /* =========================
    5. EVENT BINDINGS
@@ -260,91 +274,124 @@ function setCompareButtonsDisabled(disabled) {
     });
   }
 
-function enableQuestionCount() {
-  questionCountBtns.forEach(btn => {
-    btn.disabled = false;
-
-    btn.addEventListener('click', () => {
-
-      // Reset UI
-      questionCountBtns.forEach(b => {
-        b.classList.remove('bg-indigo-500', 'text-white');
-        b.classList.add('bg-gray-200', 'text-gray-700');
-      });
-
-      // Highlight
-      btn.classList.remove('bg-gray-200', 'text-gray-700');
-      btn.classList.add('bg-indigo-500', 'text-white');
-
-      // Update state
-      quizState.TOTAL_QUIZ_QUESTIONS = parseInt(btn.dataset.questions, 10);
-      totalQuestionsSpan.textContent = quizState.TOTAL_QUIZ_QUESTIONS;
+  /* NEW */
+  function enableQuestionCount() {
+    questionCountBtns.forEach(btn => {
+      btn.disabled = false;
+      if (!btn.dataset.boundQCount) {
+        btn.addEventListener('click', () => {
+          // Reset UI
+          questionCountBtns.forEach(b => {
+            b.classList.remove('bg-indigo-500', 'text-white');
+            b.classList.add('bg-gray-200', 'text-gray-700');
+          });
+  
+          // Highlight
+          btn.classList.remove('bg-gray-200', 'text-gray-700');
+          btn.classList.add('bg-indigo-500', 'text-white');
+  
+          // Update state
+          quizState.TOTAL_QUIZ_QUESTIONS = parseInt(btn.dataset.questions, 10);
+          if (totalQuestionsSpan) totalQuestionsSpan.textContent = quizState.TOTAL_QUIZ_QUESTIONS;
+        });
+        btn.dataset.boundQCount = '1';
+      }
     });
-  });
-}
+  }
+  
 
-
+/* Bind Events NEW */
 function bindEvents() {
+  if (startQuizBtn) startQuizBtn.addEventListener('click', startQuiz);
+  if (nextQuestionBtn) nextQuestionBtn.addEventListener('click', nextQuestion);
+  if (restartQuizBtn) restartQuizBtn.addEventListener('click', restartQuiz);
+  if (exitQuizBtn) exitQuizBtn.addEventListener('click', exitQuiz);
 
-  startQuizBtn.addEventListener('click', startQuiz);
-  nextQuestionBtn.addEventListener('click', nextQuestion);
-  restartQuizBtn.addEventListener('click', restartQuiz);
-  exitQuizBtn.addEventListener('click', exitQuiz);
+  // submitAnswerBtn may be null in some screens
+  if (submitAnswerBtn) submitAnswerBtn.addEventListener('click', submitAnswer);
 
- // submitAnswerBtn.addEventListener('click', submitAnswer);
-
+  // Level select buttons
   levelSelectBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-  
-      // 1. Reset UI các nút level
-      levelSelectBtns.forEach(b => {
-        b.classList.remove('bg-indigo-600', 'text-white');
-        b.classList.add('bg-gray-200', 'text-gray-700');
-      });
-      
-      // 2. Highlight nút được chọn
-      btn.classList.remove('bg-gray-200', 'text-gray-700');
-      btn.classList.add('bg-indigo-600', 'text-white');
-  
-      // 3. Update state
-      quizState.currentLevel = parseInt(btn.dataset.level, 10);
-      quizState.currentLevelName = btn.dataset.name;
-      quizState.currentQuizType = btn.dataset.type;
-  
-      // 4. Update UI
-      updateLevelUI();
-  
-      // 5. Cho phép chọn số câu + start
-      enableQuestionCount();
-      startQuizBtn.disabled = false;
-    });
-       
-  });
-  modalCancelBtn.addEventListener('click', () => {
-    confirmModal.classList.add('hidden');
-    confirmModal.classList.remove('flex');
-  });
-  
-  modalConfirmBtn.addEventListener('click', () => {
-    location.reload();
-  });
+    // ensure idempotent: only bind once
+    if (!btn.dataset.boundLevel) {
+      btn.addEventListener('click', () => {
+        levelSelectBtns.forEach(b => {
+          b.classList.remove('bg-indigo-600', 'text-white');
+          b.classList.add('bg-gray-200', 'text-gray-700');
+        });
 
-  // Xử lý phím Enter cho ô nhập đáp án
-  mathAnswerInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      
-      // Nếu nút "Kiểm tra" đang hiện và không bị disabled
-      if (!submitAnswerBtn.classList.contains('hidden') && !submitAnswerBtn.disabled) {
-        submitAnswerBtn.click();
-      }
-      // Nếu nút "Câu hỏi tiếp theo" đang hiện
-      else if (!nextQuestionBtn.classList.contains('hidden')) {
-        nextQuestionBtn.click();
-      }
+        btn.classList.remove('bg-gray-200', 'text-gray-700');
+        btn.classList.add('bg-indigo-600', 'text-white');
+
+        quizState.currentLevel = parseInt(btn.dataset.level, 10);
+        quizState.currentLevelName = btn.dataset.name;
+        quizState.currentQuizType = btn.dataset.type;
+
+        updateLevelUI();
+        enableQuestionCount();
+        if (startQuizBtn) startQuizBtn.disabled = false;
+      });
+      btn.dataset.boundLevel = '1';
     }
   });
+
+  // Comparison buttons (if present)
+  const compButtons = document.querySelectorAll('.comp-btn');
+  compButtons.forEach(btn => {
+    if (!btn.dataset.boundComp) {
+      btn.addEventListener('click', () => {
+        const selectedOp = btn.dataset.op;
+        handleCompareAnswer(selectedOp);
+      });
+      btn.dataset.boundComp = '1';
+    }
+  });
+
+  // Modal buttons
+  if (modalCancelBtn) {
+    modalCancelBtn.addEventListener('click', () => {
+      confirmModal?.classList.add('hidden');
+      confirmModal?.classList.remove('flex');
+    });
+  }
+  if (modalConfirmBtn) {
+    modalConfirmBtn.addEventListener('click', () => {
+      location.reload();
+    });
+  }
+
+  // Enter key handling for mathAnswerInput
+  if (mathAnswerInput) {
+    mathAnswerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (submitAnswerBtn && !submitAnswerBtn.classList.contains('hidden') && !submitAnswerBtn.disabled) {
+          submitAnswerBtn.click();
+        } else if (nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden')) {
+          nextQuestionBtn.click();
+        }
+      }
+    });
+  }
+
+  // Bind submit score button safely
+  if (submitScoreBtn && !submitScoreBtn.dataset.boundSubmitScore) {
+    submitScoreBtn.addEventListener('click', async () => {
+      const name = playerNameInput?.value?.trim() || '';
+      if (name === '') {
+        alert('Vui lòng nhập tên!');
+        return;
+      }
+      await saveScore(name, quizState.currentScore, quizState.currentLevel);
+      nameModal?.classList.add('hidden');
+      nameModal?.classList.remove('flex');
+      if (playerNameInput) playerNameInput.value = '';
+      location.reload();
+    });
+    submitScoreBtn.dataset.boundSubmitScore = '1';
+  }
 }
+
 
 /* =========================
    6. FLOW CONTROL
@@ -379,7 +426,7 @@ function startQuiz() {
   nextQuestion();
 }
 
-function nextQuestion(){
+async function nextQuestion(){
     quizState.currentQuestionNumber++;
     if (quizState.currentQuestionNumber > quizState.TOTAL_QUIZ_QUESTIONS) {
       endQuiz();
@@ -419,7 +466,7 @@ function nextQuestion(){
     }, 100);
     // ↑↑↑ HẾT PHẦN CHÈN
   
-    generateQuestion();
+    await generateQuestion();
 }
 
 function restartQuiz() {
@@ -432,218 +479,94 @@ function exitQuiz() {
   confirmModal.classList.add('flex');
 }
 
-function generateQuestion() {
-    //console.log('generateQuestion chạy');
+async function generateQuestion() {
   
-    let question;
+  // Lấy trọng số theo quiz type và level
+  const weights = QUESTION_WEIGHTS[quizState.currentQuizType]?.[quizState.currentLevel];
   
-    if (quizState.currentQuizType === 'ADD_SUB') {
-
-        const rand = Math.random();
-        if (
-          (quizState.currentLevel === 1 || quizState.currentLevel === 2)
-          && rand < 0.2
-        ) {
-          question = generateClockQuestion(quizState);
-        }
-        else if (rand < 0.35) {
-          question = generateCompareQuestion(quizState);
-        }
-        else if (rand < 0.5) {
-          question = generateSortingQuestion(quizState.currentLevel);
-        }
-        else {
-          question = generateAddSubQuestion(quizState);
-        }
-      
-      }
-    else if (quizState.currentQuizType === 'MULT_DIV') {
-      question = generateMultDivQuestion(quizState);
-    } 
-    else if (quizState.currentQuizType === 'COMPARE') {
-        question = generateCompareQuestion(quizState);
-    }
-    else if (quizState.currentQuizType === 'SORT') {
-        question = generateSortingQuestion(quizState.currentLevel);
-    }      
-    else {
-      question = {
-        text: 'Chưa hỗ trợ loại quiz này',
-        answer: null
-      };
-    }
-    quizState.currentQuestion = question;
-  
-    console.log('currentQuestion =', quizState.currentQuestion);
-    console.log('TYPE =', quizState.currentQuestion?.type);
+  if (!weights) {
+    quizState.currentQuestion = {
+      text: 'Chưa cấu hình dạng bài cho level này',
+      answer: null,
+      type: 'ERROR'
+    };
     displayQuestion();
+    return;
+  }
+  
+  // Chọn loại câu hỏi theo trọng số
+  const selectedType = weightedRandom(weights);
+  
+  // Load module tương ứng
+  const module = await loadQuestionModule(selectedType);
+  
+  if (!module || !module.generate) {
+    quizState.currentQuestion = {
+      text: 'Lỗi khi load câu hỏi',
+      answer: null,
+      type: 'ERROR'
+    };
+    displayQuestion();
+    return;
+  }
+  
+  // Generate câu hỏi từ module
+  quizState.currentQuestion = module.generate(quizState);
+  
+  
+  displayQuestion();
 }
 
-function displayQuestion() {
+async function displayQuestion() {
   hideAllAnswerAreas();
   resetSubmitButton();
   submitAnswerBtn.classList.add('hidden');
   const q = quizState.currentQuestion;
-  if (!q) return;
-
-  switch (q.type) {
-
-    case 'SORT':
-      questionText.textContent =
-        q.order === 'ASC'
-          ? 'Sắp xếp các số theo thứ tự tăng dần'
-          : 'Sắp xếp các số theo thứ tự giảm dần';
-
-      questionText.classList.remove('hidden');
-
-      sortingNumbersContainer.classList.remove('hidden');
-      sortingTargetContainer.classList.remove('hidden');
-
-      renderSortingNumbers(q.numbers);
-
-      inputAnswerContainer.classList.remove('hidden');
-      mathAnswerInput.classList.add('hidden');
-
-      submitAnswerBtn.textContent = 'Kiểm tra';
-      submitAnswerBtn.classList.remove('hidden');
-      console.log('Đã remove hidden khỏi submitAnswerBtn:', submitAnswerBtn); // DEBUG
-      console.log('submitAnswerBtn classes:', submitAnswerBtn.className); // DEBUG
-      submitAnswerBtn.disabled = false;
-      
-      submitAnswerBtn.onclick = () => {
-        const selected = Array.from(
-          sortingTargetContainer.children
-        ).map(el => Number(el.textContent));
-
-        lockUserInput();
-        checkSortingAnswer(selected);
-      };
-      break;
-
-    case 'ADD_SUB':
-      questionText.textContent = q.text;
-      questionText.classList.remove('hidden');
-      inputAnswerContainer.classList.remove('hidden');
-      submitAnswerBtn.textContent = 'Kiểm tra';
-      submitAnswerBtn.classList.remove('hidden');
-      submitAnswerBtn.disabled = false;
-      submitAnswerBtn.onclick = submitAnswer;
-      break;
-
-    case 'COMPARE':
-      questionText.classList.add('hidden');
-      comparisonDisplayArea.classList.remove('hidden');
-      mathAnswerInput.classList.add('hidden');
-
-      expressionLeft.textContent = q.left;
-      expressionRight.textContent = q.right;
-      comparisonBox.textContent = '?';
-
-      comparisonButtonsContainer.classList.remove('hidden');
-      break;
-    
-      case 'CLOCK':
-        questionText.classList.add('hidden');
-        clockImageContainer.classList.remove('hidden');
-
-        // rotate hands
-        const minuteDeg = quizState.currentQuestion.minute * 6;
-        const hourDeg =
-          (quizState.currentQuestion.hour % 12) * 30 +
-          quizState.currentQuestion.minute * 0.5;
-      
-          minuteHand.setAttribute(
-            'transform',
-            `rotate(${minuteDeg} 100 100)`
-          );
-          
-          hourHand.setAttribute(
-            'transform',
-            `rotate(${hourDeg} 100 100)`
-          );
-      
-        // render choices
-        clockChoices.innerHTML = '';
-        quizState.currentQuestion.choices.forEach(choice => {
-          const btn = document.createElement('button');
-
-          const [hour, minute] = choice.split(':');
-
-          btn.innerHTML = `
-            <span class="text-red-500 font-bold">${hour}</span>
-            :
-            <span class="text-green-500 font-bold">${minute}</span>
-          `;
-
-          btn.className =
-            'bg-white border rounded px-4 py-2 font-bold hover:bg-indigo-100';
-          btn.onclick = () => {
-            lockUserInput();
-            if (choice ===
-                `${quizState.currentQuestion.hour}:${quizState.currentQuestion.minute
-                  .toString().padStart(2, '0')}`) {
-              handleCorrectAnswer();
-            } else {
-              handleWrongAnswer();
-            }
-          };
-      
-          clockChoices.appendChild(btn);
-        });
-        break;
-        
-    default:
-      questionText.textContent = 'Loại câu hỏi chưa hỗ trợ';
-      questionText.classList.remove('hidden');
+  if (!q || q.type === 'ERROR') {
+    questionText.textContent = q?.text || 'Lỗi không xác định';
+    questionText.classList.remove('hidden');
+    return;
   }
+  
+  // Load module tương ứng
+  const module = await loadQuestionModule(q.type);
+  
+  if (!module || !module.display) {
+    questionText.textContent = 'Lỗi hiển thị câu hỏi';
+    questionText.classList.remove('hidden');
+    return;
+  }
+  
+  // Gọi hàm display của module
+  module.display(q, {
+    questionText,
+    inputAnswerContainer,
+    mathAnswerInput,
+    submitAnswerBtn,
+    sortingNumbersContainer,
+    sortingTargetContainer,
+    comparisonDisplayArea,
+    expressionLeft,
+    expressionRight,
+    comparisonBox,
+    comparisonButtonsContainer,
+    clockImageContainer,
+    hourHand,
+    minuteHand,
+    clockChoices,
+    // Các hàm cần thiết
+    lockUserInput,
+    checkSortingAnswer,
+    submitAnswer,
+    handleCorrectAnswer,
+    handleWrongAnswer,
+    renderSortingNumbers
+  });
 }
-
 
 /* =========================
    7. QUESTION / DISPLAY
 ========================= */
-/* Clock Question */
-function generateClockQuestion(quizState) {
-  const hour = Math.floor(Math.random() * 12) + 1;
-  let minute;
-
-  if (quizState.currentLevel === 1) {
-    minute = Math.random() < 0.5 ? 0 : 30;
-  } else if (quizState.currentLevel === 2) {
-    minute = Math.floor(Math.random() * 12) * 5;
-  } else {
-    return null;
-  }
-
-  const correct = `${hour}:${minute.toString().padStart(2, '0')}`;
-
-  const choices = new Set([correct]);
-
-  while (choices.size < 4) {
-    let h = hour;
-    let m = minute;
-
-    if (Math.random() < 0.5) {
-      h = ((hour + (Math.random() < 0.5 ? -1 : 1) + 12 - 1) % 12) + 1;
-    } else {
-      m = quizState.currentLevel === 1
-        ? (minute === 0 ? 30 : 0)
-        : (minute + (Math.random() < 0.5 ? -5 : 5) + 60) % 60;
-    }
-
-    choices.add(`${h}:${m.toString().padStart(2, '0')}`);
-  }
-
-  return {
-    type: 'CLOCK',
-    hour,
-    minute,
-    choices: Array.from(choices)
-  };
-}
-
-/* Hàm câu hỏi */
-
 function renderSortingNumbers(numbers) {
   sortingNumbersContainer.innerHTML = '';
   sortingTargetContainer.innerHTML = '';
@@ -667,32 +590,8 @@ function renderSortingNumbers(numbers) {
 
       sortingNumbersContainer.appendChild(div);
   });
-}
-  
-function generateSortingQuestion(level) {
-    const count = level + 3; // level 1 → 4 số
-  
-    const set = new Set();
-    while (set.size < count) {
-      set.add(Math.floor(Math.random() * 50));
-    }
-  
-    const numbers = Array.from(set);
-  
-    const order = Math.random() < 0.5 ? 'ASC' : 'DESC';
-  
-    const answer = [...numbers].sort((a, b) =>
-      order === 'ASC' ? a - b : b - a
-    );
-  
-    return {
-      numbers,
-      order,
-      answer,
-      type: 'SORT'
-    };
-  }
-  
+}  
+
   function handleCorrectAnswer() {
     quizState.currentScore += 1;
     quizState.correctStreak += 1;
@@ -731,7 +630,6 @@ function generateSortingQuestion(level) {
     nextQuestionBtn.classList.remove('hidden');
   }
   
-  
   function handleWrongAnswer() {
     quizState.currentScore -= 1;
     quizState.correctStreak = 0;
@@ -756,7 +654,6 @@ function generateSortingQuestion(level) {
   
     nextQuestionBtn.classList.remove('hidden');
   }
-  
 
 function handleCompareAnswer(selectedOp) {
     if (submitAnswerBtn.disabled) return;
@@ -772,116 +669,6 @@ function handleCompareAnswer(selectedOp) {
   }
   }
   
-function getMultipliersByLevel(level) {
-    switch (level) {
-      case 1: return [2, 3];
-      case 2: return [4, 5];
-      case 3: return [6, 7];
-      case 4: return [8, 9];
-      default: return [2];
-    }
-  }
-
-/**
- * Sinh câu hỏi Nhân / Chia
- * - Luôn ra số nguyên
- * - Không âm
- * - Đúng bảng theo level
- */
-function generateMultDivQuestion(quizState) {
-    const multipliers = getMultipliersByLevel(quizState.currentLevel);
-    const base = multipliers[Math.floor(Math.random() * multipliers.length)];
-  
-    const x = Math.floor(Math.random() * 10) + 1; // 1–10
-    const result = base * x;
-  
-    const isMultiply = Math.random() < 0.5;
-  
-    return isMultiply
-      ? {
-          text: `${base} × ${x} = ?`,
-          answer: result,
-          type: 'MULT_DIV'
-        }
-      : {
-          text: `${result} ÷ ${base} = ?`,
-          answer: x,
-          type: 'MULT_DIV'
-        };
-  }
-    
-function getRandomNumberByLevel(level) {
-    switch (level) {
-      case 1: return Math.floor(Math.random() * 10);   // 0–9
-      case 2: return Math.floor(Math.random() * 100);  // 0–99
-      case 3: return Math.floor(Math.random() * 1000); // 0–999
-      default: return 0;
-    }
-  }
-  
-/**
- * Sinh câu hỏi Cộng / Trừ theo level
- * - Level 1: KHÔNG có số âm
- * - Level 2+: có thể có số âm (giữ đúng logic cũ)
- */
-
-function generateAddSubQuestion(quizState) {
-    let a = getRandomNumberByLevel(quizState.currentLevel);
-    let b = getRandomNumberByLevel(quizState.currentLevel);
-  
-    const isAdd = Math.random() < 0.5;
-  
-    // ❗ Level 1: không cho phép kết quả âm
-    if (!isAdd && quizState.currentLevel === 1) {
-      if (b > a) {
-        [a, b] = [b, a];
-      }
-    }
-  
-    return {
-      text: isAdd ? `${a} + ${b} = ?` : `${a} - ${b} = ?`,
-      answer: isAdd ? a + b : a - b,
-      type: 'ADD_SUB'
-    };
-  }
-
-function generateSimpleExpression(level) {
-    let a = getRandomNumberByLevel(level);
-    let b = getRandomNumberByLevel(level);
-  
-    const isAdd = Math.random() < 0.5;
-  
-    if (!isAdd && level === 1 && b > a) {
-      [a, b] = [b, a];
-    }
-  
-    return {
-      text: isAdd ? `${a} + ${b}` : `${a} - ${b}`,
-      value: isAdd ? a + b : a - b
-    };
-  }
-
-/**
- * Sinh câu hỏi So sánh (> < =)
- */
-function generateCompareQuestion(quizState) {
-    const leftExp = generateSimpleExpression(quizState.currentLevel);
-    const rightExp = generateSimpleExpression(quizState.currentLevel);
-  
-    let answer = '=';
-  
-    if (leftExp.value > rightExp.value) answer = '>';
-    else if (leftExp.value < rightExp.value) answer = '<';
-  
-    return {
-      left: leftExp.text,
-      right: rightExp.text,
-      answer,
-      type: 'COMPARE'
-    };
-  }
-
-
 /* =========================
    8. ANSWER CHECKING
 ========================= */
@@ -913,27 +700,35 @@ function submitAnswer() {
   checkAnswer();
 }
 
+/* NEW */
 function checkAnswer() {
   if (!quizState.currentQuestion) return false;
 
-  const userAnswer = Number(mathAnswerInput.value);
-
-  if (mathAnswerInput.value.trim() === '') {
+  const raw = (mathAnswerInput?.value || '').trim();
+  if (raw === '') {
     messageBox.textContent = '⚠️ Bạn chưa nhập đáp án';
     messageBox.className = 'text-yellow-600 font-bold';
     return false;
   }
 
+  const userAnswer = Number(raw);
+  if (Number.isNaN(userAnswer)) {
+    messageBox.textContent = '⚠️ Đáp án không hợp lệ';
+    messageBox.className = 'text-yellow-600 font-bold';
+    return false;
+  }
+
   const isCorrect = userAnswer === quizState.currentQuestion.answer;
-  
+
   if (isCorrect) {
     handleCorrectAnswer();
   } else {
     handleWrongAnswer();
   }
-  
+
   return isCorrect;
 }
+
 
 /* =========================
    9. TIMER
@@ -983,6 +778,47 @@ function endQuiz() {
 /* =========================
    11. UTILITIES
 ========================= */
+
+/* =========================
+   DYNAMIC MODULE LOADER
+========================= */
+
+const questionModules = {};
+
+async function loadQuestionModule(type) {
+  // Nếu đã load rồi thì return cache
+  if (questionModules[type]) {
+    return questionModules[type];
+  }
+  
+  try {
+    const module = await import(`./questions/${type.toLowerCase()}.js`);
+    questionModules[type] = module;
+    return module;
+  } catch (error) {
+    return null;
+  }
+}
+
+/* =========================
+   WEIGHTED RANDOM
+========================= */
+
+function weightedRandom(weights) {
+  const total = Object.values(weights).reduce((sum, w) => sum + w, 0);
+  let random = Math.random() * total;
+  
+  for (const [key, weight] of Object.entries(weights)) {
+    random -= weight;
+    if (random <= 0) {
+      return key;
+    }
+  }
+  
+  // Fallback
+  return Object.keys(weights)[0];
+}
+
 /* Score Effect */
 function showScoreEffect(text, color) {
   scoreEffect.textContent = text;
@@ -1061,29 +897,37 @@ function updateLevelUI() {
         
         data.forEach((row, index) => {
           const tr = document.createElement('tr');
-          const rankClass = index === 0 ? 'leader-top-1' : 
-                          index === 1 ? 'leader-top-2' : 
-                          index === 2 ? 'leader-top-3' : '';
-          
+          const rankClass = index === 0 ? 'leader-top-1' :
+                            index === 1 ? 'leader-top-2' :
+                            index === 2 ? 'leader-top-3' : '';
           tr.className = rankClass;
-          tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${row.player_name}</td>
-            <td>${row.score}</td>
-            <td>${row.level}</td>
-          `;
-          
+        
+          const tdRank = document.createElement('td');
+          tdRank.textContent = index + 1;
+        
+          const tdName = document.createElement('td');
+          tdName.textContent = row.player_name ?? '';
+        
+          const tdScore = document.createElement('td');
+          tdScore.textContent = String(row.score ?? '');
+        
+          const tdLevel = document.createElement('td');
+          tdLevel.textContent = row.level ?? '';
+        
+          tr.appendChild(tdRank);
+          tr.appendChild(tdName);
+          tr.appendChild(tdScore);
+          tr.appendChild(tdLevel);
+        
           leaderboardBody.appendChild(tr);
         });
+        
+        
       } catch (error) {
-        console.error('Error loading leaderboard:', error);
       }
     }
 
     async function saveScore(playerName, score, level) {
-      console.log('🟡 saveScore được gọi với:', { playerName, score, level }); // THÊM
-      console.log('🟡 Supabase client:', supabase); // THÊM
-      console.log('🟡 SUPABASE_URL:', SUPABASE_URL); // THÊM
         try {
           const { data, error } = await supabase
             .from('leaderboard')
@@ -1096,62 +940,12 @@ function updateLevelUI() {
               }
             ]);
           
-            console.log('🟢 Kết quả insert:', { data, error }); // THÊM
         
          if (error) throw error;
           
           await loadLeaderboard();
         } catch (error) {
-          console.error('🔴 Lỗi khi lưu điểm:', error);
           alert('Lỗi khi lưu điểm: ' + error.message);
         }
       }
-
-      // Xử lý sự kiện submit score (phải đặt sau khi hàm saveScore đã được định nghĩa)
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('🟣🟣🟣 DOMContentLoaded THỨ HAI đã chạy!');
-        console.log('🟣 Kiểm tra biến global:', { submitScoreBtn, playerNameInput, nameModal });
-        //const submitScoreBtn = document.getElementById('submit-score');
-        //const playerNameInput = document.getElementById('player-name');
-        //const nameModal = document.getElementById('name-modal');
-      
-        if (submitScoreBtn) {
-          console.log('🟣 submitScoreBtn TỒN TẠI, đang bind event...');
-          submitScoreBtn.addEventListener('click', async () => {
-            console.log('🔵 Đã click nút Lưu kết quả'); 
-            const name = playerNameInput.value.trim();
-            console.log('🔵 Tên người chơi:', name);
-            if (name === '') {
-              alert('Vui lòng nhập tên!');
-              return;
-            }
-            console.log('🔵 Chuẩn bị gọi saveScore');
-            await saveScore(name, quizState.currentScore, quizState.currentLevel);
-            console.log('🔵 Đã gọi saveScore xong');
-            nameModal.classList.add('hidden');
-            nameModal.classList.remove('flex');
-            playerNameInput.value = '';
-            location.reload();
-          });
-          console.log('🟣 Đã bind event xong!');
-        } else {
-          console.log('🔴 Không tìm thấy submitScoreBtn');
-        }
-        }
-    );
-
-      /* =========================
-        INIT LEADERBOARD
-      ========================= */
-
-      // Gọi loadLeaderboard khi trang load xong
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('🟣🟣🟣 DOMContentLoaded THỨ HAI đã chạy!');
-        // Đợi một chút để đảm bảo tất cả biến đã được khởi tạo
-        setTimeout(() => {
-          if (typeof loadLeaderboard === 'function') {
-            loadLeaderboard();
-          }
-        }, 500);
-      });
 
