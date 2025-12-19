@@ -13,5 +13,13 @@ export function generate(quizState){
     return { text:`${seq.join(', ')}, ?`, answer, type:'GEOMETRIC-SEQUENCE' };
   }
   
-  export function display(q,refs){ /* giống Arithmetic */ }
+  export function display(q, refs){
+    const {questionText,inputAnswerContainer,mathAnswerInput,submitAnswerBtn,lockUserInput,checkAnswer} = refs;
+    questionText.textContent=q.text;
+    questionText.classList.remove('hidden');
+    inputAnswerContainer.classList.remove('hidden');
+    mathAnswerInput.classList.remove('hidden');
+    submitAnswerBtn.classList.remove('hidden');
+    submitAnswerBtn.onclick=()=>{lockUserInput();refs.checkAnswer();};
+  }
   
