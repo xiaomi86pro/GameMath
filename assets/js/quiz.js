@@ -75,6 +75,27 @@ export const QUESTION_WEIGHTS = {
     2: { 'MULT_DIV': 60, 'SORT': 25, 'COMPARE': 15 },
     3: { 'MULT_DIV': 65, 'SORT': 20, 'COMPARE': 15 },
     4: { 'MULT_DIV': 70, 'SORT': 20, 'COMPARE': 10 }
+  },
+  TIMO: {
+     'AGE-COMBINED' : 10,
+     'AGE-CURRENT-PAST': 10,
+     'AGE-DIFFERENCE': 10,
+     'QUEUE-PROBLEM': 10,
+     'AGE-SIBLING': 10,
+     'AlTERNATING-SEQUENCE' : 10,
+     'ARITHMETIC-SEQUENCE' : 10,
+     'FIBONACCI-SEQUENCE' : 10,
+     'GEOMETRIC-SEQUENCE' : 10,
+     'MIXED-SEQUENCE' : 10,
+     'QUADRATIC-SEQUENCE': 10,
+     'SQUARE-SEQUENCE' : 10,
+     'TRIANGULAR-SEQUENCE' : 10,
+     'PRIME-SEQUENCE' : 10,
+     'ODD-SEQUENCE' : 10,
+     'EVEN-SEQUENCE' : 10,
+     'CREATE-MAX-MIN': 10,
+     'CREATE-EVEN-ODD' : 10,
+     'BALANCE-EQUATION' : 10,
   }
 };
 
@@ -476,20 +497,21 @@ function exitQuiz() {
 }
 
 async function generateQuestion() {
-  
-  // Lấy trọng số theo quiz type và level
-  const weights = QUESTION_WEIGHTS[quizState.currentQuizType]?.[quizState.currentLevel];
-  
+  // Lấy nhóm trọng số theo quiz type
+  const group = QUESTION_WEIGHTS[quizState.currentQuizType];
+  // Nếu nhóm có theo level thì lấy theo level, nếu không thì dùng trực tiếp (TIMO)
+  const weights = (group && group[quizState.currentLevel]) ? group[quizState.currentLevel] : group;
+
   if (!weights) {
     quizState.currentQuestion = {
-      text: 'Chưa cấu hình dạng bài cho level này',
+      text: 'Chưa cấu hình dạng bài cho loại này',
       answer: null,
       type: 'ERROR'
     };
     displayQuestion();
     return;
   }
-  
+
   // Chọn loại câu hỏi theo trọng số
   const selectedType = weightedRandom(weights);
   console.log("👉 Selected question type:", selectedType);
@@ -507,11 +529,10 @@ async function generateQuestion() {
     displayQuestion();
     return;
   }
-  
+
   // Generate câu hỏi từ module
   quizState.currentQuestion = module.generate(quizState);
-  
-  
+
   displayQuestion();
 }
 

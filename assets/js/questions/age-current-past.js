@@ -6,8 +6,8 @@ export function generate() {
   
     const answer = isFuture ? age + years : age - years;
     const text = isFuture
-      ? `Bạn năm nay ${age} tuổi. Sau ${years} năm nữa bạn bao nhiêu tuổi?`
-      : `Bạn năm nay ${age} tuổi. Cách đây ${years} năm bạn bao nhiêu tuổi?`;
+      ? `Bạn A năm nay ${age} tuổi. Sau ${years} năm nữa bạn A bao nhiêu tuổi?`
+      : `Bạn B năm nay ${age} tuổi. Cách đây ${years} năm bạn B bao nhiêu tuổi?`;
   
     return {
       text,

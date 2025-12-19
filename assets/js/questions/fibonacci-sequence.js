@@ -10,3 +10,20 @@ export function generate(){
   
   export function display(q,refs){ /* giống Arithmetic */ }
   
+  export function display(q, refs) {
+    const { questionText, inputAnswerContainer, mathAnswerInput, submitAnswerBtn, submitAnswer } = refs;
+  
+    // Hiển thị câu hỏi
+    questionText.textContent = q.text;
+    questionText.classList.remove('hidden');
+  
+    // Hiển thị ô nhập số
+    inputAnswerContainer.classList.remove('hidden');
+    mathAnswerInput.classList.remove('hidden');
+  
+    // Nút kiểm tra
+    submitAnswerBtn.classList.remove('hidden');
+    submitAnswerBtn.disabled = false;
+    submitAnswerBtn.onclick = submitAnswer;
+  }
+  
