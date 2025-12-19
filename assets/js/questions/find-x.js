@@ -1,40 +1,67 @@
 // questions/find-x.js
 export function generate(quizState) {
-    // Sinh số ngẫu nhiên trong phạm vi level
-    const max = quizState.currentLevel * 10; // ví dụ cấp 1: 0-9, cấp 2: 0-19...
-    const a = Math.floor(Math.random() * max) + 1;
-    const b = Math.floor(Math.random() * max) + 1;
-  
-    // Các dạng biểu thức
-    const patterns = [
-      { expr: `${a} + ? = ${a + b}`, answer: b },
-      { expr: `? + ${a} = ${a + b}`, answer: b },
-      { expr: `${a} - ? = ${a - b}`, answer: b },
-      { expr: `? - ${a} = ${b - a}`, answer: b },
-    ];
-  
-    // Chọn ngẫu nhiên một dạng
-    const chosen = patterns[Math.floor(Math.random() * patterns.length)];
-  
-    return {
-      text: chosen.expr,
-      answer: chosen.answer,
-      type: 'find-x'
-    };
+  let expression, answer;
+
+  if (quizState.currentLevel === 2) {
+    while (true) {
+      const x = Math.floor(Math.random() * 10);
+      const y = Math.floor(Math.random() * 10);
+      const z = Math.floor(Math.random() * 30 + 10); // tăng z để tránh âm
+      const pos = Math.floor(Math.random() * 3);
+
+      if (pos === 0) {
+        answer = z - (x + y);
+        expression = `? + ${x} + ${y} = ${z}`;
+      } else if (pos === 1) {
+        answer = z - x + y;
+        expression = `${x} + ? - ${y} = ${z}`;
+      } else {
+        answer = z - (x - y);
+        expression = `${x} - ${y} + ? = ${z}`;
+      }
+
+      if (answer >= 0) break; // chỉ chấp nhận số không âm
+    }
+
+    return { text: expression, answer, type: 'FIND-X' };
   }
-  
-  export function display(question, refs) {
-    const { questionText, inputAnswerContainer, mathAnswerInput, submitAnswerBtn, lockUserInput, checkAnswer } = refs;
-    questionText.textContent = question.text;
-    questionText.classList.remove('hidden');
-  
-    inputAnswerContainer.classList.remove('hidden');
-    mathAnswerInput.classList.remove('hidden');
-    submitAnswerBtn.classList.remove('hidden');
-  
-    submitAnswerBtn.onclick = () => {
-      lockUserInput();
-      checkAnswer();
-    };
+
+  if (quizState.currentLevel === 3) {
+    while (true) {
+      const nums = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10));
+      const [a, b, c, d] = nums;
+      answer = d - (a - b + c);
+      expression = `? + ${a} - ${b} + ${c} = ${d}`;
+      if (answer >= 0) break;
+    }
+
+    return { text: expression, answer, type: 'FIND-X' };
   }
+
+  // Level 1 mặc định
+  const a = Math.floor(Math.random() * 10);
+  const b = Math.floor(Math.random() * 10);
+  answer = b;
+  return { text: `${a} + ? = ${a + b}`, answer, type: 'FIND-X' };
+}
+
+export function display(question, refs) {
+  const { 
+    questionText, 
+    inputAnswerContainer, 
+    mathAnswerInput, 
+    submitAnswerBtn,
+    submitAnswer  // ← SỬA: dùng submitAnswer thay vì lockUserInput + checkAnswer
+  } = refs;
   
+  questionText.textContent = question.text;
+  questionText.classList.remove('hidden');
+
+  inputAnswerContainer.classList.remove('hidden');
+  mathAnswerInput.classList.remove('hidden');
+  
+  submitAnswerBtn.textContent = 'Kiểm tra';
+  submitAnswerBtn.classList.remove('hidden');
+  submitAnswerBtn.disabled = false;
+  submitAnswerBtn.onclick = submitAnswer;  // ← Dùng hàm submitAnswer như các module khác
+}

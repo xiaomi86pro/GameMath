@@ -7,12 +7,90 @@
     <!-- Tải Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">  
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         .leader-top-1 { color: #d97706; font-weight: 700; }
         .leader-top-2 { color: #6b7280; font-weight: 600; }
         .leader-top-3 { color: #92400e; font-weight: 600; }
         /* Tùy chỉnh font cho dễ nhìn hơn */
-        /* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap'); */
+
+        /* 🔥 Score Ball – Fire Mode */
+        .score-ball-fire {
+            
+            background: linear-gradient(135deg, #ffeb3b, #ffc107);
+            border-color: #ffe082;
+            
+            }
+        /* halo chung */
+            .score-ball-fire::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(255, 200, 0, 0.6),
+                rgba(255, 120, 0, 0.4),
+                transparent 70%
+            );
+            filter: blur(6px);
+            animation: flame-move 1.2s ease-in-out infinite;
+            z-index: -1;
+            }  
+        /* 🔥 level 1 – streak ≥ 3 */
+        .fire-lv1 {
+        box-shadow:
+            0 0 8px rgba(255, 193, 7, 0.8),
+            0 0 16px rgba(255, 152, 0, 0.6);
+        }
+
+        /* 🔥🔥 level 2 – streak ≥ 5 */
+        .fire-lv2 {
+        box-shadow:
+            0 0 12px rgba(255, 193, 7, 0.9),
+            0 0 24px rgba(255, 152, 0, 0.8),
+            0 0 36px rgba(255, 87, 34, 0.6);
+        }
+
+        /* 🔥🔥🔥 level 3 – streak ≥ 10 */
+        .fire-lv3 {
+        box-shadow:
+            0 0 16px rgba(255, 213, 79, 1),
+            0 0 32px rgba(255, 152, 0, 0.9),
+            0 0 48px rgba(255, 87, 34, 0.8);
+        }
+
+        @keyframes flame-move {
+        0% {
+            transform: scale(1) rotate(0deg);
+            opacity: 0.7;
+        }
+        50% {
+            transform: scale(1.08) rotate(6deg);
+            opacity: 0.9;
+        }
+        100% {
+            transform: scale(1) rotate(-4deg);
+            opacity: 0.7;
+        }
+        }      
+        /* lớp lửa bao quanh */
+            .score-ball-fire::before {
+                content: '';
+                position: absolute;
+                inset: -6px;
+                border-radius: 50%;
+                background: radial-gradient(
+                    circle,
+                    rgba(255, 200, 0, 0.6),
+                    rgba(255, 120, 0, 0.4),
+                    transparent 70%
+                );
+                filter: blur(6px);
+                animation: flame-move 1.2s ease-in-out infinite;
+                z-index: -1;
+                }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f7f7f7;
@@ -42,6 +120,7 @@
             border: 3px solid #10b981;
             transform: scale(1.05);
         }
+        
         /* Cập nhật CSS cho độ tương phản cao hơn: Nền nhạt, Chữ đậm */
         .correct-answer-box {
             background-color: #d1fae5 !important; /* light green (green-100) */
@@ -55,6 +134,8 @@
         .warning-answer-box {
             background-color: #fef9c3 !important; /* light yellow (yellow-100) */
         }
+
+
         /* --- Score Pop-up Effect --- */
         .score-effect {
             position: absolute;
@@ -69,6 +150,7 @@
         .score-container-relative {
             position: relative;
         }
+        
         /* Dùng keyframes cho các hiệu ứng nền */
         @keyframes pulse-green {
             0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
@@ -80,24 +162,7 @@
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        /* Styling cho đồng hồ kim SVG */
-        .clock-face {
-            fill: #f9fafb;
-            stroke: #374151;
-            stroke-width: 4;
-        }
-        .hour-hand {
-            stroke: #1f2937;
-            stroke-linecap: round;
-            stroke-width: 6;
-            transform-origin: 50% 50%;
-        }
-        .minute-hand {
-            stroke: #ef4444;
-            stroke-linecap: round;
-            stroke-width: 4;
-            transform-origin: 50% 50%;
-        }
+
         /* Styling đặc biệt cho ô so sánh */
         .comparison-box {
             min-height: 70px;
@@ -106,9 +171,11 @@
             justify-content: center;
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-cpwLiQN8.js"></script>
 </head>
 <body class="p-4">
+    <audio id="sound-correct" src="./assets/sounds/correct.mp3" preload="auto"></audio>
+	<audio id="sound-wrong" src="./assets/sounds/wrong.mp3" preload="auto"></audio>
+    <!-- Bảng xếp hạng -->
     <div id="leaderboard" class="fixed left-0 top-0 h-full w-64 bg-white shadow-xl p-4 overflow-auto">
         <h2 class="text-xl font-extrabold text-indigo-700 mb-4">🏆 Bảng xếp hạng</h2>
         <table class="w-full text-sm">
@@ -124,6 +191,7 @@
         </table>
     </div>
 
+    <!-- Khung Quiz -->
     <div class="container bg-white p-6 md:p-10 rounded-xl shadow-2xl ml-64">
         <h1 class="text-4xl font-bold text-center text-indigo-700 mb-6">🧠 Ứng Dụng Học Toán Tương Tác</h1>
         
@@ -161,24 +229,24 @@
     		</div>
 			</div>
             <p id="level-description" class="mt-4 text-sm text-indigo-700 text-center font-medium">Bạn đã chọn: Cấp 1 (Phạm vi số từ 0 đến 9).</p>
-<!-- Chọn số câu hỏi -->
-<div class="text-center mt-4">
-    <p class="text-md font-semibold text-gray-700 mb-2">Chọn số câu hỏi:</p>
-    <div id="question-count-options" class="flex justify-center space-x-4">
-        <button data-questions="10" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
-            10 câu
-        </button>
-        <button data-questions="20" class="q-count-btn px-4 py-2 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
-            20 câu
-        </button>
-        <button data-questions="30" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
-            30 câu
-        </button>
-    </div>
-</div>
+            <!-- Chọn số câu hỏi -->
+            <div class="text-center mt-4">
+                <p class="text-md font-semibold text-gray-700 mb-2">Chọn số câu hỏi:</p>
+                <div id="question-count-options" class="flex justify-center space-x-4">
+                    <button data-questions="10" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+                        10 câu
+                    </button>
+                    <button data-questions="20" class="q-count-btn px-4 py-2 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+                        20 câu
+                    </button>
+                    <button data-questions="30" class="q-count-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition">
+                        30 câu
+                    </button>
+                </div>
+            </div>
 
             <div class="text-center pt-4">
-                <button id="start-quiz-btn" class="px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105" disabled>
+                <button id="start-quiz-btn" class="px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
                     Bắt Đầu Quiz
                 </button>
             </div>
@@ -202,15 +270,33 @@
                 </p>
 
                 <!-- Score Container with Relative Positioning for Effect -->
-                <p class="text-xl font-semibold score-container-relative">
-                    Điểm: <span id="current-score" class="text-green-600 font-extrabold text-2xl">0</span>
-                    <span id="score-effect" class="score-effect"></span>
-                </p>
+                <!-- <p class="text-xl font-semibold score-container-relative"> -->
+                <!--    Điểm: <span id="current-score" class="text-green-600 font-extrabold text-2xl">0</span> -->
+                <!--    <span id="score-effect" class="score-effect"></span> -->
+                <!-- </p> -->
             </div>
             
             <!-- Progress Bar -->
-            <div id="progress-bar-container" class="w-full bg-gray-200 rounded-full h-4 mb-4 overflow-hidden shadow-inner">
+            <div id="progress-bar-container" class="relative w-full bg-gray-200 rounded-full h-4 mb-6 shadow-inner">
                 <div id="progress-bar" class="bg-indigo-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                <div
+                    id="score-effect"
+                    class="pointer-events-none transition-all duration-500
+                        absolute left-1/2 -translate-x-1/2 -top-6
+                        text-2xl font-bold">
+                </div>
+                <div
+                        id="score-ball"
+                        class="absolute -top-3
+                            w-10 h-10 rounded-full
+                            bg-blue-500
+                            border-2 border-transparent
+                            flex items-center justify-center
+                            text-white font-bold transition-all duration-300"
+                        style="left: 0%"
+                >
+                0
+                </div>
             </div>
             
             <p class="text-lg font-semibold mb-4">Cấp độ: <span id="current-level-name">Cấp 1</span> | Câu hỏi: <span id="current-question-number">0</span> / <span id="total-questions">20</span></p>
@@ -220,7 +306,52 @@
             <div id="question-area" class="min-h-[150px] flex flex-col justify-center items-center p-6 bg-blue-100 rounded-xl shadow-xl mb-3">
                 <!-- Vùng cho hình ảnh đồng hồ (Q19) -->
                 <div id="clockImageContainer" class="hidden my-4 flex justify-center">
-                    <!-- SVG clock will be generated here -->
+                    <!-- ⏰ CLOCK QUESTION -->
+                    <svg id="clock-question" viewBox="0 0 200 200" class="w-52 h-52">
+    
+                        <!-- Face -->
+                        <circle cx="100" cy="100" r="95"
+                                fill="#ffffff" stroke="#374151" stroke-width="4" />
+                    
+                        <!-- Numbers -->
+                        <g font-size="14" font-weight="bold" fill="#1f2937" text-anchor="middle">
+                          <text x="100" y="28">12</text>
+                          <text x="172" y="105">3</text>
+                          <text x="100" y="182">6</text>
+                          <text x="28" y="105">9</text>
+                    
+                          <text x="140" y="40">1</text>
+                          <text x="165" y="70">2</text>
+                          <text x="165" y="145">4</text>
+                          <text x="140" y="170">5</text>
+                          <text x="60" y="170">7</text>
+                          <text x="35" y="145">8</text>
+                          <text x="35" y="70">10</text>
+                          <text x="60" y="40">11</text>
+                        </g>
+                    
+                        <!-- Hour hand -->
+                        <line id="hour-hand"
+                              x1="100" y1="100"
+                              x2="100" y2="55"
+                              stroke="#ef4444"
+                              stroke-width="6"
+                              stroke-linecap="round" />
+                    
+                        <!-- Minute hand -->
+                        <line id="minute-hand"
+                              x1="100" y1="100"
+                              x2="100" y2="35"
+                              stroke="#22c55e"
+                              stroke-width="4"
+                              stroke-linecap="round" />
+                    
+                        <!-- Center -->
+                        <circle cx="100" cy="100" r="5" fill="#374151" />
+                    
+                      </svg>
+                    
+                      <div id="clock-choices" class="grid grid-cols-2 gap-3"></div>
                 </div>
                 
                 <!-- Dạng bài so sánh -->
@@ -252,7 +383,7 @@
                 <!-- Vùng cho Bài tập So sánh (nút bấm) -->
                 <div id="comparison-buttons-container" class="space-x-4 hidden">
                     <button data-op=">" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800">></button>
-                    <button data-op="<" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800"></button>
+                    <button data-op="&lt;" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800">&lt;</button>
                     <button data-op="=" class="comp-btn px-8 py-4 bg-indigo-600 text-white text-3xl font-bold rounded-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg active:bg-indigo-800">=</button>
                 </div>
 
@@ -271,76 +402,51 @@
 
             <!-- Message Box -->
             <p id="message-box" class="mt-4 text-xl font-bold min-h-[30px]"></p>
-
             <button id="next-question-btn" class="mt-6 px-6 py-3 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition duration-300 hidden">Câu hỏi tiếp theo</button>
-            </div>
-        
-        <!-- Màn Hình Kết thúc Quiz -->
-        <div id="end-screen" class="hidden text-center p-8 bg-white rounded-xl shadow-2xl">
-            <h2 class="text-4xl font-extrabold text-green-700 mb-4">Hoàn thành Quiz! 🎉</h2>
-            <p class="text-2xl text-gray-700 mb-6">Bạn đã hoàn thành quiz.</p>
-            <p class="text-5xl font-extrabold text-indigo-600">Điểm của bạn: <span id="final-score">0</span> / <span id="total-questions-display">20</span></p>
-            <p id="time-taken-message" class="text-xl text-gray-600 mt-4"></p>
-            <button id="restart-quiz-btn" class="mt-8 px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
-                Chơi lại
-            </button>
-        </div>
 
-        <!-- Custom Modal for Confirmation (using Tailwind) -->
-        <div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4">
-                <h3 class="text-xl font-bold text-red-600 mb-4">Xác nhận Quay lại</h3>
-                <p class="text-gray-700 mb-6">Bạn có chắc chắn muốn quay lại màn hình chính? Mọi tiến trình quiz hiện tại sẽ bị mất.</p>
-                <div class="flex justify-end space-x-4">
-                    <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Hủy</button>
-                    <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Quay lại</button>
+        </div>
+        
+            <!-- Màn Hình Kết thúc Quiz -->
+            <div id="end-screen" class="hidden text-center p-8 bg-white rounded-xl shadow-2xl">
+                <h2 class="text-4xl font-extrabold text-green-700 mb-4">Hoàn thành Quiz! 🎉</h2>
+                <p class="text-2xl text-gray-700 mb-6">Bạn đã hoàn thành quiz.</p>
+                <p class="text-5xl font-extrabold text-indigo-600">Điểm của bạn: <span id="final-score">0</span> / <span id="total-questions-display">20</span></p>
+                <p id="time-taken-message" class="text-xl text-gray-600 mt-4"></p>
+                <button id="restart-quiz-btn" class="mt-8 px-8 py-3 bg-red-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
+                    Chơi lại
+                </button>
+            </div>
+
+            <!-- Custom Modal for Confirmation (using Tailwind) -->
+            <div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Xác nhận Quay lại</h3>
+                    <p class="text-gray-700 mb-6">Bạn có chắc chắn muốn quay lại màn hình chính? Mọi tiến trình quiz hiện tại sẽ bị mất.</p>
+                    <div class="flex justify-end space-x-4">
+                        <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Hủy</button>
+                        <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Quay lại</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
     </div>
+    
     <!-- MODAL NHẬP TÊN -->
     <div id="name-modal"
-            class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+        class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
         <div class="bg-white p-6 rounded-xl w-80 shadow-xl">
             <h2 class="text-xl font-bold mb-3 text-indigo-700">
             🏆 Nhập tên của bạn
             </h2>
-
-            <input id="player-name"
-                class="w-full border p-2 rounded mb-4"
-                placeholder="Tên người chơi">
-
-            <button id="submit-score"
-                    class="w-full bg-indigo-600 text-white font-bold py-2 rounded">
+            <input id="player-name" class="w-full border p-2 rounded mb-4" placeholder="Tên người chơi">
+            <button id="submit-score" class="w-full bg-indigo-600 text-white font-bold py-2 rounded">
             Lưu kết quả
             </button>
         </div>
     </div>
-
-	<audio id="sound-correct" src="./assets/sounds/correct.mp3" preload="auto"></audio>
-	<audio id="sound-wrong" src="./assets/sounds/wrong.mp3" preload="auto"></audio>
 
-    <!-- MODAL NHẬP TÊN -->
-<div id="name-modal"
-     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-
-  <div class="bg-white p-6 rounded-xl w-80 shadow-xl">
-    <h2 class="text-xl font-bold mb-3 text-indigo-700">
-      🏆 Nhập tên của bạn
-    </h2>
-
-    <input id="player-name"
-           class="w-full border p-2 rounded mb-4"
-           placeholder="Tên người chơi">
-
-    <button id="submit-score"
-            class="w-full bg-indigo-600 text-white font-bold py-2 rounded">
-      Lưu kết quả
-    </button>
-  </div>
-</div>
+    <script type="module" src="./assets/js/quiz.js"></script>
 
 </body>
 </html>

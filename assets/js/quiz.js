@@ -50,24 +50,24 @@ export const DAYS_OF_WEEK = [
 export const QUESTION_WEIGHTS = {
   ADD_SUB: {
     1: {
-      'ADD_SUB': 40,
-      'COMPARE': 30,
-      'SORT': 20,
-      'CLOCK': 10,
+      'ADD_SUB': 10,
+      'COMPARE': 20,
+      'SORT': 10,
+      'CLOCK': 20,
       'FIND-X': 20
     },
     2: {
-      'ADD_SUB': 30,
-      'COMPARE': 25,
-      'SORT': 20,
-      'CLOCK': 15,
-      'MULT_DIV': 10
+      'ADD_SUB': 10,
+      'COMPARE': 20,
+      'SORT': 10,
+      'CLOCK': 20,
+      'FIND-X': 20   
     },
     3: {
       'ADD_SUB': 35,
       'COMPARE': 25,
       'SORT': 20,
-      'MULT_DIV': 20
+      'FIND-X': 20
     }
   },
   MULT_DIV: {
@@ -312,7 +312,6 @@ function bindEvents() {
 
   // Level select buttons
   levelSelectBtns.forEach(btn => {
-    // ensure idempotent: only bind once
     if (!btn.dataset.boundLevel) {
       btn.addEventListener('click', () => {
         levelSelectBtns.forEach(b => {
@@ -360,18 +359,20 @@ function bindEvents() {
     });
   }
 
-  // Enter key handling for mathAnswerInput
-  if (mathAnswerInput) {
-    mathAnswerInput.addEventListener('keypress', (e) => {
+  // Enter key handling for mathAnswerInput (idempotent + keydown)
+  if (mathAnswerInput && !mathAnswerInput.dataset.boundEnter) {
+    mathAnswerInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
+        // Ưu tiên gọi trực tiếp submitAnswer để tránh +2
         if (submitAnswerBtn && !submitAnswerBtn.classList.contains('hidden') && !submitAnswerBtn.disabled) {
-          submitAnswerBtn.click();
+          submitAnswer();
         } else if (nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden')) {
-          nextQuestionBtn.click();
+          nextQuestionBtn.click(); // OK vì chỉ có một handler nextQuestion
         }
       }
     });
+    mathAnswerInput.dataset.boundEnter = '1';
   }
 
   // Bind submit score button safely
@@ -414,13 +415,7 @@ function startQuiz() {
   totalQuestionsSpan.textContent = quizState.TOTAL_QUIZ_QUESTIONS;
   currentLevelNameSpan.textContent = quizState.currentLevelName;
 
-  const scoreBall = document.getElementById('score-ball');
-    if (scoreBall) {
-      scoreBall.textContent = 0;
-      scoreBall.classList.remove('bg-yellow-400', 'animate-pulse');
-      scoreBall.classList.add('bg-blue-500');
-      scoreBall.style.left = '0%';
-    }
+  updateScoreBall();
   
   startTimer();
   nextQuestion();
@@ -432,6 +427,7 @@ async function nextQuestion(){
       endQuiz();
       return;
     }
+    quizState.hasEvaluated = false;
     unlockUserInput();
     mathAnswerInput.value = '';
     messageBox.textContent = '';
@@ -496,10 +492,12 @@ async function generateQuestion() {
   
   // Chọn loại câu hỏi theo trọng số
   const selectedType = weightedRandom(weights);
-  
+  console.log("👉 Selected question type:", selectedType);
+
   // Load module tương ứng
   const module = await loadQuestionModule(selectedType);
-  
+  console.log("👉 Loaded module:", module);
+
   if (!module || !module.generate) {
     quizState.currentQuestion = {
       text: 'Lỗi khi load câu hỏi',
@@ -522,6 +520,8 @@ async function displayQuestion() {
   resetSubmitButton();
   submitAnswerBtn.classList.add('hidden');
   const q = quizState.currentQuestion;
+  console.log("👉 Current question object:", q);
+
   if (!q || q.type === 'ERROR') {
     questionText.textContent = q?.text || 'Lỗi không xác định';
     questionText.classList.remove('hidden');
@@ -530,8 +530,10 @@ async function displayQuestion() {
   
   // Load module tương ứng
   const module = await loadQuestionModule(q.type);
-  
+  console.log("👉 Display module for type:", q.type, module);
+
   if (!module || !module.display) {
+    console.error("❌ Lỗi hiển thị câu hỏi với type:", q.type);
     questionText.textContent = 'Lỗi hiển thị câu hỏi';
     questionText.classList.remove('hidden');
     return;
@@ -554,8 +556,8 @@ async function displayQuestion() {
     hourHand,
     minuteHand,
     clockChoices,
+    // Các hàm cần thiết
     lockUserInput,
-    checkAnswer,
     checkSortingAnswer,
     submitAnswer,
     handleCorrectAnswer,
@@ -591,144 +593,141 @@ function renderSortingNumbers(numbers) {
       sortingNumbersContainer.appendChild(div);
   });
 }  
-
-  function handleCorrectAnswer() {
-    quizState.currentScore += 1;
-    quizState.correctStreak += 1;
-  
-    showScoreEffect('+1', 'text-yellow-400');
-  
-    const scoreBall = document.getElementById('score-ball');
-      if (scoreBall) {
-        scoreBall.textContent = quizState.currentScore;
-
-        // reset class lửa
-        scoreBall.classList.remove(
-          'score-ball-fire',
-          'fire-lv1',
-          'fire-lv2',
-          'fire-lv3'
-        );
-
-        if (quizState.correctStreak >= 3) {
-          scoreBall.classList.add('score-ball-fire', 'fire-lv1');
-        }
-        if (quizState.correctStreak >= 5) {
-          scoreBall.classList.add('fire-lv2');
-        }
-        if (quizState.correctStreak >= 10) {
-          scoreBall.classList.add('fire-lv3');
-        }
-      }
-    //        scoreBall.classList.remove('bg-blue-500');
-
-    soundCorrect?.play();
-  
-    messageBox.textContent = '✅ Chính xác!';
-    messageBox.className = 'text-green-600 font-bold';
-  
-    nextQuestionBtn.classList.remove('hidden');
+ 
+// Hàm cập nhật UI điểm
+function updateScoreBall() {
+  const scoreEl = document.getElementById('current-score');
+  if (scoreEl) {
+    scoreEl.textContent = quizState.currentScore;
   }
-  
-  function handleWrongAnswer() {
-    quizState.currentScore -= 1;
-    quizState.correctStreak = 0;
-  
-    showScoreEffect('-1', 'text-red-500');
-  
-    const scoreBall = document.getElementById('score-ball');
-      if (scoreBall) {
-        scoreBall.textContent = quizState.currentScore;
-        scoreBall.classList.remove(
-          'score-ball-fire',
-          'fire-lv1',
-          'fire-lv2',
-          'fire-lv3'
-        );
-      }
-  
-    soundWrong?.play();
-  
-    messageBox.textContent = '❌ Sai rồi!';
-    messageBox.className = 'text-red-600 font-bold';
-  
-    nextQuestionBtn.classList.remove('hidden');
+}
+
+// Hàm trung tâm chấm điểm
+
+// Đúng
+function handleCorrectAnswer() {
+  showScoreEffect('+1', 'text-yellow-400');
+
+  // reset class lửa theo streak
+  const scoreEl = document.getElementById('current-score');
+  if (scoreEl) {
+    scoreEl.classList.remove('score-ball-fire','fire-lv1','fire-lv2','fire-lv3');
+
+    if (quizState.correctStreak >= 3) {
+      scoreEl.classList.add('score-ball-fire','fire-lv1');
+    }
+    if (quizState.correctStreak >= 5) {
+      scoreEl.classList.add('fire-lv2');
+    }
+    if (quizState.correctStreak >= 10) {
+      scoreEl.classList.add('fire-lv3');
+    }
   }
+
+  soundCorrect?.play();
+
+  messageBox.textContent = '✅ Chính xác!';
+  messageBox.className = 'text-green-600 font-bold';
+
+  nextQuestionBtn.classList.remove('hidden');
+}
+
+// Sai
+function handleWrongAnswer() {
+  showScoreEffect('-1', 'text-red-500');
+
+  const scoreEl = document.getElementById('current-score');
+  if (scoreEl) {
+    scoreEl.classList.remove('score-ball-fire','fire-lv1','fire-lv2','fire-lv3');
+  }
+
+  soundWrong?.play();
+
+  messageBox.textContent = '❌ Sai rồi!';
+  messageBox.className = 'text-red-600 font-bold';
+
+  nextQuestionBtn.classList.remove('hidden');
+}
 
 function handleCompareAnswer(selectedOp) {
-    if (submitAnswerBtn.disabled) return;
+  if (quizState.hasEvaluated) return; // tránh double-call
+  if (submitAnswerBtn.disabled) return;
 
-        lockUserInput();
+  lockUserInput();
+  document.getElementById('comparison-box').textContent = selectedOp;
 
-        document.getElementById('comparison-box').textContent = selectedOp;
+  const isCorrect = (selectedOp === quizState.currentQuestion.answer);
 
-        if (selectedOp === quizState.currentQuestion.answer) {
-            handleCorrectAnswer();
-        } else {
-            handleWrongAnswer();
-  }
-  }
+  evaluateAnswer(isCorrect); // ✅ điểm được tính ở đây
+}
   
 /* =========================
    8. ANSWER CHECKING
 ========================= */
 function checkSortingAnswer(userOrder) {
-  const correct = quizState.currentQuestion.answer;
-  const isCorrect =
-    JSON.stringify(userOrder) === JSON.stringify(correct);
-
-  if (isCorrect) {
-    handleCorrectAnswer();
-  } else {
-    handleWrongAnswer();
-  }
-
-  nextQuestionBtn.classList.remove('hidden');
-}
-
-
-function submitAnswer() {
-  const userAnswer = mathAnswerInput.value.trim();
-
-  if (userAnswer === '') {
+  if (!userOrder || userOrder.length === 0) {
     messageBox.textContent = '⚠️ Bạn chưa nhập đáp án';
     messageBox.className = 'text-yellow-600 font-bold';
     return;
   }
-  
-  lockUserInput();
-  checkAnswer();
+
+  const correct = quizState.currentQuestion.answer;
+  const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correct);
+  evaluateAnswer(isCorrect);
 }
 
-/* NEW */
-function checkAnswer() {
-  if (!quizState.currentQuestion) return false;
+// Hàm trung tâm chấm điểm
+function evaluateAnswer(isCorrect) {
+  if (quizState.hasEvaluated) return; // tránh double-call
+  quizState.hasEvaluated = true;
 
+  if (isCorrect) {
+    quizState.currentScore += 1;
+    quizState.correctStreak += 1;
+    handleCorrectAnswer();
+  } else {
+    quizState.currentScore = Math.max(0, quizState.currentScore - 1);
+    quizState.correctStreak = 0;
+    handleWrongAnswer();
+  }
+
+  updateScoreBall(); // ✅ luôn cập nhật UI sau khi thay đổi
+}
+
+
+function submitAnswer() {
+  // Khóa input để tránh spam
+  lockUserInput();
+
+  // Lấy giá trị nhập
   const raw = (mathAnswerInput?.value || '').trim();
+
+  // Kiểm tra rỗng
   if (raw === '') {
     messageBox.textContent = '⚠️ Bạn chưa nhập đáp án';
     messageBox.className = 'text-yellow-600 font-bold';
-    return false;
+    unlockUserInput(); // cho phép nhập lại
+    return;
   }
 
+  // Kiểm tra hợp lệ (phải là số)
   const userAnswer = Number(raw);
   if (Number.isNaN(userAnswer)) {
     messageBox.textContent = '⚠️ Đáp án không hợp lệ';
     messageBox.className = 'text-yellow-600 font-bold';
-    return false;
+    unlockUserInput();
+    return;
   }
 
+  // So sánh với đáp án đúng
   const isCorrect = userAnswer === quizState.currentQuestion.answer;
 
-  if (isCorrect) {
-    handleCorrectAnswer();
-  } else {
-    handleWrongAnswer();
-  }
+  // ✅ Chấm điểm qua evaluateAnswer
+  evaluateAnswer(isCorrect);
 
-  return isCorrect;
+  // Reset input cho câu tiếp theo
+  mathAnswerInput.value = '';
 }
-
 
 /* =========================
    9. TIMER
@@ -796,6 +795,7 @@ async function loadQuestionModule(type) {
     questionModules[type] = module;
     return module;
   } catch (error) {
+    console.error("❌ Lỗi import module:", type, error);
     return null;
   }
 }
@@ -851,9 +851,6 @@ function hideAllAnswerAreas() {
 
   mathAnswerInput.classList.remove('hidden');
 
-  //submitAnswerBtn.classList.add('hidden');
-  //clockQuestionContainer.classList.add('hidden');
-  mathAnswerInput.classList.remove('hidden');
 }
 
 function showMessage(text, type) {
@@ -948,4 +945,3 @@ function updateLevelUI() {
           alert('Lỗi khi lưu điểm: ' + error.message);
         }
       }
-
