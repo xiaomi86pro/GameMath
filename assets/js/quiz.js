@@ -263,28 +263,77 @@ function resetSubmitButton() {
     submitAnswerBtn.onclick = null;
 }
 function lockUserInput() {
+  // Khoá nút kiểm tra
+  if (submitAnswerBtn) {
     submitAnswerBtn.disabled = true;
-
-    // Khoá sorting
-    sortingNumbersContainer
-        .querySelectorAll('.sorting-number')
-        .forEach(el => el.style.pointerEvents = 'none');
-
-    // Khoá compare
-    comparisonButtonsContainer
-        ?.querySelectorAll('button')
-        .forEach(btn => btn.disabled = true);
+    submitAnswerBtn.classList.add('opacity-50', 'cursor-not-allowed');
   }
+
+  // Khoá ô nhập đáp án
+  if (mathAnswerInput) {
+    mathAnswerInput.disabled = true;
+    mathAnswerInput.classList.add('opacity-50', 'cursor-not-allowed');
+  }
+
+  // Khoá sorting
+  sortingNumbersContainer
+    ?.querySelectorAll('.sorting-number')
+    .forEach(el => el.style.pointerEvents = 'none');
+
+  // Khoá compare buttons
+  comparisonButtonsContainer
+    ?.querySelectorAll('button')
+    .forEach(btn => {
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+    });
+
+  // Khoá clock choices
+  clockChoices
+    ?.querySelectorAll('button')
+    .forEach(btn => {
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+    });
+
+  // 👉 Focus sang nút "Câu hỏi tiếp theo"
+  if (nextQuestionBtn) nextQuestionBtn.focus();
+}
   
 function unlockUserInput() {
+  // Mở lại nút kiểm tra
+  if (submitAnswerBtn) {
     submitAnswerBtn.disabled = false;
-    submitAnswerBtn.classList.remove('opacity-50');
-  
-    mathAnswerInput.disabled = false;
-  
-    setCompareButtonsDisabled(false);
-
+    submitAnswerBtn.classList.remove('opacity-50', 'cursor-not-allowed');
   }
+
+  // Mở lại ô nhập đáp án
+  if (mathAnswerInput) {
+    mathAnswerInput.disabled = false;
+    mathAnswerInput.classList.remove('opacity-50', 'cursor-not-allowed');
+  }
+
+  // Mở lại sorting
+  sortingNumbersContainer
+    ?.querySelectorAll('.sorting-number')
+    .forEach(el => el.style.pointerEvents = 'auto');
+
+  // Mở lại compare buttons
+  comparisonButtonsContainer
+    ?.querySelectorAll('button')
+    .forEach(btn => {
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    });
+
+  // Mở lại clock choices
+  clockChoices
+    ?.querySelectorAll('button')
+    .forEach(btn => {
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    });
+}
   
 function setCompareButtonsDisabled(disabled) {
     const buttons = document.querySelectorAll('.comp-btn');
@@ -617,69 +666,93 @@ function renderSortingNumbers(numbers) {
  
 // Hàm cập nhật UI điểm
 function updateScoreBall() {
-  const scoreEl = document.getElementById('current-score');
-  if (scoreEl) {
-    scoreEl.textContent = quizState.currentScore;
+  const scoreBall = document.getElementById('score-ball');
+  if (!scoreBall) return;
+
+  // Cập nhật số điểm
+  quizState.currentScore = Number(quizState.currentScore) || 0;
+  scoreBall.textContent = quizState.currentScore;
+
+  // Xoá class fire cũ
+  scoreBall.classList.remove('fire-lv1', 'fire-lv2', 'fire-lv3', 'score-ball-fire');
+
+  // Thêm class theo streak
+  const s = Number(quizState.currentStreak) || 0;
+  if (s >= 3 && s < 5) {
+    scoreBall.classList.add('score-ball-fire', 'fire-lv1');
+  } else if (s >= 5 && s < 8) {
+    scoreBall.classList.add('score-ball-fire', 'fire-lv2');
+  } else if (s >= 8) {
+    scoreBall.classList.add('score-ball-fire', 'fire-lv3');
+  }
+}
+
+function updateProgressBar() {
+  const progress = (quizState.currentQuestionNumber / quizState.TOTAL_QUIZ_QUESTIONS) * 100;
+  if (progressBar) {
+    progressBar.style.width = progress + '%';
+  }
+
+  const scoreBall = document.getElementById('score-ball');
+  if (scoreBall) {
+    scoreBall.style.left = `calc(${progress}% - 10px)`;
+    scoreBall.textContent = quizState.currentScore;
   }
 }
 
 // Hàm trung tâm chấm điểm
 
 // Đúng
+// Đúng
 function handleCorrectAnswer() {
+  // Không cộng điểm ở đây nữa, chỉ lo hiệu ứng
   showScoreEffect('+1', 'text-yellow-400');
-
-  // reset class lửa theo streak
-  const scoreEl = document.getElementById('current-score');
-  if (scoreEl) {
-    scoreEl.classList.remove('score-ball-fire','fire-lv1','fire-lv2','fire-lv3');
-
-    if (quizState.correctStreak >= 3) {
-      scoreEl.classList.add('score-ball-fire','fire-lv1');
-    }
-    if (quizState.correctStreak >= 5) {
-      scoreEl.classList.add('fire-lv2');
-    }
-    if (quizState.correctStreak >= 10) {
-      scoreEl.classList.add('fire-lv3');
-    }
-  }
-
-  soundCorrect?.play();
-
-  messageBox.textContent = '✅ Chính xác!';
-  messageBox.className = 'text-green-600 font-bold';
+  updateScoreBall();
 
   nextQuestionBtn.classList.remove('hidden');
+  nextQuestionBtn.focus();
 }
 
 // Sai
 function handleWrongAnswer() {
-  showScoreEffect('-1', 'text-red-500');
+  // Âm thanh sai
+  const wrongSound = document.getElementById('sound-wrong');
+  if (wrongSound) wrongSound.play();
 
-  const scoreEl = document.getElementById('current-score');
-  if (scoreEl) {
-    scoreEl.classList.remove('score-ball-fire','fire-lv1','fire-lv2','fire-lv3');
-  }
-
-  soundWrong?.play();
-
+  // Hiển thị thông báo sai
   messageBox.textContent = '❌ Sai rồi!';
   messageBox.className = 'text-red-600 font-bold';
 
+  // Trừ điểm
+  quizState.currentScore = Math.max(0, quizState.currentScore - 1);
+
+  // Reset streak
+  quizState.currentStreak = 0;
+
+  // Cập nhật thanh tiến trình + quả cầu điểm
+  updateProgressBar();
+  updateScoreBall();
+
+  // Hiện nút tiếp theo và focus
   nextQuestionBtn.classList.remove('hidden');
+  nextQuestionBtn.focus();
 }
 
 function handleCompareAnswer(selectedOp) {
-  if (quizState.hasEvaluated) return; // tránh double-call
+  if (quizState.hasEvaluated) return;
   if (submitAnswerBtn.disabled) return;
 
-  lockUserInput();
-  document.getElementById('comparison-box').textContent = selectedOp;
+  // Normalize: nếu là &lt; thì đổi thành ký tự '<'
+  if (selectedOp === '&lt;') selectedOp = '<';
+
+ lockUserInput();
+  comparisonBox.textContent = selectedOp;
 
   const isCorrect = (selectedOp === quizState.currentQuestion.answer);
+  evaluateAnswer(isCorrect);
 
-  evaluateAnswer(isCorrect); // ✅ điểm được tính ở đây
+  // 👉 Sau khi xử lý, focus sang nút "Câu hỏi tiếp theo"
+  if (nextQuestionBtn) nextQuestionBtn.focus();
 }
   
 /* =========================
@@ -691,6 +764,7 @@ function checkSortingAnswer(userOrder) {
     messageBox.className = 'text-yellow-600 font-bold';
     return;
   }
+  lockUserInput();
 
   const correct = quizState.currentQuestion.answer;
   const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correct);
@@ -699,27 +773,24 @@ function checkSortingAnswer(userOrder) {
 
 // Hàm trung tâm chấm điểm
 function evaluateAnswer(isCorrect) {
-  if (quizState.hasEvaluated) return; // tránh double-call
+  if (quizState.hasEvaluated) return;
   quizState.hasEvaluated = true;
 
   if (isCorrect) {
-    quizState.currentScore += 1;
-    quizState.correctStreak += 1;
+    quizState.currentScore += 1;        // ✅ chỉ cộng ở đây
+    quizState.currentStreak += 1;
     handleCorrectAnswer();
   } else {
     quizState.currentScore = Math.max(0, quizState.currentScore - 1);
-    quizState.correctStreak = 0;
+    quizState.currentStreak = 0;
     handleWrongAnswer();
   }
 
-  updateScoreBall(); // ✅ luôn cập nhật UI sau khi thay đổi
+  updateScoreBall();
 }
 
 
 function submitAnswer() {
-  // Khóa input để tránh spam
-  lockUserInput();
-
   // Lấy giá trị nhập
   const raw = (mathAnswerInput?.value || '').trim();
 
@@ -727,8 +798,7 @@ function submitAnswer() {
   if (raw === '') {
     messageBox.textContent = '⚠️ Bạn chưa nhập đáp án';
     messageBox.className = 'text-yellow-600 font-bold';
-    unlockUserInput(); // cho phép nhập lại
-    return;
+    return; // 👉 Không khóa input, cho phép nhập lại
   }
 
   // Kiểm tra hợp lệ (phải là số)
@@ -736,9 +806,11 @@ function submitAnswer() {
   if (Number.isNaN(userAnswer)) {
     messageBox.textContent = '⚠️ Đáp án không hợp lệ';
     messageBox.className = 'text-yellow-600 font-bold';
-    unlockUserInput();
-    return;
+    return; // 👉 Không khóa input, cho phép nhập lại
   }
+
+  // Nếu đã nhập hợp lệ thì mới khóa input để tránh spam
+  lockUserInput();
 
   // So sánh với đáp án đúng
   const isCorrect = userAnswer === quizState.currentQuestion.answer;
@@ -746,9 +818,13 @@ function submitAnswer() {
   // ✅ Chấm điểm qua evaluateAnswer
   evaluateAnswer(isCorrect);
 
-  // Reset input cho câu tiếp theo
-  mathAnswerInput.value = '';
+  // Sau khi kiểm tra thì disable input
+  mathAnswerInput.disabled = true;
+  // 👉 Thêm dòng này để focus sang nút "Câu hỏi tiếp theo"
+  if (nextQuestionBtn) nextQuestionBtn.focus();
 }
+
+
 
 /* =========================
    9. TIMER
@@ -841,16 +917,28 @@ function weightedRandom(weights) {
 }
 
 /* Score Effect */
-function showScoreEffect(text, color) {
-  scoreEffect.textContent = text;
-  scoreEffect.className = `absolute text-2xl font-bold ${color}`;
-  scoreEffect.style.opacity = 1;
-  scoreEffect.style.transform = 'translateY(0)';
+function showScoreEffect(text, colorClass) {
+  const scoreBall = document.getElementById('score-ball');
+  const effect = document.getElementById('score-effect');
+  if (!scoreBall || !effect) return;
 
+  // Hiện popup +1/-1
+  effect.textContent = '+1';
+  effect.classList.add(colorClass);
+  effect.style.opacity = '1';
+  effect.style.transform = 'translateY(-10px)';
+
+  // Thêm glow cho quả cầu
+  scoreBall.classList.add('glow');
+
+  // Sau 1s xoá glow và reset popup
   setTimeout(() => {
-    scoreEffect.style.opacity = 0;
-    scoreEffect.style.transform = 'translateY(-30px)';
-  }, 600);
+    effect.style.opacity = '0';
+    effect.style.transform = 'translateY(-30px)';
+    effect.classList.remove(colorClass);
+    scoreBall.classList.remove('glow');
+    updateScoreBall(); // 👉 gọi lại để đảm bảo số điểm và fire class đúng
+  }, 1000);
 }
 
 function hideAllAnswerAreas() {

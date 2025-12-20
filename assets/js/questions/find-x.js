@@ -63,5 +63,8 @@ export function display(question, refs) {
   submitAnswerBtn.textContent = 'Kiểm tra';
   submitAnswerBtn.classList.remove('hidden');
   submitAnswerBtn.disabled = false;
-  submitAnswerBtn.onclick = submitAnswer;  // ← Dùng hàm submitAnswer như các module khác
+  submitAnswerBtn.onclick = submitAnswer;  
+  // 👉 Sau khi xử lý, focus sang nút "Câu hỏi tiếp theo"
+  const nextBtn = document.getElementById('next-question-btn');
+  if (nextBtn) nextBtn.focus();
 }

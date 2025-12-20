@@ -36,29 +36,7 @@
             filter: blur(6px);
             animation: flame-move 1.2s ease-in-out infinite;
             z-index: -1;
-            }  
-        /* 🔥 level 1 – streak ≥ 3 */
-        .fire-lv1 {
-        box-shadow:
-            0 0 8px rgba(255, 193, 7, 0.8),
-            0 0 16px rgba(255, 152, 0, 0.6);
-        }
-
-        /* 🔥🔥 level 2 – streak ≥ 5 */
-        .fire-lv2 {
-        box-shadow:
-            0 0 12px rgba(255, 193, 7, 0.9),
-            0 0 24px rgba(255, 152, 0, 0.8),
-            0 0 36px rgba(255, 87, 34, 0.6);
-        }
-
-        /* 🔥🔥🔥 level 3 – streak ≥ 10 */
-        .fire-lv3 {
-        box-shadow:
-            0 0 16px rgba(255, 213, 79, 1),
-            0 0 32px rgba(255, 152, 0, 0.9),
-            0 0 48px rgba(255, 87, 34, 0.8);
-        }
+            }         
 
         @keyframes flame-move {
         0% {
@@ -73,23 +51,17 @@
             transform: scale(1) rotate(-4deg);
             opacity: 0.7;
         }
-        }      
-        /* lớp lửa bao quanh */
-            .score-ball-fire::before {
-                content: '';
-                position: absolute;
-                inset: -6px;
-                border-radius: 50%;
-                background: radial-gradient(
-                    circle,
-                    rgba(255, 200, 0, 0.6),
-                    rgba(255, 120, 0, 0.4),
-                    transparent 70%
-                );
-                filter: blur(6px);
-                animation: flame-move 1.2s ease-in-out infinite;
-                z-index: -1;
-                }
+        }    
+
+        @keyframes glow {
+        0%   { box-shadow: 0 0 5px #ffd700; }
+        50%  { box-shadow: 0 0 20px #ffd700; }
+        100% { box-shadow: 0 0 5px #ffd700; }
+        }
+
+        .glow {
+        animation: glow 1s ease;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -161,6 +133,38 @@
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        /* Cấp độ 1: ánh sáng nhẹ */
+        .fire-lv1 {
+        animation: fireLv1 1s infinite;
+        }
+
+        @keyframes fireLv1 {
+        0%   { box-shadow: 0 0 10px orange; }
+        50%  { box-shadow: 0 0 20px gold; }
+        100% { box-shadow: 0 0 10px orange; }
+        }
+
+        /* Cấp độ 2: cháy mạnh hơn, thêm đỏ */
+        .fire-lv2 {
+        animation: fireLv2 1s infinite;
+        }
+
+        @keyframes fireLv2 {
+        0%   { box-shadow: 0 0 15px orange, 0 0 30px red; }
+        50%  { box-shadow: 0 0 25px gold, 0 0 40px crimson; }
+        100% { box-shadow: 0 0 15px orange, 0 0 30px red; }
+        }
+
+        /* Cấp độ 3: cháy rực rỡ, nhiều lớp sáng */
+        .fire-lv3 {
+        animation: fireLv3 1s infinite;
+        }
+
+        @keyframes fireLv3 {
+        0%   { box-shadow: 0 0 20px orange, 0 0 40px red, 0 0 60px yellow; }
+        50%  { box-shadow: 0 0 30px gold, 0 0 60px crimson, 0 0 80px white; }
+        100% { box-shadow: 0 0 20px orange, 0 0 40px red, 0 0 60px yellow; }
         }
 
         /* Styling đặc biệt cho ô so sánh */
@@ -268,39 +272,33 @@
                 <p class="text-xl font-semibold text-red-600">
                     ⏰ <span id="quiz-timer" class="font-extrabold text-3xl">30:00</span>
                 </p>
-
-                <!-- Score Container with Relative Positioning for Effect -->
-                <!-- <p class="text-xl font-semibold score-container-relative"> -->
-                <!--    Điểm: <span id="current-score" class="text-green-600 font-extrabold text-2xl">0</span> -->
-                <!--    <span id="score-effect" class="score-effect"></span> -->
-                <!-- </p> -->
             </div>
-            
+
             <!-- Progress Bar -->
             <div id="progress-bar-container" class="relative w-full bg-gray-200 rounded-full h-4 mb-6 shadow-inner">
                 <div id="progress-bar" class="bg-indigo-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
-                <div
-                    id="score-effect"
-                    class="pointer-events-none transition-all duration-500
-                        absolute left-1/2 -translate-x-1/2 -top-6
-                        text-2xl font-bold">
-                </div>
-                <div
-                        id="score-ball"
-                        class="absolute -top-3
-                            w-10 h-10 rounded-full
-                            bg-blue-500
-                            border-2 border-transparent
-                            flex items-center justify-center
-                            text-white font-bold transition-all duration-300"
-                        style="left: 0%"
-                >
-                0
-                </div>
-            </div>
             
-            <p class="text-lg font-semibold mb-4">Cấp độ: <span id="current-level-name">Cấp 1</span> | Câu hỏi: <span id="current-question-number">0</span> / <span id="total-questions">20</span></p>
+                <!-- Score ball (relative để effect căn theo ball) -->
+                <div
+                id="score-ball"
+                class="absolute -top-3
+                        w-10 h-10 rounded-full
+                        bg-blue-500
+                        border-2 border-transparent
+                        flex items-center justify-center
+                        text-white font-bold transition-all duration-300 relative"
+                style="left: 0%"
+                >
+                <span id="current-score">0</span>
+            
+                <!-- Effect nằm TRONG quả cầu -->
+                <div id="score-effect"
+                    class="absolute left-1/2 -translate-x-1/2 -top-6 text-2xl font-bold pointer-events-none transition-all duration-500">
+                </div>
+                </div>
+            </div> 
 
+            <p class="text-lg font-semibold mb-4">Cấp độ: <span id="current-level-name">Cấp 1</span> | Câu hỏi: <span id="current-question-number">0</span> / <span id="total-questions">20</span></p>
 
             <!-- Khu vực câu hỏi -->
             <div id="question-area" class="min-h-[150px] flex flex-col justify-center items-center p-6 bg-blue-100 rounded-xl shadow-xl mb-3">

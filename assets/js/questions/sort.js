@@ -66,4 +66,7 @@ export function generate(quizState) {
       lockUserInput();
       checkSortingAnswer(selected);
     };
+    // 👉 Sau khi xử lý, focus sang nút "Câu hỏi tiếp theo"
+    const nextBtn = document.getElementById('next-question-btn');
+    if (nextBtn) nextBtn.focus();
   }

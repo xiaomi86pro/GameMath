@@ -110,7 +110,6 @@ export function display(question, context) {
         handleWrongAnswer();
       }
     };
-
     clockChoices.appendChild(btn);
   });
 }
